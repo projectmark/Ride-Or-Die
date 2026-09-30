@@ -357,6 +357,12 @@
     .m3-icon-btn:active {
       transform: scale(0.92);
     }
+    .m3-icon-btn.is-active {
+      border-color: var(--sky-accent);
+      color: var(--sky-accent);
+      background: var(--glass-bg-elevated);
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.25);
+    }
 
     /* ==========================================================================
        MAIN COCKPIT GRID (Strictly scaled: 255px | 1fr | 275px)
@@ -1623,6 +1629,353 @@
       font-size: 0.72rem;
       padding: 7px 16px;
     }
+
+    /* ==========================================================================
+       SIMPLE MODE: 1 SCHERMVULLEND GECOMBINEERD WIDGET
+       Combineert Weer & Motoradvies
+       ========================================================================== */
+    body.is-simple-mode .dashboard-grid {
+      display: none !important;
+    }
+
+    .simple-mode-container {
+      display: none;
+      width: 100%;
+      flex: 1;
+      min-height: calc(100vh - 120px);
+      box-sizing: border-box;
+      margin: 4px 0 10px;
+    }
+
+    body.is-simple-mode .simple-mode-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      animation: fadeInSimple 0.25s ease-out;
+    }
+
+    @keyframes fadeInSimple {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .simple-combined-card {
+      width: 100%;
+      flex: 1;
+      min-height: calc(100vh - 140px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: clamp(20px, 3vw, 36px) clamp(22px, 3.5vw, 42px);
+      border-radius: var(--radius-xl);
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      background: var(--glass-bg);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .simple-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--glass-border);
+      width: 100%;
+    }
+
+    .simple-location-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .simple-location-pin {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--glass-bg-elevated);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sky-accent);
+      flex-shrink: 0;
+    }
+
+    .simple-city-name {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 2.8vw, 2.4rem);
+      font-weight: 900;
+      color: var(--text-main);
+      margin: 0;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .simple-date-str {
+      font-size: clamp(0.82rem, 1.3vw, 1rem);
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .simple-header-badges {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .simple-category-label {
+      font-size: clamp(0.75rem, 1.1vw, 0.88rem);
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--glass-bg-subtle);
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--glass-border);
+    }
+
+    .simple-time-badge {
+      font-family: var(--font-mono);
+      font-size: clamp(0.8rem, 1.2vw, 0.92rem);
+      font-weight: 800;
+      color: var(--text-main);
+      background: var(--glass-bg-elevated);
+      border: 1px solid var(--glass-border);
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      letter-spacing: 0.05em;
+    }
+
+    .simple-main-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1.35fr;
+      gap: clamp(18px, 3.5vw, 44px);
+      align-items: center;
+      flex: 1;
+      padding: clamp(16px, 2.8vw, 32px) 0;
+      width: 100%;
+    }
+
+    .simple-divider {
+      width: 1px;
+      align-self: stretch;
+      background: linear-gradient(180deg, transparent, var(--glass-border), transparent);
+    }
+
+    /* Left: Current Weather Section */
+    .simple-weather-section {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(10px, 1.6vw, 18px);
+      min-width: 0;
+    }
+
+    .simple-temp-row {
+      display: flex;
+      align-items: center;
+      gap: clamp(12px, 2.5vw, 24px);
+    }
+
+    .simple-temp-wrap {
+      display: flex;
+      align-items: flex-start;
+      line-height: 0.95;
+    }
+
+    .simple-temp-val {
+      font-family: var(--font-display);
+      font-size: clamp(4rem, 8vw, 6.2rem);
+      font-weight: 900;
+      color: var(--text-main);
+      letter-spacing: -0.04em;
+    }
+
+    .simple-temp-unit {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      color: var(--sky-accent);
+      margin-top: 4px;
+      margin-left: 2px;
+    }
+
+    .simple-icon-wrap {
+      width: clamp(72px, 9vw, 105px);
+      height: clamp(72px, 9vw, 105px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.1));
+    }
+
+    .simple-icon-wrap svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .simple-condition-text {
+      font-family: var(--font-display);
+      font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .simple-stats-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .simple-stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 14px;
+      background: var(--glass-bg-subtle);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-pill);
+      font-size: clamp(0.78rem, 1.1vw, 0.9rem);
+    }
+
+    .simple-stat-lbl {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .simple-stat-val {
+      color: var(--text-main);
+      font-weight: 800;
+      font-family: var(--font-mono);
+    }
+
+    .simple-wind-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(0.82rem, 1.2vw, 0.95rem);
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      background: var(--glass-bg-subtle);
+      border: 1px solid var(--glass-border);
+      width: fit-content;
+    }
+
+    /* Right: Verdict & Advice Section */
+    .simple-verdict-section {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(10px, 1.8vw, 20px);
+      min-width: 0;
+    }
+
+    .simple-verdict-top-tags {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .simple-verdict-headline {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.25;
+      margin: 0;
+      letter-spacing: -0.015em;
+    }
+
+    .simple-verdict-explanation {
+      font-size: clamp(0.92rem, 1.4vw, 1.12rem);
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .simple-commute-preview {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .simple-commute-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--glass-bg-subtle);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      transition: var(--transition-smooth);
+    }
+
+    .simple-commute-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .simple-commute-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .simple-commute-name {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .simple-commute-status {
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Responsive Simple Mode */
+    @media (max-width: 900px) {
+      .simple-main-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .simple-divider {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+      }
+      .simple-combined-card {
+        min-height: auto;
+      }
+      .simple-commute-preview {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .simple-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .simple-header-badges {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
   </style>
 </head>
 <body data-weather-state="sunny">
@@ -1738,6 +2091,16 @@
             <path d="M3 3v5h5"></path>
             <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
             <path d="M16 21h5v-5"></path>
+          </svg>
+        </button>
+
+        <!-- Simple Mode Toggle (Combineert Weer & Motoradvies tot 1 schermvullend widget) -->
+        <button class="m3-icon-btn" id="simple-mode-btn" title="Simple mode: combineer tot 1 schermvullend widget" aria-label="Simple mode">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <circle cx="8" cy="15" r="1.5"></circle>
+            <line x1="13" y1="15" x2="17" y2="15"></line>
           </svg>
         </button>
 
@@ -2086,6 +2449,118 @@
       </section>
 
     </main>
+
+    <!-- ====================================================================
+         SIMPLE MODE CONTAINER: 1 SCHERMVULLEND GECOMBINEERD WIDGET
+         Combineert Actueel Weer & Woon-werk Motoradvies
+         ==================================================================== -->
+    <section class="simple-mode-container" id="simple-mode-container" aria-label="Eenvoudige Weergave">
+      <div class="glass-card simple-combined-card" id="simple-combined-card">
+        
+        <!-- Header: Locatie, Live Tijd & Advies Label -->
+        <div class="simple-header-row">
+          <div class="simple-location-group">
+            <div class="simple-location-pin">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+            <div class="simple-loc-text">
+              <h1 class="simple-city-name" id="simple-city-name">Utrecht</h1>
+              <div class="simple-date-str" id="simple-date-str">Vandaag, live update</div>
+            </div>
+          </div>
+
+          <div class="simple-header-badges">
+            <div class="simple-category-label">Woon-werk Motoradvies</div>
+            <div class="simple-time-badge" id="simple-update-time">--:--</div>
+          </div>
+        </div>
+
+        <!-- Main Content: Links Weer, Rechts Motoradvies -->
+        <div class="simple-main-grid">
+
+          <!-- Links: Actueel Weer -->
+          <div class="simple-weather-section">
+            <div class="simple-temp-row">
+              <div class="simple-temp-wrap">
+                <span class="simple-temp-val" id="simple-temp">--</span>
+                <span class="simple-temp-unit">°C</span>
+              </div>
+              <div class="simple-icon-wrap" id="simple-weather-icon">
+                <!-- SVG Icon via JS -->
+              </div>
+            </div>
+
+            <div class="simple-condition-text" id="simple-condition">Gegevens laden...</div>
+
+            <div class="simple-stats-pills">
+              <div class="simple-stat-pill">
+                <span class="simple-stat-lbl">Gevoel:</span>
+                <span class="simple-stat-val" id="simple-feels-like">--°</span>
+              </div>
+              <div class="simple-stat-pill">
+                <span class="simple-stat-lbl">Max:</span>
+                <span class="simple-stat-val" id="simple-max-temp">--°</span>
+              </div>
+              <div class="simple-stat-pill">
+                <span class="simple-stat-lbl">Min:</span>
+                <span class="simple-stat-val" id="simple-min-temp">--°</span>
+              </div>
+            </div>
+
+            <div class="simple-wind-bar" id="simple-wind-bar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+              <span id="simple-wind-text">Wind: -- km/u • Stoten: -- km/u</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="simple-divider"></div>
+
+          <!-- Rechts: Motoradvies Banner -->
+          <div class="simple-verdict-section">
+            <div class="simple-verdict-top-tags">
+              <div class="verdict-pill-badge" id="simple-verdict-pill">
+                <span>🏍️</span> RIDE ON!
+              </div>
+              <div class="verdict-score-pill" id="simple-verdict-score">
+                Index: 100/100
+              </div>
+            </div>
+
+            <h2 class="simple-verdict-headline" id="simple-verdict-headline">
+              Groen licht: Heerlijk weer voor twee wielen!
+            </h2>
+
+            <p class="simple-verdict-explanation" id="simple-verdict-explanation">
+              Zowel de ochtendrit als de avondrit zijn droog en veilig. Ideale temperaturen en kalme wind.
+            </p>
+
+            <!-- Woon-werk Snelle Blik (Ochtend & Avond) -->
+            <div class="simple-commute-preview">
+              <div class="simple-commute-chip" id="simple-morning-chip">
+                <span class="simple-commute-icon">🌅</span>
+                <div class="simple-commute-info">
+                  <span class="simple-commute-name">Ochtendrit <small id="simple-morning-time">(08:00)</small></span>
+                  <span class="simple-commute-status" id="simple-morning-status">--°C • Droog • 🟢 GOED</span>
+                </div>
+              </div>
+              <div class="simple-commute-chip" id="simple-evening-chip">
+                <span class="simple-commute-icon">🌇</span>
+                <div class="simple-commute-info">
+                  <span class="simple-commute-name">Avondrit <small id="simple-evening-time">(17:00)</small></span>
+                  <span class="simple-commute-status" id="simple-evening-status">--°C • Droog • 🟢 GOED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
   </div>
 
   <!-- Minimalist Fixed Footer (Borderless & Muted) -->
@@ -2247,6 +2722,7 @@
         maxGusts: 55,
         rainTolerance: 'normal'
       },
+      isSimpleMode: false,
       weatherData: null
     };
 
@@ -2262,10 +2738,18 @@
 
         const savedCommute = localStorage.getItem('rideordie_commute');
         if (savedCommute) AppState.commute = { ...AppState.commute, ...JSON.parse(savedCommute) };
+
+        const savedSimple = localStorage.getItem('rideordie_simple');
+        if (savedSimple !== null) {
+          AppState.isSimpleMode = savedSimple === 'true';
+        } else if (window.location.hash.includes('simple')) {
+          AppState.isSimpleMode = true;
+        }
       } catch (e) {
         console.error("Kon instellingen niet laden:", e);
       }
       applyTheme(AppState.theme, false);
+      updateSimpleModeUI(AppState.isSimpleMode);
     }
 
     function saveState() {
@@ -2273,6 +2757,7 @@
         localStorage.setItem('rideordie_theme', AppState.theme);
         localStorage.setItem('rideordie_loc', JSON.stringify(AppState.location));
         localStorage.setItem('rideordie_commute', JSON.stringify(AppState.commute));
+        localStorage.setItem('rideordie_simple', AppState.isSimpleMode ? 'true' : 'false');
       } catch (e) {
         console.error("Kon instellingen niet opslaan:", e);
       }
@@ -2799,6 +3284,120 @@
 
       renderHourlyStrip(hourly);
       renderDailyForecast(daily);
+      renderSimpleModeCard(data, advice);
+    }
+
+    // Render Simple Mode Card (Combines Current Weather & Motoradvies into 1 Screen-Filling Widget)
+    function renderSimpleModeCard(data, advice) {
+      if (!data || !data.current) return;
+      if (!advice) advice = computeCommuteAdvise(data);
+
+      const current = data.current;
+      const daily = data.daily;
+
+      // Location & Date & Time
+      const cityNameEl = document.getElementById('simple-city-name');
+      if (cityNameEl) cityNameEl.textContent = AppState.location.name;
+
+      const now = new Date();
+      const options = { weekday: 'long', day: 'numeric', month: 'long' };
+      const dateStr = now.toLocaleDateString('nl-NL', options);
+      const dateEl = document.getElementById('simple-date-str');
+      if (dateEl) dateEl.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+      const timeEl = document.getElementById('simple-update-time');
+      if (timeEl) timeEl.textContent = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+
+      // Weather condition
+      const code = current.weather_code || 0;
+      const wmoInfo = WMO_DICT[code] || { text: "Helder", icon: "sun", state: "sunny" };
+      const isNight = current.is_day === 0;
+
+      const tempEl = document.getElementById('simple-temp');
+      if (tempEl) tempEl.textContent = Math.round(current.temperature_2m);
+
+      const condEl = document.getElementById('simple-condition');
+      if (condEl) condEl.textContent = wmoInfo.text;
+
+      const iconEl = document.getElementById('simple-weather-icon');
+      if (iconEl) iconEl.innerHTML = getWeatherSvg(wmoInfo.icon, isNight);
+
+      const feelsEl = document.getElementById('simple-feels-like');
+      if (feelsEl) feelsEl.textContent = `${Math.round(current.apparent_temperature)}°`;
+
+      if (daily && daily.temperature_2m_max) {
+        const maxEl = document.getElementById('simple-max-temp');
+        const minEl = document.getElementById('simple-min-temp');
+        if (maxEl) maxEl.textContent = `${Math.round(daily.temperature_2m_max[0])}°`;
+        if (minEl) minEl.textContent = `${Math.round(daily.temperature_2m_min[0])}°`;
+      }
+
+      const windSpeed = Math.round(current.wind_speed_10m);
+      const windDir = getWindDirectionText(current.wind_direction_10m);
+      const windGusts = Math.round(current.wind_gusts_10m);
+      const windTextEl = document.getElementById('simple-wind-text');
+      if (windTextEl) windTextEl.textContent = `Wind: ${windSpeed} km/u (${windDir}) • Stoten: ${windGusts} km/u`;
+
+      // Master Verdict / Advice Banner
+      const verdictCard = document.getElementById('simple-combined-card');
+      const verdictPill = document.getElementById('simple-verdict-pill');
+      const verdictScore = document.getElementById('simple-verdict-score');
+      const verdictHeadline = document.getElementById('simple-verdict-headline');
+      const verdictExpl = document.getElementById('simple-verdict-explanation');
+
+      if (verdictHeadline) verdictHeadline.textContent = advice.dayHeadline;
+      if (verdictPill) verdictPill.innerHTML = advice.dayPill;
+      if (verdictScore) verdictScore.textContent = `Index: ${advice.minScore}/100`;
+      if (verdictExpl) verdictExpl.textContent = advice.dayExplanation;
+
+      if (verdictCard && verdictPill && verdictScore) {
+        if (advice.dayVerdict === 'green') {
+          verdictCard.style.background = 'linear-gradient(135deg, var(--verdict-ride-bg), var(--glass-bg-elevated))';
+          verdictCard.style.borderColor = 'var(--verdict-ride-border)';
+          verdictCard.style.boxShadow = '0 16px 40px rgba(16, 185, 129, 0.15)';
+          verdictPill.style.background = 'var(--verdict-ride-bg)';
+          verdictPill.style.border = '1px solid var(--verdict-ride-border)';
+          verdictPill.style.color = 'var(--verdict-ride-text)';
+          verdictScore.style.background = 'var(--verdict-ride-bg)';
+          verdictScore.style.color = 'var(--verdict-ride-text)';
+          verdictScore.style.borderColor = 'var(--verdict-ride-border)';
+        } else if (advice.dayVerdict === 'yellow') {
+          verdictCard.style.background = 'linear-gradient(135deg, var(--verdict-warn-bg), var(--glass-bg-elevated))';
+          verdictCard.style.borderColor = 'var(--verdict-warn-border)';
+          verdictCard.style.boxShadow = '0 16px 40px rgba(245, 158, 11, 0.15)';
+          verdictPill.style.background = 'var(--verdict-warn-bg)';
+          verdictPill.style.border = '1px solid var(--verdict-warn-border)';
+          verdictPill.style.color = 'var(--verdict-warn-text)';
+          verdictScore.style.background = 'var(--verdict-warn-bg)';
+          verdictScore.style.color = 'var(--verdict-warn-text)';
+          verdictScore.style.borderColor = 'var(--verdict-warn-border)';
+        } else {
+          verdictCard.style.background = 'linear-gradient(135deg, var(--verdict-die-bg), var(--glass-bg-elevated))';
+          verdictCard.style.borderColor = 'var(--verdict-die-border)';
+          verdictCard.style.boxShadow = '0 16px 40px rgba(239, 68, 68, 0.18)';
+          verdictPill.style.background = 'var(--verdict-die-bg)';
+          verdictPill.style.border = '1px solid var(--verdict-die-border)';
+          verdictPill.style.color = 'var(--verdict-die-text)';
+          verdictScore.style.background = 'var(--verdict-die-bg)';
+          verdictScore.style.color = 'var(--verdict-die-text)';
+          verdictScore.style.borderColor = 'var(--verdict-die-border)';
+        }
+      }
+
+      // Commute highlights
+      const mornTimeEl = document.getElementById('simple-morning-time');
+      const mornStatusEl = document.getElementById('simple-morning-status');
+      if (mornTimeEl) mornTimeEl.textContent = `(${AppState.commute.morningTime})`;
+      if (mornStatusEl && advice.morningData) {
+        mornStatusEl.textContent = `${advice.morningData.avgTemp}°C • ${advice.morningData.totalPrecip} mm • ${advice.morningScore.badgeText}`;
+      }
+
+      const eveTimeEl = document.getElementById('simple-evening-time');
+      const eveStatusEl = document.getElementById('simple-evening-status');
+      if (eveTimeEl) eveTimeEl.textContent = `(${AppState.commute.eveningTime})`;
+      if (eveStatusEl && advice.eveningData) {
+        eveStatusEl.textContent = `${advice.eveningData.avgTemp}°C • ${advice.eveningData.totalPrecip} mm • ${advice.eveningScore.badgeText}`;
+      }
     }
 
     // Render Hourly Strip: Starts from past 1 hour and displays forecast ahead
@@ -2981,9 +3580,75 @@
       );
     }
 
+    // Hash Synchronization Helper (supports #fullscreen, #simple, #fullscreen&simple)
+    function syncUrlHash(isFs, isSimple) {
+      const parts = [];
+      if (isFs) parts.push('fullscreen');
+      if (isSimple) parts.push('simple');
+      const targetHash = parts.length ? '#' + parts.join('&') : '';
+      if (window.location.hash !== targetHash) {
+        history.replaceState(null, '', targetHash || (window.location.pathname + window.location.search));
+      }
+    }
+
+    // Simple Mode Management (Combines Weather & Master Verdict into 1 screen-filling widget)
+    function toggleSimpleMode(force) {
+      const willBeSimple = typeof force === 'boolean' ? force : !AppState.isSimpleMode;
+      AppState.isSimpleMode = willBeSimple;
+      saveState();
+
+      const isFs = !!(document.fullscreenElement || document.documentElement.classList.contains('is-fullscreen'));
+      syncUrlHash(isFs, willBeSimple);
+
+      updateSimpleModeUI(willBeSimple);
+
+      if (willBeSimple) {
+        showToast("Simple mode geactiveerd 🏍️");
+      } else {
+        showToast("Volledig dashboard hersteld");
+      }
+    }
+
+    function updateSimpleModeUI(isSimple) {
+      const btn = document.getElementById('simple-mode-btn');
+      if (isSimple) {
+        document.body.classList.add('is-simple-mode');
+        if (btn) {
+          btn.classList.add('is-active');
+          btn.setAttribute('title', 'Volledig Dashboard (alle widgets)');
+          btn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            </svg>
+          `;
+        }
+      } else {
+        document.body.classList.remove('is-simple-mode');
+        if (btn) {
+          btn.classList.remove('is-active');
+          btn.setAttribute('title', 'Simple mode: combineer tot 1 schermvullend widget');
+          btn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <circle cx="8" cy="15" r="1.5"></circle>
+              <line x1="13" y1="15" x2="17" y2="15"></line>
+            </svg>
+          `;
+        }
+      }
+
+      if (AppState.weatherData) {
+        renderSimpleModeCard(AppState.weatherData);
+      }
+    }
+
     // Fullscreen & Kiosk Scaling Management (Scales up to max 125%, adaptive on any screen)
     function updateFullscreenScale() {
-      const isFs = document.fullscreenElement || window.location.hash === '#fullscreen' || document.documentElement.classList.contains('is-fullscreen');
+      const isFs = document.fullscreenElement || window.location.hash.includes('fullscreen') || document.documentElement.classList.contains('is-fullscreen');
       if (!isFs) {
         document.documentElement.style.removeProperty('--fs-scale');
         document.documentElement.classList.remove('is-fullscreen');
@@ -3037,10 +3702,8 @@
     function toggleFullScreen() {
       const isAlreadyFs = document.fullscreenElement || document.documentElement.classList.contains('is-fullscreen');
       if (!isAlreadyFs) {
-        if (window.location.hash !== '#fullscreen') {
-          history.replaceState(null, '', '#fullscreen');
-        }
         document.documentElement.classList.add('is-fullscreen');
+        syncUrlHash(true, AppState.isSimpleMode);
         updateFullscreenScale();
 
         if (document.documentElement.requestFullscreen) {
@@ -3048,10 +3711,8 @@
         }
         showToast("Schermvullend vergroot (max 125%) ⛶");
       } else {
-        if (window.location.hash === '#fullscreen') {
-          history.replaceState(null, '', window.location.pathname + window.location.search);
-        }
         document.documentElement.classList.remove('is-fullscreen');
+        syncUrlHash(false, AppState.isSimpleMode);
         updateFullscreenScale();
 
         if (document.fullscreenElement && document.exitFullscreen) {
@@ -3061,8 +3722,17 @@
       }
     }
 
-    function checkInitialFullscreenHash() {
-      if (window.location.hash === '#fullscreen') {
+    function checkInitialHashModes() {
+      const hash = window.location.hash;
+      const hasFs = hash.includes('fullscreen');
+      const hasSimple = hash.includes('simple');
+
+      if (hasSimple) {
+        AppState.isSimpleMode = true;
+        updateSimpleModeUI(true);
+      }
+
+      if (hasFs) {
         document.documentElement.classList.add('is-fullscreen');
         updateFullscreenScale();
         updateFullscreenButtonUI(true);
@@ -3082,22 +3752,26 @@
     document.addEventListener('fullscreenchange', () => {
       const isFs = !!document.fullscreenElement;
       if (isFs) {
-        if (window.location.hash !== '#fullscreen') {
-          history.replaceState(null, '', '#fullscreen');
-        }
         document.documentElement.classList.add('is-fullscreen');
       } else {
-        if (window.location.hash === '#fullscreen') {
-          history.replaceState(null, '', window.location.pathname + window.location.search);
-        }
         document.documentElement.classList.remove('is-fullscreen');
       }
+      syncUrlHash(isFs, AppState.isSimpleMode);
       updateFullscreenScale();
       updateFullscreenButtonUI(isFs);
     });
 
     window.addEventListener('hashchange', () => {
-      if (window.location.hash === '#fullscreen') {
+      const hash = window.location.hash;
+      const isFs = hash.includes('fullscreen');
+      const isSimple = hash.includes('simple');
+
+      if (isSimple !== AppState.isSimpleMode) {
+        AppState.isSimpleMode = isSimple;
+        updateSimpleModeUI(isSimple);
+      }
+
+      if (isFs) {
         document.documentElement.classList.add('is-fullscreen');
         updateFullscreenScale();
         updateFullscreenButtonUI(true);
@@ -3222,18 +3896,22 @@
       });
     }
 
-    // Refresh, GPS, Theme & Fullscreen buttons
+    // Refresh, GPS, Theme, Simple Mode & Fullscreen buttons
     document.getElementById('refresh-btn').addEventListener('click', () => {
       fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
     });
     document.getElementById('gps-btn').addEventListener('click', requestGPSLocation);
+    const simpleModeBtn = document.getElementById('simple-mode-btn');
+    if (simpleModeBtn) {
+      simpleModeBtn.addEventListener('click', () => toggleSimpleMode());
+    }
     document.getElementById('fullscreen-btn').addEventListener('click', toggleFullScreen);
     document.getElementById('theme-toggle-btn').addEventListener('click', cycleTheme);
 
     // Initial Start
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedState();
-      checkInitialFullscreenHash();
+      checkInitialHashModes();
       setupModalEvents();
       fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
 
