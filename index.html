@@ -266,33 +266,6 @@
       gap: 6px;
     }
 
-    .brand-badge {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: var(--radius-pill);
-      background: rgba(2, 132, 199, 0.12);
-      border: 1px solid rgba(2, 132, 199, 0.35);
-      color: var(--sky-accent);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .knmi-pill-indicator {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 3px 10px;
-      background: rgba(148, 163, 184, 0.12);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-pill);
-      font-size: 0.74rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
     .pulse-dot {
       width: 7px;
       height: 7px;
@@ -300,6 +273,8 @@
       background-color: #10b981;
       box-shadow: 0 0 6px #10b981;
       animation: pulseGreen 2s infinite;
+      display: inline-block;
+      flex-shrink: 0;
     }
     @keyframes pulseGreen {
       0%, 100% { opacity: 1; transform: scale(1); }
@@ -593,30 +568,52 @@
       text-overflow: ellipsis;
     }
 
-    .knmi-info-card {
-      background: var(--glass-bg-subtle);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-md);
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      min-width: 0;
-    }
-    .knmi-info-title {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--sky-accent);
+    /* Clean Minimalist Footer */
+    .app-footer {
       display: flex;
       align-items: center;
-      gap: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .knmi-info-desc {
-      font-size: 0.68rem;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 7px 16px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--glass-shadow);
+      font-size: 0.74rem;
       color: var(--text-muted);
-      line-height: 1.3;
+      text-align: center;
+      min-width: 0;
+      margin-top: 2px;
+    }
+
+    .footer-model-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    .footer-divider {
+      opacity: 0.35;
+      font-size: 0.65rem;
+    }
+
+    .footer-desc {
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+
+    .footer-source {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--sky-accent);
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     /* ==========================================================================
@@ -1505,11 +1502,13 @@
 
     @media (max-width: 768px) {
       .top-navbar {
-        flex-direction: column;
-        align-items: stretch;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 6px 12px;
       }
       .nav-actions {
-        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 6px;
       }
       .dashboard-grid {
         grid-template-columns: 1fr;
@@ -1579,20 +1578,15 @@
   <!-- Main Dashboard Container -->
   <div class="dashboard-wrapper">
 
-    <!-- Top Navigation Bar -->
+    <!-- Top Navigation Bar (Clean & Calm) -->
     <header class="top-navbar">
       <div class="brand-group">
         <div class="brand-icon-wrapper">
           🏍️
         </div>
         <div class="brand-title">
-          RIDE OR DIE <span class="brand-badge">KNMI 2KM</span>
+          RIDE OR DIE
         </div>
-      </div>
-
-      <div class="knmi-pill-indicator">
-        <span class="pulse-dot"></span>
-        <span>KNMI Harmonie-AROME</span>
       </div>
 
       <div class="nav-actions">
@@ -1750,17 +1744,6 @@
             </div>
             <div class="spec-value" id="spec-visibility">> 20 km</div>
             <div class="spec-extra">Uitstekend</div>
-          </div>
-        </div>
-
-        <!-- KNMI Harmonie Info Card -->
-        <div class="knmi-info-card">
-          <div class="knmi-info-title">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-            KNMI Harmonie-AROME 2km
-          </div>
-          <div class="knmi-info-desc">
-            Rechtstreeks numeriek weermodel van het KNMI voor Nederlandse buien en windlijnen.
           </div>
         </div>
 
@@ -1989,6 +1972,19 @@
       </section>
 
     </main>
+
+    <!-- Minimalist Unified Footer -->
+    <footer class="app-footer">
+      <div class="footer-model-badge">
+        <span class="pulse-dot"></span>
+        <span>KNMI Harmonie-AROME (2km)</span>
+      </div>
+      <span class="footer-divider">•</span>
+      <span class="footer-desc">Rechtstreeks numeriek weermodel van het KNMI voor actuele Nederlandse buien en windlijnen</span>
+      <span class="footer-divider">•</span>
+      <span class="footer-source">Data via Open-Meteo</span>
+    </footer>
+
   </div>
 
   <!-- ==========================================================================
