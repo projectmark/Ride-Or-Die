@@ -210,7 +210,7 @@
       width: 100%;
       max-width: 1260px;
       margin: 0 auto;
-      padding: 10px 14px 14px;
+      padding: 10px 14px 42px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -568,51 +568,66 @@
       text-overflow: ellipsis;
     }
 
-    /* Clean Minimalist Footer */
+    /* Clean Minimalist Fixed Footer (Borderless / Zonder Kaders, Muted & Discreet) */
     .app-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      z-index: 100;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
       flex-wrap: wrap;
-      padding: 7px 16px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-pill);
-      box-shadow: var(--glass-shadow);
-      font-size: 0.74rem;
+      padding: 6px 14px;
+      background: linear-gradient(to top, var(--bg-base) 75%, transparent 100%);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+      font-size: 0.68rem;
       color: var(--text-muted);
       text-align: center;
-      min-width: 0;
-      margin-top: 2px;
+      pointer-events: auto;
+      line-height: 1.35;
     }
 
     .footer-model-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-weight: 700;
+      gap: 5px;
+      font-weight: 600;
       color: var(--text-main);
+      opacity: 0.85;
       white-space: nowrap;
     }
 
     .footer-divider {
       opacity: 0.35;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
     }
 
     .footer-desc {
       color: var(--text-muted);
-      font-size: 0.72rem;
+      opacity: 0.85;
     }
 
     .footer-source {
       font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: var(--sky-accent);
-      font-weight: 700;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      opacity: 0.8;
+      white-space: nowrap;
+    }
+
+    .footer-license {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      opacity: 0.8;
       white-space: nowrap;
     }
 
@@ -1501,14 +1516,30 @@
     }
 
     @media (max-width: 768px) {
+      .dashboard-wrapper {
+        padding: 8px 10px 48px;
+      }
       .top-navbar {
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         gap: 8px;
-        padding: 6px 12px;
+        padding: 8px 12px;
+      }
+      .brand-group {
+        width: 100%;
+        justify-content: center;
       }
       .nav-actions {
+        width: 100%;
+        justify-content: center;
         flex-wrap: wrap;
         gap: 6px;
+      }
+      .app-footer {
+        font-size: 0.63rem;
+        gap: 4px 8px;
+        padding: 4px 8px;
       }
       .dashboard-grid {
         grid-template-columns: 1fr;
@@ -1973,16 +2004,18 @@
 
     </main>
 
-    <!-- Minimalist Unified Footer -->
+    <!-- Minimalist Fixed Footer (Borderless & Muted) -->
     <footer class="app-footer">
       <div class="footer-model-badge">
         <span class="pulse-dot"></span>
-        <span>KNMI Harmonie-AROME (2km)</span>
+        <span>KNMI Harmonie-AROME 2km</span>
       </div>
       <span class="footer-divider">•</span>
-      <span class="footer-desc">Rechtstreeks numeriek weermodel van het KNMI voor actuele Nederlandse buien en windlijnen</span>
+      <span class="footer-desc">Rechtstreeks numeriek weermodel KNMI</span>
       <span class="footer-divider">•</span>
       <span class="footer-source">Data via Open-Meteo</span>
+      <span class="footer-divider">•</span>
+      <span class="footer-license">MIT License (Open Source) &copy; 2026 Ride Or Die Weer</span>
     </footer>
 
   </div>
