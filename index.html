@@ -1053,6 +1053,31 @@
       transform: translateY(-1px);
     }
 
+    .legend-dot-now {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+    }
+
+    .hour-chip.is-current-hour {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.16);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.28);
+    }
+    .hour-chip.is-current-hour::after {
+      content: 'NU';
+      position: absolute;
+      top: -5px;
+      font-size: 0.52rem;
+      font-weight: 800;
+      background: #10b981;
+      color: #fff;
+      padding: 0 4px;
+      border-radius: var(--radius-pill);
+    }
+
     .hour-chip.is-commute-morning {
       border-color: #0284c7;
       background: rgba(2, 132, 199, 0.12);
@@ -1921,6 +1946,7 @@
               <span>Uurlijkse Trend</span>
             </div>
             <div class="commute-legend">
+              <span><span class="legend-dot-now"></span> Nu</span>
               <span><span class="legend-dot-morning"></span> Heen</span>
               <span><span class="legend-dot-evening"></span> Terug</span>
             </div>
@@ -2649,17 +2675,35 @@
       renderDailyForecast(daily);
     }
 
-    // Render Hourly Strip
+    // Render Hourly Strip: Starts from past 1 hour and displays forecast ahead
     function renderHourlyStrip(hourly) {
       const strip = document.getElementById('hourly-strip');
       if (!strip || !hourly || !hourly.time) return;
+
+      const now = new Date();
+      const currentTimestamp = now.getTime();
+
+      // Find index in hourly data closest to current time
+      let currentIdx = 0;
+      let minDiff = Infinity;
+      for (let i = 0; i < hourly.time.length; i++) {
+        const t = new Date(hourly.time[i]).getTime();
+        const diff = Math.abs(t - currentTimestamp);
+        if (diff < minDiff) {
+          minDiff = diff;
+          currentIdx = i;
+        }
+      }
+
+      // Start 1 hour prior ("het afgelopen uur en dan wat er komt")
+      const startIdx = Math.max(0, currentIdx - 1);
+      const endIdx = Math.min(hourly.time.length, startIdx + 28);
 
       const morningHour = parseInt(AppState.commute.morningTime.split(':')[0], 10);
       const eveningHour = parseInt(AppState.commute.eveningTime.split(':')[0], 10);
 
       let html = '';
-      const limit = Math.min(24, hourly.time.length);
-      for (let i = 0; i < limit; i++) {
+      for (let i = startIdx; i < endIdx; i++) {
         const timeObj = new Date(hourly.time[i]);
         const hourNum = timeObj.getHours();
         const hourStr = `${hourNum.toString().padStart(2, '0')}:00`;
@@ -2669,13 +2713,20 @@
         const iconType = (WMO_DICT[code] || {}).icon || 'sun';
         const isNight = hourNum < 6 || hourNum > 21;
 
+        const isCurrent = (i === currentIdx);
         let commuteClass = '';
-        if (hourNum === morningHour) commuteClass = 'is-commute-morning';
-        else if (hourNum === eveningHour) commuteClass = 'is-commute-evening';
+
+        if (isCurrent) {
+          commuteClass = 'is-current-hour';
+        } else if (hourNum === morningHour) {
+          commuteClass = 'is-commute-morning';
+        } else if (hourNum === eveningHour) {
+          commuteClass = 'is-commute-evening';
+        }
 
         html += `
-          <div class="hour-chip ${commuteClass}">
-            <span class="hour-time">${hourStr}</span>
+          <div class="hour-chip ${commuteClass}" title="${isCurrent ? 'Huidig uur (Nu)' : hourStr}">
+            <span class="hour-time">${isCurrent ? 'Nu' : hourStr}</span>
             <div class="hour-icon">${getWeatherSvg(iconType, isNight)}</div>
             <span class="hour-temp">${temp}°</span>
             <span class="hour-rain">${rainProb > 10 ? `💧${rainProb}%` : '☀️0%'}</span>
@@ -2683,6 +2734,9 @@
         `;
       }
       strip.innerHTML = html;
+
+      // Ensure immediate position on the current block
+      strip.scrollLeft = 0;
     }
 
     // Render 7-Day Forecast (Strictly Scaled - No Clipping)
