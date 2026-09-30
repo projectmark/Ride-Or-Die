@@ -1602,6 +1602,27 @@
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
+
+    /* ==========================================================================
+       FULLSCREEN KIOSK MODE (Scales up to max 125%, adaptive & responsive)
+       ========================================================================== */
+    html.is-fullscreen,
+    :fullscreen {
+      overflow-x: hidden;
+    }
+
+    html.is-fullscreen .dashboard-wrapper,
+    :fullscreen .dashboard-wrapper {
+      zoom: var(--fs-scale, 1.25);
+      max-width: 1260px;
+      width: 100%;
+    }
+
+    html.is-fullscreen .app-footer,
+    :fullscreen .app-footer {
+      font-size: 0.72rem;
+      padding: 7px 16px;
+    }
   </style>
 </head>
 <body data-weather-state="sunny">
@@ -2065,22 +2086,21 @@
       </section>
 
     </main>
-
-    <!-- Minimalist Fixed Footer (Borderless & Muted) -->
-    <footer class="app-footer">
-      <div class="footer-model-badge">
-        <span class="pulse-dot"></span>
-        <span>KNMI Harmonie-AROME 2km</span>
-      </div>
-      <span class="footer-divider">•</span>
-      <span class="footer-desc">Rechtstreeks numeriek weermodel KNMI</span>
-      <span class="footer-divider">•</span>
-      <span class="footer-source">Data via Open-Meteo</span>
-      <span class="footer-divider">•</span>
-      <span class="footer-license">MIT License (Open Source) &copy; 2026 Mark Tapking</span>
-    </footer>
-
   </div>
+
+  <!-- Minimalist Fixed Footer (Borderless & Muted) -->
+  <footer class="app-footer">
+    <div class="footer-model-badge">
+      <span class="pulse-dot"></span>
+      <span>KNMI Harmonie-AROME 2km</span>
+    </div>
+    <span class="footer-divider">•</span>
+    <span class="footer-desc">Rechtstreeks numeriek weermodel KNMI</span>
+    <span class="footer-divider">•</span>
+    <span class="footer-source">Data via Open-Meteo</span>
+    <span class="footer-divider">•</span>
+    <span class="footer-license">MIT License (Open Source) &copy; 2026 Mark Tapking</span>
+  </footer>
 
   <!-- ==========================================================================
        SETTINGS & LOCATION MODAL
@@ -2961,18 +2981,141 @@
       );
     }
 
-    // Fullscreen Toggle
-    function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch((err) => {
-          showToast(`Kon scherm niet maximaliseren: ${err.message}`);
-        });
+    // Fullscreen & Kiosk Scaling Management (Scales up to max 125%, adaptive on any screen)
+    function updateFullscreenScale() {
+      const isFs = document.fullscreenElement || window.location.hash === '#fullscreen' || document.documentElement.classList.contains('is-fullscreen');
+      if (!isFs) {
+        document.documentElement.style.removeProperty('--fs-scale');
+        document.documentElement.classList.remove('is-fullscreen');
+        updateFullscreenButtonUI(false);
+        return;
+      }
+
+      document.documentElement.classList.add('is-fullscreen');
+      updateFullscreenButtonUI(true);
+
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      // When screen width and height have space beyond baseline (1260x680)
+      if (w >= 1260 && h >= 680) {
+        const scaleW = w / 1260;
+        const scaleH = h / 680;
+        // Scale up to max 1.25 (125%)
+        const scale = Math.min(1.25, Math.min(scaleW, scaleH));
+        document.documentElement.style.setProperty('--fs-scale', scale.toFixed(3));
       } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
+        // Keeps 1.0 on smaller screens so responsive layout stays crisp without distortion
+        document.documentElement.style.setProperty('--fs-scale', '1.0');
       }
     }
+
+    function updateFullscreenButtonUI(isFs) {
+      const btn = document.getElementById('fullscreen-btn');
+      if (!btn) return;
+      if (isFs) {
+        btn.setAttribute('title', 'Verlaat volledig scherm (ESC)');
+        btn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+          </svg>
+        `;
+        btn.style.borderColor = 'var(--sky-accent)';
+        btn.style.color = 'var(--sky-accent)';
+      } else {
+        btn.setAttribute('title', 'Volledig scherm / Kiosk mode');
+        btn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+          </svg>
+        `;
+        btn.style.borderColor = '';
+        btn.style.color = '';
+      }
+    }
+
+    function toggleFullScreen() {
+      const isAlreadyFs = document.fullscreenElement || document.documentElement.classList.contains('is-fullscreen');
+      if (!isAlreadyFs) {
+        if (window.location.hash !== '#fullscreen') {
+          history.replaceState(null, '', '#fullscreen');
+        }
+        document.documentElement.classList.add('is-fullscreen');
+        updateFullscreenScale();
+
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+        showToast("Schermvullend vergroot (max 125%) ⛶");
+      } else {
+        if (window.location.hash === '#fullscreen') {
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+        document.documentElement.classList.remove('is-fullscreen');
+        updateFullscreenScale();
+
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+        showToast("Normale weergave hersteld");
+      }
+    }
+
+    function checkInitialFullscreenHash() {
+      if (window.location.hash === '#fullscreen') {
+        document.documentElement.classList.add('is-fullscreen');
+        updateFullscreenScale();
+        updateFullscreenButtonUI(true);
+        const requestOnGesture = () => {
+          if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          }
+          document.removeEventListener('click', requestOnGesture);
+          document.removeEventListener('touchstart', requestOnGesture);
+        };
+        document.addEventListener('click', requestOnGesture, { once: true });
+        document.addEventListener('touchstart', requestOnGesture, { once: true });
+      }
+    }
+
+    // Fullscreen and hash synchronization listeners
+    document.addEventListener('fullscreenchange', () => {
+      const isFs = !!document.fullscreenElement;
+      if (isFs) {
+        if (window.location.hash !== '#fullscreen') {
+          history.replaceState(null, '', '#fullscreen');
+        }
+        document.documentElement.classList.add('is-fullscreen');
+      } else {
+        if (window.location.hash === '#fullscreen') {
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+        document.documentElement.classList.remove('is-fullscreen');
+      }
+      updateFullscreenScale();
+      updateFullscreenButtonUI(isFs);
+    });
+
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === '#fullscreen') {
+        document.documentElement.classList.add('is-fullscreen');
+        updateFullscreenScale();
+        updateFullscreenButtonUI(true);
+      } else {
+        document.documentElement.classList.remove('is-fullscreen');
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+        updateFullscreenScale();
+        updateFullscreenButtonUI(false);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (document.documentElement.classList.contains('is-fullscreen') || document.fullscreenElement) {
+        updateFullscreenScale();
+      }
+    });
 
     // Setup Modal & Button Handlers
     function setupModalEvents() {
@@ -3090,6 +3233,7 @@
     // Initial Start
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedState();
+      checkInitialFullscreenHash();
       setupModalEvents();
       fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
 
