@@ -243,15 +243,21 @@
     }
 
     .brand-icon-wrapper {
-      width: 32px;
+      width: 36px;
       height: 32px;
-      border-radius: var(--radius-pill);
-      background: linear-gradient(135deg, var(--sky-accent), #2563eb);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
-      box-shadow: 0 2px 8px var(--sky-glow);
+      background: none;
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+      flex-shrink: 0;
+      filter: drop-shadow(0 2px 5px rgba(2, 132, 199, 0.22));
+      transition: transform 0.3s ease;
+    }
+    .brand-group:hover .brand-icon-wrapper {
+      transform: scale(1.06);
     }
 
     .brand-title {
@@ -1612,8 +1618,43 @@
     <!-- Top Navigation Bar (Clean & Calm) -->
     <header class="top-navbar">
       <div class="brand-group">
-        <div class="brand-icon-wrapper">
-          🏍️
+        <div class="brand-icon-wrapper" title="Ride Or Die - KNMI Weer">
+          <svg class="brand-logo-svg" width="36" height="32" viewBox="0 0 46 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="brandSunGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#fbbf24"/>
+                <stop offset="100%" stop-color="#ea580c"/>
+              </linearGradient>
+              <linearGradient id="brandBikeBody" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="50%" stop-color="#2563eb"/>
+                <stop offset="100%" stop-color="#1d4ed8"/>
+              </linearGradient>
+              <linearGradient id="brandWindGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.1"/>
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.75"/>
+              </linearGradient>
+            </defs>
+            <!-- Radiant Weather Sun -->
+            <circle cx="35" cy="11" r="6" fill="url(#brandSunGrad)"/>
+            <path d="M35 2v2.5M35 17.5v2.5M26 11h2.5M41.5 11H44M28.6 4.6l1.8 1.8M39.6 15.6l1.8 1.8M28.6 17.4l1.8-1.8M39.6 6.4l1.8-1.8" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- Weather Breeze Streamline -->
+            <path d="M6 16c5-4 13-4 20-1" stroke="url(#brandWindGrad)" stroke-width="1.8" stroke-linecap="round"/>
+            <!-- Motorcycle Wheels -->
+            <circle cx="11" cy="28" r="6.5" stroke="currentColor" stroke-width="2.6"/>
+            <circle cx="11" cy="28" r="2.4" fill="currentColor"/>
+            <circle cx="33" cy="28" r="6.5" stroke="currentColor" stroke-width="2.6"/>
+            <circle cx="33" cy="28" r="2.4" fill="currentColor"/>
+            <!-- Chassis, Fork & Swingarm -->
+            <path d="M11 28l9-4h5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M33 28L27 15.5l-3.5-.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Aerodynamic Body Fairing -->
+            <path d="M9 21.5l7 2.8 3.5-3.8 5-2.5 5.5 2 5 4-3 2h-7l-4.5 1.8z" fill="url(#brandBikeBody)"/>
+            <!-- Windscreen -->
+            <path d="M27 15.5l4-4 1.5 4z" fill="#38bdf8"/>
+            <!-- Ground Speedline -->
+            <path d="M3 37h38" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.28"/>
+          </svg>
         </div>
         <div class="brand-title">
           RIDE OR DIE
