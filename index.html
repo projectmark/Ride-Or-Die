@@ -4,22 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Ride Or Die | KNMI Motor Weerbericht & Commute Advisor</title>
-  <meta name="description" content="Het ultieme motorweer dashboard voor Nederland, aangedreven door het open-source KNMI Harmonie-AROME weermodel. Weet direct of je 's ochtends en 's middags veilig op de motor stapt." />
+  <meta name="description" content="Het ultieme motorweer dashboard voor Nederland, aangedreven door het open-source KNMI Harmonie-AROME weermodel. Geoptimaliseerd voor 7-8 inch schermen en 1280x720/1280x800 resoluties." />
   <meta name="theme-color" content="#0d131f" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏍️</text></svg>" />
 
-  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+  <!-- Google Fonts: Outfit, Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-
-  <!-- Leaflet CSS & JS for RainViewer Live Radar -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 
   <style>
     /* ==========================================================================
-       MATERIAL YOU 3 EXPRESSIVE + GRADIENT WEATHER DESIGN SYSTEM
+       MATERIAL YOU 3 EXPRESSIVE - COMPACT 1280x720 / 1280x800 COCKPIT DASHBOARD
        ========================================================================== */
     :root {
       --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -27,86 +23,85 @@
       --font-mono: 'JetBrains Mono', monospace;
 
       /* Dynamic Theme Variables (Default Day/Clear) */
-      --sky-grad-1: #0f1c3f;
-      --sky-grad-2: #1e3a8a;
-      --sky-grad-3: #2563eb;
+      --sky-grad-1: #0b152d;
+      --sky-grad-2: #162f68;
+      --sky-grad-3: #1e4bb5;
       --sky-accent: #38bdf8;
-      --sky-glow: rgba(56, 189, 248, 0.25);
+      --sky-glow: rgba(56, 189, 248, 0.22);
 
-      /* Glassmorphism & Material You 3 Expressive Containers */
-      --glass-bg: rgba(18, 26, 45, 0.62);
-      --glass-bg-subtle: rgba(25, 36, 61, 0.45);
-      --glass-bg-elevated: rgba(30, 43, 73, 0.78);
-      --glass-border: rgba(255, 255, 255, 0.14);
-      --glass-border-light: rgba(255, 255, 255, 0.24);
-      --glass-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.45);
-      --glass-shadow-lg: 0 25px 60px -12px rgba(0, 0, 0, 0.6);
+      /* Frosted Glass & Containers */
+      --glass-bg: rgba(16, 24, 43, 0.68);
+      --glass-bg-subtle: rgba(22, 33, 58, 0.52);
+      --glass-bg-elevated: rgba(26, 38, 66, 0.82);
+      --glass-border: rgba(255, 255, 255, 0.13);
+      --glass-border-light: rgba(255, 255, 255, 0.22);
+      --glass-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.45);
 
-      /* Semantic Riding Alert Colors */
-      --verdict-ride-bg: rgba(16, 185, 129, 0.18);
+      /* Semantic Riding Verdict Colors */
+      --verdict-ride-bg: rgba(16, 185, 129, 0.16);
       --verdict-ride-border: rgba(16, 185, 129, 0.55);
       --verdict-ride-text: #34d399;
-      --verdict-ride-glow: rgba(16, 185, 129, 0.4);
+      --verdict-ride-glow: rgba(16, 185, 129, 0.35);
 
-      --verdict-warn-bg: rgba(245, 158, 11, 0.18);
+      --verdict-warn-bg: rgba(245, 158, 11, 0.16);
       --verdict-warn-border: rgba(245, 158, 11, 0.55);
       --verdict-warn-text: #fbbf24;
-      --verdict-warn-glow: rgba(245, 158, 11, 0.4);
+      --verdict-warn-glow: rgba(245, 158, 11, 0.35);
 
-      --verdict-die-bg: rgba(239, 68, 68, 0.18);
+      --verdict-die-bg: rgba(239, 68, 68, 0.16);
       --verdict-die-border: rgba(239, 68, 68, 0.6);
       --verdict-die-text: #f87171;
-      --verdict-die-glow: rgba(239, 68, 68, 0.45);
+      --verdict-die-glow: rgba(239, 68, 68, 0.4);
 
       /* Text Hierarchy */
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --text-faint: #64748b;
 
-      /* Material 3 Expressive Radii */
-      --radius-sm: 14px;
-      --radius-md: 20px;
-      --radius-lg: 28px;
-      --radius-xl: 36px;
+      /* Material 3 Expressive Radii (Cockpit proportioned) */
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --radius-xl: 28px;
       --radius-pill: 9999px;
 
-      --transition-spring: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      --transition-smooth: all 0.28s ease;
+      --transition-spring: all 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+      --transition-smooth: all 0.22s ease;
     }
 
     /* THEME WEATHER STATES */
     body[data-weather-state="sunny"] {
-      --sky-grad-1: #0f2b48;
+      --sky-grad-1: #0c233d;
       --sky-grad-2: #0284c7;
-      --sky-grad-3: #f59e0b;
+      --sky-grad-3: #ea580c;
       --sky-accent: #fcd34d;
-      --sky-glow: rgba(251, 191, 36, 0.3);
+      --sky-glow: rgba(251, 191, 36, 0.25);
     }
     body[data-weather-state="cloudy"] {
-      --sky-grad-1: #111827;
-      --sky-grad-2: #1f2937;
-      --sky-grad-3: #374151;
+      --sky-grad-1: #0f172a;
+      --sky-grad-2: #1e293b;
+      --sky-grad-3: #334155;
       --sky-accent: #93c5fd;
-      --sky-glow: rgba(147, 197, 253, 0.2);
+      --sky-glow: rgba(147, 197, 253, 0.18);
     }
     body[data-weather-state="rain"] {
-      --sky-grad-1: #09131d;
-      --sky-grad-2: #0f2742;
-      --sky-grad-3: #1e3a5f;
+      --sky-grad-1: #08111a;
+      --sky-grad-2: #0e243d;
+      --sky-grad-3: #1a3654;
       --sky-accent: #60a5fa;
-      --sky-glow: rgba(96, 165, 250, 0.3);
+      --sky-glow: rgba(96, 165, 250, 0.25);
     }
     body[data-weather-state="storm"] {
-      --sky-grad-1: #090914;
-      --sky-grad-2: #1e1b4b;
-      --sky-grad-3: #312e81;
+      --sky-grad-1: #090913;
+      --sky-grad-2: #1c183f;
+      --sky-grad-3: #2d2a6e;
       --sky-accent: #c084fc;
-      --sky-glow: rgba(192, 132, 252, 0.35);
+      --sky-glow: rgba(192, 132, 252, 0.3);
     }
     body[data-weather-state="night"] {
-      --sky-grad-1: #030712;
-      --sky-grad-2: #0b132b;
-      --sky-grad-3: #1c2541;
+      --sky-grad-1: #020617;
+      --sky-grad-2: #091024;
+      --sky-grad-3: #141c38;
       --sky-accent: #818cf8;
       --sky-glow: rgba(129, 140, 248, 0.2);
     }
@@ -122,128 +117,107 @@
       min-height: 100vh;
       font-family: var(--font-body);
       color: var(--text-main);
-      background-color: #0b111e;
+      background-color: #070d18;
       overflow-x: hidden;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
-    /* Animated Dynamic Gradient Mesh Background */
+    /* Animated Dynamic Ambient Background */
     .dynamic-bg-container {
       position: fixed;
       inset: 0;
       z-index: -2;
       overflow: hidden;
       pointer-events: none;
-      background: radial-gradient(circle at 20% 20%, var(--sky-grad-3) 0%, transparent 60%),
-                  radial-gradient(circle at 80% 30%, var(--sky-grad-2) 0%, transparent 65%),
-                  radial-gradient(circle at 50% 90%, var(--sky-grad-1) 0%, #060b13 100%);
+      background: radial-gradient(circle at 18% 22%, var(--sky-grad-3) 0%, transparent 55%),
+                  radial-gradient(circle at 82% 28%, var(--sky-grad-2) 0%, transparent 60%),
+                  radial-gradient(circle at 50% 95%, var(--sky-grad-1) 0%, #050810 100%);
       transition: background 1.2s ease;
     }
 
     .mesh-blob {
       position: absolute;
       border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.65;
-      animation: floatMesh 20s infinite alternate ease-in-out;
+      filter: blur(70px);
+      opacity: 0.6;
+      animation: floatMesh 22s infinite alternate ease-in-out;
     }
     .mesh-blob-1 {
-      width: 65vw;
-      height: 65vw;
-      top: -20vw;
-      left: -15vw;
+      width: 55vw;
+      height: 55vw;
+      top: -15vw;
+      left: -10vw;
       background: var(--sky-accent);
-      opacity: 0.22;
+      opacity: 0.18;
     }
     .mesh-blob-2 {
-      width: 50vw;
-      height: 50vw;
+      width: 45vw;
+      height: 45vw;
       bottom: -10vw;
       right: -10vw;
       background: var(--sky-grad-3);
-      opacity: 0.35;
-      animation-duration: 25s;
-    }
-    .mesh-blob-3 {
-      width: 40vw;
-      height: 40vw;
-      top: 30vh;
-      left: 35vw;
-      background: var(--sky-glow);
       opacity: 0.28;
-      animation-duration: 18s;
+      animation-duration: 26s;
     }
 
     @keyframes floatMesh {
       0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(4vw, 5vh) scale(1.1); }
-      100% { transform: translate(-3vw, -4vh) scale(0.95); }
-    }
-
-    /* Ambient rain/snow canvas */
-    #ambient-canvas {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0.5;
+      50% { transform: translate(3vw, 4vh) scale(1.08); }
+      100% { transform: translate(-2vw, -3vh) scale(0.96); }
     }
 
     /* ==========================================================================
-       LAYOUT: 16:10 LANDSCAPE DASHBOARD FOCUS
+       LAYOUT: OPTIMIZED 1280x720 / 1280x800 COCKPIT DASHBOARD
        ========================================================================== */
     .dashboard-wrapper {
-      max-width: 1720px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 24px 28px 40px;
+      padding: 12px 16px 16px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 12px;
       min-height: 100vh;
+      box-sizing: border-box;
     }
 
-    /* Top App Navigation / Header */
+    /* Top Navigation Bar - Compact 46px Height */
     .top-navbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 12px 20px;
+      gap: 12px;
+      padding: 8px 16px;
       background: var(--glass-bg);
-      backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-pill);
       box-shadow: var(--glass-shadow);
+      min-height: 48px;
     }
 
     .brand-group {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .brand-icon-wrapper {
-      width: 44px;
-      height: 44px;
+      width: 34px;
+      height: 34px;
       border-radius: var(--radius-pill);
       background: linear-gradient(135deg, var(--sky-accent), var(--sky-grad-2));
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 4px 14px var(--sky-glow);
-    }
-
-    .brand-title-area {
-      display: flex;
-      flex-direction: column;
+      font-size: 18px;
+      box-shadow: 0 2px 10px var(--sky-glow);
     }
 
     .brand-title {
       font-family: var(--font-display);
       font-weight: 900;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       letter-spacing: -0.02em;
       text-transform: uppercase;
       background: linear-gradient(to right, #fff, #cbd5e1);
@@ -251,41 +225,42 @@
       -webkit-text-fill-color: transparent;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .brand-badge {
       font-family: var(--font-mono);
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 700;
-      padding: 2px 8px;
+      padding: 2px 6px;
       border-radius: var(--radius-pill);
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.4);
       color: var(--sky-accent);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
     }
 
     .knmi-pill-indicator {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
+      gap: 6px;
+      padding: 4px 12px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-pill);
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       font-weight: 600;
       color: #e2e8f0;
+      white-space: nowrap;
     }
 
     .pulse-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background-color: #10b981;
-      box-shadow: 0 0 10px #10b981;
+      box-shadow: 0 0 8px #10b981;
       animation: pulseGreen 2s infinite;
     }
     @keyframes pulseGreen {
@@ -296,36 +271,31 @@
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .m3-action-btn {
-      display: inline-flex;
+    .location-trigger {
+      display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: var(--radius-pill);
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--glass-border);
-      color: var(--text-main);
-      font-family: var(--font-body);
-      font-size: 0.88rem;
-      font-weight: 600;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
       cursor: pointer;
       transition: var(--transition-spring);
     }
-    .m3-action-btn:hover {
-      background: rgba(255, 255, 255, 0.16);
-      border-color: var(--glass-border-light);
-      transform: translateY(-2px);
-    }
-    .m3-action-btn:active {
-      transform: scale(0.96);
+    .location-trigger:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
     }
 
     .m3-icon-btn {
-      width: 44px;
-      height: 44px;
+      width: 36px;
+      height: 36px;
       padding: 0;
       display: flex;
       align-items: center;
@@ -340,51 +310,31 @@
     .m3-icon-btn:hover {
       background: rgba(255, 255, 255, 0.18);
       border-color: var(--glass-border-light);
-      transform: translateY(-2px);
+      transform: translateY(-1px);
     }
     .m3-icon-btn:active {
       transform: scale(0.92);
     }
 
-    /* Location selector pill */
-    .location-trigger {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 18px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: var(--radius-pill);
-      color: #fff;
-      font-size: 0.92rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: var(--transition-spring);
-    }
-    .location-trigger:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-    }
-
     /* ==========================================================================
-       16:10 THREE COLUMN MAIN GRID
+       MAIN 3-COLUMN COCKPIT GRID (Tailored for 1280px)
        ========================================================================== */
     .dashboard-grid {
       display: grid;
-      grid-template-columns: 310px 1fr 390px;
-      gap: 20px;
-      align-items: start;
+      grid-template-columns: 290px 1fr 310px;
+      gap: 12px;
+      align-items: stretch;
     }
 
-    /* CARD SYSTEM */
+    /* GLASS CARDS */
     .glass-card {
       background: var(--glass-bg);
-      backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-lg);
       box-shadow: var(--glass-shadow);
-      padding: 24px;
+      padding: 16px;
       position: relative;
       overflow: hidden;
       transition: var(--transition-smooth);
@@ -394,20 +344,21 @@
     }
 
     /* ==========================================================================
-       COLUMN 1: CURRENT WEATHER HERO & ATMOSPHERE
+       COLUMN 1: CURRENT WEATHER HERO & SPECS (Left)
        ========================================================================== */
     .col-hero {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 12px;
     }
 
     .hero-weather-card {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      background: linear-gradient(165deg, rgba(255, 255, 255, 0.12) 0%, rgba(18, 26, 45, 0.75) 100%);
+      gap: 10px;
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.1) 0%, rgba(16, 24, 43, 0.78) 100%);
       border: 1px solid var(--glass-border-light);
+      padding: 16px;
     }
 
     .hero-location-header {
@@ -418,21 +369,21 @@
 
     .hero-city-name {
       font-family: var(--font-display);
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       line-height: 1.1;
     }
     .hero-sub-location {
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     .hero-time-badge {
       font-family: var(--font-mono);
-      font-size: 0.75rem;
-      padding: 4px 10px;
+      font-size: 0.72rem;
+      padding: 3px 8px;
       border-radius: var(--radius-pill);
       background: rgba(255, 255, 255, 0.08);
       color: #cbd5e1;
@@ -443,7 +394,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin: 8px 0;
+      margin: 2px 0;
     }
 
     .hero-temp-block {
@@ -453,7 +404,7 @@
 
     .hero-temp-number {
       font-family: var(--font-display);
-      font-size: 5.4rem;
+      font-size: 4rem;
       font-weight: 900;
       line-height: 0.9;
       letter-spacing: -0.04em;
@@ -461,20 +412,20 @@
 
     .hero-temp-unit {
       font-family: var(--font-display);
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       font-weight: 400;
       color: var(--sky-accent);
-      margin-top: 8px;
+      margin-top: 4px;
       margin-left: 2px;
     }
 
     .hero-icon-container {
-      width: 100px;
-      height: 100px;
+      width: 76px;
+      height: 76px;
       display: flex;
       align-items: center;
       justify-content: center;
-      filter: drop-shadow(0 10px 20px var(--sky-glow));
+      filter: drop-shadow(0 6px 16px var(--sky-glow));
     }
     .hero-icon-container svg {
       width: 100%;
@@ -483,7 +434,7 @@
 
     .hero-condition-text {
       font-family: var(--font-display);
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: #fff;
     }
@@ -491,8 +442,8 @@
     .hero-highlow-row {
       display: flex;
       align-items: center;
-      gap: 16px;
-      font-size: 0.9rem;
+      justify-content: space-between;
+      font-size: 0.82rem;
       color: var(--text-muted);
       padding-top: 8px;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -501,150 +452,138 @@
     .hero-highlow-item {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
     .hero-highlow-item span.val {
       color: var(--text-main);
       font-weight: 700;
     }
 
-    /* Quick Specs Grid */
+    /* Specs Grid 2x3 compact */
     .specs-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      gap: 8px;
     }
 
     .spec-card {
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-md);
-      padding: 14px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      transition: var(--transition-smooth);
-    }
-    .spec-card:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
+      gap: 2px;
     }
 
     .spec-label-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.78rem;
+      gap: 5px;
+      font-size: 0.72rem;
       font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
     }
     .spec-label-row svg {
-      width: 15px;
-      height: 15px;
+      width: 13px;
+      height: 13px;
       stroke: var(--sky-accent);
     }
 
     .spec-value {
       font-family: var(--font-display);
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: var(--text-main);
     }
 
     .spec-extra {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* KNMI Model Card Footer */
     .knmi-info-card {
-      background: linear-gradient(145deg, rgba(37, 99, 235, 0.15), rgba(15, 23, 42, 0.6));
-      border: 1px solid rgba(56, 189, 248, 0.25);
+      background: linear-gradient(145deg, rgba(37, 99, 235, 0.12), rgba(15, 23, 42, 0.5));
+      border: 1px solid rgba(56, 189, 248, 0.2);
       border-radius: var(--radius-md);
-      padding: 16px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
     }
     .knmi-info-title {
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--sky-accent);
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
     }
     .knmi-info-desc {
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       color: #cbd5e1;
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     /* ==========================================================================
-       COLUMN 2: RIDE OR DIE COMMUTE COMMAND CENTER (CENTER HERO)
+       COLUMN 2: RIDE OR DIE COMMUTE COMMAND CENTER (Center)
        ========================================================================== */
     .col-commute {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 12px;
     }
 
     /* Master Motorcycle Verdict Banner */
     .master-verdict-card {
-      border-radius: var(--radius-xl);
-      padding: 26px 28px;
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 10px;
       transition: var(--transition-spring);
-    }
-    .master-verdict-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      opacity: 0.12;
-      background: radial-gradient(circle at 85% 20%, #fff, transparent 60%);
-      pointer-events: none;
     }
 
     .verdict-header-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .verdict-tag-wrapper {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .verdict-pill-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
+      gap: 6px;
+      padding: 5px 14px;
       border-radius: var(--radius-pill);
       font-family: var(--font-display);
       font-weight: 800;
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
 
     .verdict-score-pill {
       font-family: var(--font-mono);
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      padding: 4px 12px;
+      padding: 3px 10px;
       border-radius: var(--radius-pill);
       background: rgba(255, 255, 255, 0.12);
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -652,42 +591,38 @@
 
     .verdict-headline {
       font-family: var(--font-display);
-      font-size: 2.1rem;
+      font-size: 1.45rem;
       font-weight: 900;
       letter-spacing: -0.02em;
-      line-height: 1.15;
+      line-height: 1.2;
     }
 
     .verdict-explanation {
-      font-size: 1.02rem;
-      line-height: 1.5;
+      font-size: 0.88rem;
+      line-height: 1.45;
       color: #e2e8f0;
-      max-width: 90%;
     }
 
-    /* Morning vs Evening Commute Split Cards */
+    /* Commute Slots Side-by-Side */
     .commute-slots-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 10px;
     }
 
     .commute-slot-card {
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
-      border-radius: var(--radius-lg);
-      padding: 20px;
+      border-radius: var(--radius-md);
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      position: relative;
-      overflow: hidden;
+      gap: 10px;
       transition: var(--transition-spring);
     }
     .commute-slot-card:hover {
       background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      transform: translateY(-2px);
     }
 
     .slot-top-row {
@@ -699,98 +634,98 @@
     .slot-label-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .slot-icon-badge {
-      width: 38px;
-      height: 38px;
-      border-radius: var(--radius-md);
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 19px;
+      font-size: 16px;
       background: rgba(255, 255, 255, 0.1);
     }
 
     .slot-name {
       font-family: var(--font-display);
-      font-size: 1.12rem;
+      font-size: 0.98rem;
       font-weight: 800;
     }
     .slot-time {
       font-family: var(--font-mono);
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
     }
 
     .slot-status-badge {
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      padding: 4px 10px;
+      padding: 3px 8px;
       border-radius: var(--radius-pill);
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
     }
 
     .slot-metrics-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      padding: 12px;
+      gap: 6px;
+      padding: 8px 10px;
       background: rgba(0, 0, 0, 0.22);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-sm);
     }
 
     .slot-metric-item {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
     }
     .slot-metric-label {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
       text-transform: uppercase;
       font-weight: 600;
     }
     .slot-metric-val {
       font-family: var(--font-display);
-      font-size: 1.1rem;
+      font-size: 0.96rem;
       font-weight: 800;
       color: #fff;
     }
 
     .slot-note-text {
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       color: #cbd5e1;
-      line-height: 1.4;
+      line-height: 1.35;
       display: flex;
       align-items: flex-start;
-      gap: 6px;
+      gap: 5px;
     }
 
-    /* 4 Crucial Safety Matrix Meters (Wind, Rain, Grip, Heat) */
+    /* 4 Safety Matrix Meters */
     .safety-matrix-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      gap: 8px;
     }
 
     .safety-meter-card {
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-md);
-      padding: 14px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .meter-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.78rem;
+      font-size: 0.7rem;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
@@ -803,24 +738,23 @@
     }
     .meter-primary-val {
       font-family: var(--font-display);
-      font-size: 1.3rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: #fff;
     }
     .meter-status-tag {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      padding: 2px 6px;
+      padding: 2px 5px;
       border-radius: var(--radius-pill);
     }
 
     .meter-bar-track {
       width: 100%;
-      height: 6px;
+      height: 5px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: var(--radius-pill);
       overflow: hidden;
-      position: relative;
     }
     .meter-bar-fill {
       height: 100%;
@@ -828,27 +762,27 @@
       transition: width 0.8s ease;
     }
 
-    /* Motorcycle Gear & Pro-Tip Card */
+    /* Gear Advisor Card */
     .gear-advisor-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.3));
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.25));
       border: 1px solid var(--glass-border);
-      border-radius: var(--radius-lg);
-      padding: 18px 22px;
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 14px;
     }
 
     .gear-icon-box {
-      width: 52px;
-      height: 52px;
-      border-radius: var(--radius-md);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 26px;
+      font-size: 20px;
       flex-shrink: 0;
     }
 
@@ -860,25 +794,21 @@
 
     .gear-title {
       font-family: var(--font-display);
-      font-size: 1rem;
+      font-size: 0.88rem;
       font-weight: 800;
       color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
     .gear-chips-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
+      gap: 5px;
     }
 
     .gear-pill {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 600;
-      padding: 3px 10px;
+      padding: 2px 8px;
       border-radius: var(--radius-pill);
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -886,55 +816,49 @@
     }
 
     /* ==========================================================================
-       COLUMN 3: HOURLY COMMUTE TIMELINE & 7-DAY FORECAST & RADAR
+       COLUMN 3: HOURLY ROUTE TIMELINE & 7-DAY FORECAST (Right)
        ========================================================================== */
     .col-forecast {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-    }
-
-    /* Hourly Slider Card */
-    .hourly-forecast-card {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
     .card-title-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 2px;
     }
 
     .section-title {
       font-family: var(--font-display);
-      font-size: 1.15rem;
+      font-size: 0.98rem;
       font-weight: 800;
       letter-spacing: -0.01em;
       color: #fff;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .commute-legend {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 0.75rem;
+      gap: 8px;
+      font-size: 0.7rem;
       color: var(--text-muted);
     }
     .legend-dot-morning {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: #38bdf8;
       display: inline-block;
     }
     .legend-dot-evening {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: #f59e0b;
       display: inline-block;
@@ -943,30 +867,30 @@
     /* Scrollable Horizontal Hourly Strip */
     .hourly-scroll-strip {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       overflow-x: auto;
-      padding-bottom: 8px;
+      padding-bottom: 6px;
       scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
     }
     .hourly-scroll-strip::-webkit-scrollbar {
-      height: 5px;
+      height: 4px;
     }
     .hourly-scroll-strip::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.18);
       border-radius: 4px;
     }
 
     .hour-chip {
-      flex: 0 0 74px;
+      flex: 0 0 62px;
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
-      border-radius: var(--radius-md);
-      padding: 12px 8px;
+      border-radius: var(--radius-sm);
+      padding: 8px 4px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 5px;
       transition: var(--transition-smooth);
       position: relative;
     }
@@ -982,12 +906,12 @@
     .hour-chip.is-commute-morning::after {
       content: 'HEEN';
       position: absolute;
-      top: -8px;
-      font-size: 0.6rem;
+      top: -6px;
+      font-size: 0.55rem;
       font-weight: 800;
       background: #38bdf8;
-      color: #0b132b;
-      padding: 1px 6px;
+      color: #070d18;
+      padding: 0 4px;
       border-radius: var(--radius-pill);
     }
 
@@ -998,25 +922,25 @@
     .hour-chip.is-commute-evening::after {
       content: 'TERUG';
       position: absolute;
-      top: -8px;
-      font-size: 0.6rem;
+      top: -6px;
+      font-size: 0.55rem;
       font-weight: 800;
       background: #f59e0b;
-      color: #0b132b;
-      padding: 1px 6px;
+      color: #070d18;
+      padding: 0 4px;
       border-radius: var(--radius-pill);
     }
 
     .hour-time {
       font-family: var(--font-mono);
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       font-weight: 600;
       color: var(--text-muted);
     }
 
     .hour-icon {
-      width: 28px;
-      height: 28px;
+      width: 22px;
+      height: 22px;
     }
     .hour-icon svg {
       width: 100%;
@@ -1025,41 +949,41 @@
 
     .hour-temp {
       font-family: var(--font-display);
-      font-size: 1.05rem;
+      font-size: 0.92rem;
       font-weight: 800;
       color: #fff;
     }
 
     .hour-rain {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       font-weight: 700;
       color: #60a5fa;
       display: flex;
       align-items: center;
-      gap: 2px;
+      gap: 1px;
     }
 
     /* 7-Day Forecast Card */
     .daily-forecast-card {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 8px;
     }
 
     .daily-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 6px;
     }
 
     .daily-row {
       display: grid;
-      grid-template-columns: 80px 32px 1fr 75px;
+      grid-template-columns: 65px 24px 1fr 60px;
       align-items: center;
-      gap: 12px;
-      padding: 8px 12px;
-      border-radius: var(--radius-md);
-      background: rgba(0, 0, 0, 0.15);
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      background: rgba(0, 0, 0, 0.18);
       border: 1px solid rgba(255, 255, 255, 0.05);
       transition: var(--transition-smooth);
     }
@@ -1068,13 +992,13 @@
     }
 
     .daily-name {
-      font-size: 0.88rem;
+      font-size: 0.78rem;
       font-weight: 700;
       color: #e2e8f0;
     }
     .daily-icon {
-      width: 26px;
-      height: 26px;
+      width: 20px;
+      height: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1084,29 +1008,28 @@
       height: 100%;
     }
 
-    /* Visual Temp Range Slider Bar */
     .daily-temp-bar-container {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .daily-min {
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.74rem;
       color: var(--text-muted);
-      width: 24px;
+      width: 20px;
       text-align: right;
     }
     .daily-max {
       font-family: var(--font-mono);
-      font-size: 0.82rem;
+      font-size: 0.76rem;
       font-weight: 700;
       color: #fff;
-      width: 24px;
+      width: 20px;
     }
     .temp-bar-track {
       flex: 1;
-      height: 5px;
+      height: 4px;
       background: rgba(255, 255, 255, 0.12);
       border-radius: var(--radius-pill);
       position: relative;
@@ -1120,46 +1043,10 @@
     }
 
     .daily-rain-pill {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
       color: #93c5fd;
       text-align: right;
-    }
-
-    /* Live Rain Radar Mini Card */
-    .radar-card {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow: hidden;
-    }
-
-    .radar-map-wrapper {
-      width: 100%;
-      height: 200px;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      position: relative;
-      background: #0f172a;
-      border: 1px solid var(--glass-border);
-    }
-    #mini-radar-map {
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-
-    .radar-controls-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .radar-time-label {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      color: #cbd5e1;
     }
 
     /* ==========================================================================
@@ -1168,17 +1055,17 @@
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(5, 10, 20, 0.75);
+      background: rgba(4, 8, 16, 0.78);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.28s ease;
     }
     .modal-backdrop.open {
       opacity: 1;
@@ -1187,22 +1074,22 @@
 
     .settings-modal-card {
       width: 100%;
-      max-width: 640px;
+      max-width: 580px;
       max-height: 90vh;
       overflow-y: auto;
-      background: #111a2e;
+      background: #0f172a;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--glass-shadow-lg);
-      padding: 30px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      transform: scale(0.94) translateY(20px);
+      gap: 18px;
+      transform: scale(0.95);
       transition: var(--transition-spring);
     }
     .modal-backdrop.open .settings-modal-card {
-      transform: scale(1) translateY(0);
+      transform: scale(1);
     }
 
     .modal-header {
@@ -1213,14 +1100,14 @@
 
     .modal-title {
       font-family: var(--font-display);
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       font-weight: 800;
       color: #fff;
     }
 
     .close-modal-btn {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid var(--glass-border);
@@ -1229,7 +1116,7 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 16px;
       transition: var(--transition-smooth);
     }
     .close-modal-btn:hover {
@@ -1241,13 +1128,13 @@
     }
     .location-search-input {
       width: 100%;
-      padding: 14px 18px 14px 44px;
+      padding: 12px 16px 12px 40px;
       border-radius: var(--radius-pill);
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff;
       font-family: var(--font-body);
-      font-size: 1rem;
+      font-size: 0.95rem;
       outline: none;
       transition: var(--transition-smooth);
     }
@@ -1258,7 +1145,7 @@
     }
     .search-icon-fixed {
       position: absolute;
-      left: 16px;
+      left: 14px;
       top: 50%;
       transform: translateY(-50%);
       pointer-events: none;
@@ -1266,21 +1153,21 @@
     }
 
     .search-results-list {
-      max-height: 180px;
+      max-height: 160px;
       overflow-y: auto;
       border-radius: var(--radius-md);
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(15, 23, 42, 0.96);
       border: 1px solid var(--glass-border);
       display: none;
       flex-direction: column;
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .search-results-list.show {
       display: flex;
     }
 
     .search-result-item {
-      padding: 10px 16px;
+      padding: 8px 14px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -1294,33 +1181,33 @@
     .search-result-name {
       font-weight: 700;
       color: #fff;
+      font-size: 0.9rem;
     }
     .search-result-province {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
     }
 
-    /* Popular Cities Chips */
     .chips-label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     .city-chips-wrapper {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
     .city-chip {
-      padding: 6px 14px;
+      padding: 5px 12px;
       border-radius: var(--radius-pill);
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid var(--glass-border);
       color: #e2e8f0;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       transition: var(--transition-smooth);
@@ -1331,36 +1218,35 @@
       color: #fff;
     }
 
-    /* Commute Timing Adjusters */
     .settings-section-title {
       font-family: var(--font-display);
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 800;
       color: #fff;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .settings-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 12px;
     }
 
     .setting-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       background: rgba(255, 255, 255, 0.04);
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-radius: var(--radius-md);
       border: 1px solid var(--glass-border);
     }
 
     .setting-label {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 700;
       color: var(--text-muted);
       display: flex;
@@ -1371,31 +1257,60 @@
       background: rgba(15, 23, 42, 0.7);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
-      padding: 8px 12px;
+      padding: 6px 10px;
       color: #fff;
       font-family: var(--font-body);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       outline: none;
     }
 
-    /* Modal Footer */
     .modal-footer {
       display: flex;
       justify-content: flex-end;
-      gap: 12px;
-      margin-top: 10px;
+      gap: 10px;
+      margin-top: 6px;
     }
 
     /* ==========================================================================
-       RESPONSIVE BREAKPOINTS (Optimized for 16:10 down to Mobile)
+       RESPONSIVE BREAKPOINTS (Ensures tight fit on 1280x720 and 1280x800)
        ========================================================================== */
-    @media (max-width: 1380px) {
-      .dashboard-grid {
-        grid-template-columns: 280px 1fr 340px;
+    @media (max-height: 820px) {
+      .dashboard-wrapper {
+        padding: 8px 12px 12px;
+        gap: 8px;
+      }
+      .top-navbar {
+        min-height: 42px;
+        padding: 6px 12px;
+      }
+      .glass-card {
+        padding: 12px 14px;
+      }
+      .hero-temp-number {
+        font-size: 3.4rem;
+      }
+      .hero-icon-container {
+        width: 64px;
+        height: 64px;
+      }
+      .master-verdict-card {
+        padding: 14px 16px;
+      }
+      .verdict-headline {
+        font-size: 1.25rem;
+      }
+      .commute-slot-card {
+        padding: 10px 12px;
+      }
+      .specs-grid {
+        gap: 6px;
+      }
+      .spec-card {
+        padding: 8px 10px;
       }
     }
 
-    @media (max-width: 1140px) {
+    @media (max-width: 1024px) {
       .dashboard-grid {
         grid-template-columns: 1fr;
       }
@@ -1403,16 +1318,9 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
       }
-      .col-forecast {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      }
     }
 
-    @media (max-width: 768px) {
-      .dashboard-wrapper {
-        padding: 16px 14px;
-      }
+    @media (max-width: 680px) {
       .top-navbar {
         flex-direction: column;
         align-items: stretch;
@@ -1420,7 +1328,7 @@
       .nav-actions {
         justify-content: space-between;
       }
-      .col-hero, .col-forecast {
+      .col-hero {
         grid-template-columns: 1fr;
       }
       .commute-slots-container {
@@ -1437,17 +1345,17 @@
     /* Toast Notification */
     .toast-pill {
       position: fixed;
-      bottom: 24px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(100px);
       background: rgba(15, 23, 42, 0.95);
       border: 1px solid var(--sky-accent);
       color: #fff;
-      padding: 10px 22px;
+      padding: 8px 18px;
       border-radius: var(--radius-pill);
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       font-weight: 700;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
       z-index: 2000;
       opacity: 0;
       transition: var(--transition-spring);
@@ -1474,35 +1382,31 @@
   <div class="dynamic-bg-container">
     <div class="mesh-blob mesh-blob-1"></div>
     <div class="mesh-blob mesh-blob-2"></div>
-    <div class="mesh-blob mesh-blob-3"></div>
   </div>
-  <canvas id="ambient-canvas"></canvas>
 
   <!-- Main Dashboard Container -->
   <div class="dashboard-wrapper">
 
-    <!-- Top Navigation & Control Bar -->
+    <!-- Top Navigation Bar -->
     <header class="top-navbar">
       <div class="brand-group">
         <div class="brand-icon-wrapper">
           🏍️
         </div>
-        <div class="brand-title-area">
-          <div class="brand-title">
-            RIDE OR DIE <span class="brand-badge">KNMI PRO</span>
-          </div>
+        <div class="brand-title">
+          RIDE OR DIE <span class="brand-badge">KNMI 2KM</span>
         </div>
       </div>
 
       <div class="knmi-pill-indicator">
         <span class="pulse-dot"></span>
-        <span>Model: <strong>KNMI Harmonie-AROME (2km)</strong></span>
+        <span>KNMI Harmonie-AROME</span>
       </div>
 
       <div class="nav-actions">
         <!-- Location Pill Button -->
         <button class="location-trigger" id="open-location-btn" title="Wijzig locatie of instellingen">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
             <circle cx="12" cy="10" r="3"></circle>
           </svg>
@@ -1511,7 +1415,7 @@
 
         <!-- GPS Quick Locate -->
         <button class="m3-icon-btn" id="gps-btn" title="Gebruik huidige GPS locatie">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <circle cx="12" cy="12" r="3"></circle>
             <line x1="12" y1="2" x2="12" y2="5"></line>
@@ -1523,7 +1427,7 @@
 
         <!-- Refresh Button -->
         <button class="m3-icon-btn" id="refresh-btn" title="Ververs KNMI data">
-          <svg id="refresh-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg id="refresh-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
             <path d="M3 3v5h5"></path>
             <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
@@ -1531,9 +1435,16 @@
           </svg>
         </button>
 
+        <!-- Fullscreen Toggle for 7-8 inch display cockpit -->
+        <button class="m3-icon-btn" id="fullscreen-btn" title="Volledig scherm / Kiosk mode">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+          </svg>
+        </button>
+
         <!-- Settings Button -->
-        <button class="m3-icon-btn" id="open-settings-btn" title="Commute & Biker Instellingen">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button class="m3-icon-btn" id="open-settings-btn" title="Woon-werk & Biker Instellingen">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
@@ -1541,22 +1452,22 @@
       </div>
     </header>
 
-    <!-- Main 16:10 Grid Layout -->
+    <!-- Main Dashboard Grid (290px | 1fr | 310px) -->
     <main class="dashboard-grid">
 
       <!-- ====================================================================
-           COLUMN 1: CURRENT WEATHER HERO & ATMOSPHERICS
+           COLUMN 1: CURRENT WEATHER HERO & SPECS (Left)
            ==================================================================== -->
       <section class="col-hero">
 
-        <!-- Hero Current Weather Card -->
+        <!-- Hero Weather Card -->
         <div class="glass-card hero-weather-card">
           <div class="hero-location-header">
             <div>
               <h1 class="hero-city-name" id="hero-city-name">Utrecht</h1>
               <div class="hero-sub-location" id="hero-date-str">Vandaag, live update</div>
             </div>
-            <div class="hero-time-badge" id="hero-update-time">14:18</div>
+            <div class="hero-time-badge" id="hero-update-time">14:30</div>
           </div>
 
           <div class="hero-main-temp-row">
@@ -1587,7 +1498,7 @@
           </div>
         </div>
 
-        <!-- Real-Time Atmospheric Specs Grid -->
+        <!-- Compact Specs Grid (2x3) -->
         <div class="specs-grid">
           <div class="spec-card">
             <div class="spec-label-row">
@@ -1601,7 +1512,7 @@
           <div class="spec-card">
             <div class="spec-label-row">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20m10-10H2m17.07-7.07L4.93 19.07m0-14.14L19.07 19.07"/></svg>
-              <span>Windstoten</span>
+              <span>Stoten</span>
             </div>
             <div class="spec-value" id="spec-wind-gusts">25 km/u</div>
             <div class="spec-extra" id="spec-gust-status">Rustig</div>
@@ -1622,7 +1533,7 @@
               <span>UV Index</span>
             </div>
             <div class="spec-value" id="spec-uv">2.3</div>
-            <div class="spec-extra">Matig (laag risico)</div>
+            <div class="spec-extra">Laag risico</div>
           </div>
 
           <div class="spec-card">
@@ -1639,26 +1550,26 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               <span>Zicht</span>
             </div>
-            <div class="spec-value" id="spec-visibility">> 25 km</div>
+            <div class="spec-value" id="spec-visibility">> 20 km</div>
             <div class="spec-extra">Uitstekend</div>
           </div>
         </div>
 
-        <!-- KNMI Seamless Information Card -->
+        <!-- KNMI Harmonie Info Card -->
         <div class="knmi-info-card">
           <div class="knmi-info-title">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-            KNMI Harmonie-AROME
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            KNMI Harmonie-AROME 2km
           </div>
           <div class="knmi-info-desc">
-            Rechtstreeks gevoed door het numerieke weermodel van het Koninklijk Nederlands Meteorologisch Instituut met 2 km rasterresolutie. Speciaal geoptimaliseerd voor lokale Nederlandse buien en windstoten.
+            Direct gevoed door het numerieke weermodel van het KNMI met hoge resolutie voor Nederlandse buien en wind.
           </div>
         </div>
 
       </section>
 
       <!-- ====================================================================
-           COLUMN 2: RIDE OR DIE COMMUTE COMMAND CENTER
+           COLUMN 2: RIDE OR DIE COMMUTE COMMAND CENTER (Center)
            ==================================================================== -->
       <section class="col-commute">
 
@@ -1667,13 +1578,13 @@
           <div class="verdict-header-row">
             <div class="verdict-tag-wrapper">
               <div class="verdict-pill-badge" id="master-verdict-pill">
-                <span>🏍️</span> RIDE ON
+                <span>🏍️</span> RIDE ON!
               </div>
               <div class="verdict-score-pill" id="master-verdict-score">
-                Index: 92/100
+                Index: 94/100
               </div>
             </div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">
               Woon-werk Motoradvies
             </div>
           </div>
@@ -1683,24 +1594,24 @@
           </h2>
 
           <p class="verdict-explanation" id="master-verdict-explanation">
-            Droog wegdek en aangename temperaturen vanochtend en vanmiddag. Windstoten blijven onder de 30 km/u, dus ideaal voor snelweg en dijkjes.
+            Droog wegdek en aangename temperaturen vanochtend en vanmiddag. Windstoten blijven kalm, ideaal voor dijkjes en snelweg.
           </p>
         </div>
 
-        <!-- Morning ('s Ochtends) vs Evening ('s Middags/Avonds) Split -->
+        <!-- Commute Slots (Morning vs Evening) -->
         <div class="commute-slots-container">
 
-          <!-- Morning Commute Card -->
+          <!-- Morning Commute -->
           <div class="commute-slot-card" id="slot-morning-card">
             <div class="slot-top-row">
               <div class="slot-label-group">
                 <div class="slot-icon-badge">🌅</div>
                 <div>
                   <div class="slot-name">Ochtendrit (Heen)</div>
-                  <div class="slot-time" id="morning-slot-time">07:30 - 09:00</div>
+                  <div class="slot-time" id="morning-slot-time">08:00 (Heenrit)</div>
                 </div>
               </div>
-              <span class="slot-status-badge" id="morning-status-badge">🟢 IDEAL</span>
+              <span class="slot-status-badge" id="morning-status-badge">🟢 GOED</span>
             </div>
 
             <div class="slot-metrics-grid">
@@ -1719,21 +1630,21 @@
             </div>
 
             <div class="slot-note-text" id="morning-note">
-              <span>👉</span> Droog en rustig verkeer. Let alleen op laagstaande ochtendzon.
+              <span>👉</span> Droog en rustig. Let alleen op laagstaande zon.
             </div>
           </div>
 
-          <!-- Evening Commute Card -->
+          <!-- Evening Commute -->
           <div class="commute-slot-card" id="slot-evening-card">
             <div class="slot-top-row">
               <div class="slot-label-group">
                 <div class="slot-icon-badge">🌇</div>
                 <div>
                   <div class="slot-name">Avondrit (Terug)</div>
-                  <div class="slot-time" id="evening-slot-time">16:30 - 18:00</div>
+                  <div class="slot-time" id="evening-slot-time">17:00 (Terugrit)</div>
                 </div>
               </div>
-              <span class="slot-status-badge" id="evening-status-badge">🟢 IDEAL</span>
+              <span class="slot-status-badge" id="evening-status-badge">🟢 GOED</span>
             </div>
 
             <div class="slot-metrics-grid">
@@ -1752,19 +1663,19 @@
             </div>
 
             <div class="slot-note-text" id="evening-note">
-              <span>👉</span> Warme terugreis! Goede grip op het asfalt en geen buien verwacht.
+              <span>👉</span> Warme terugreis met droog wegdek en goede grip.
             </div>
           </div>
 
         </div>
 
-        <!-- 4 Key Safety Matrix Gauges -->
+        <!-- 4 Safety Gauges -->
         <div class="safety-matrix-grid">
 
-          <!-- Wind / Zijwind Hazard -->
+          <!-- Wind / Zijwind -->
           <div class="safety-meter-card">
             <div class="meter-header">
-              <span>Wind / Zijwind</span>
+              <span>Zijwind</span>
               <span id="meter-wind-bft">3 Bft</span>
             </div>
             <div class="meter-val-row">
@@ -1779,7 +1690,7 @@
           <!-- Wegdek & Grip -->
           <div class="safety-meter-card">
             <div class="meter-header">
-              <span>Wegdek & Grip</span>
+              <span>Grip</span>
               <span>Droog</span>
             </div>
             <div class="meter-val-row">
@@ -1791,14 +1702,14 @@
             </div>
           </div>
 
-          <!-- Regenrisico -->
+          <!-- Neerslagrisico -->
           <div class="safety-meter-card">
             <div class="meter-header">
               <span>Regenkans</span>
               <span id="meter-rain-mm">0 mm/u</span>
             </div>
             <div class="meter-val-row">
-              <span class="meter-primary-val" id="meter-rain-val">5%</span>
+              <span class="meter-primary-val" id="meter-rain-val">0%</span>
               <span class="meter-status-tag" id="meter-rain-tag">Droog</span>
             </div>
             <div class="meter-bar-track">
@@ -1806,11 +1717,11 @@
             </div>
           </div>
 
-          <!-- Thermisch Comfort -->
+          <!-- Comfort / Kleding -->
           <div class="safety-meter-card">
             <div class="meter-header">
-              <span>Kleding / Temp</span>
-              <span>Behaaglijk</span>
+              <span>Comfort</span>
+              <span>Lekker</span>
             </div>
             <div class="meter-val-row">
               <span class="meter-primary-val" id="meter-temp-val">24°C</span>
@@ -1823,18 +1734,16 @@
 
         </div>
 
-        <!-- Biker Gear & Pro Tips Card -->
+        <!-- Gear Advisor -->
         <div class="gear-advisor-card">
           <div class="gear-icon-box">🦺</div>
           <div class="gear-info-content">
-            <div class="gear-title">
-              Uitrusting Advies voor Vandaag
-            </div>
+            <div class="gear-title">Uitrusting & Kledingadvies</div>
             <div class="gear-chips-row" id="gear-chips-container">
               <span class="gear-pill">🧥 Doorwaaijas / Leer</span>
               <span class="gear-pill">🧤 Zomerhandschoenen</span>
-              <span class="gear-pill">🕶️ Donker Vizier / Zonnebril</span>
-              <span class="gear-pill">💧 Regenpak niet nodig</span>
+              <span class="gear-pill">🕶️ Zonnevizier</span>
+              <span class="gear-pill">💧 Regenpak thuis laten</span>
             </div>
           </div>
         </div>
@@ -1842,16 +1751,16 @@
       </section>
 
       <!-- ====================================================================
-           COLUMN 3: HOURLY COMMUTE TIMELINE, 7-DAY FORECAST & RADAR
+           COLUMN 3: HOURLY COMMUTE TIMELINE & 7-DAY FORECAST (Right)
            ==================================================================== -->
       <section class="col-forecast">
 
-        <!-- Hourly Commute Timeline Card -->
+        <!-- Hourly Commute Timeline -->
         <div class="glass-card hourly-forecast-card">
           <div class="card-title-row">
             <div class="section-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span>Uurlijkse Route Trend</span>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Uurlijkse Trend</span>
             </div>
             <div class="commute-legend">
               <span><span class="legend-dot-morning"></span> Heen</span>
@@ -1860,7 +1769,7 @@
           </div>
 
           <div class="hourly-scroll-strip" id="hourly-strip">
-            <!-- Dynamically populated 24-48 hours -->
+            <!-- Populated via JS -->
           </div>
         </div>
 
@@ -1868,35 +1777,13 @@
         <div class="glass-card daily-forecast-card">
           <div class="card-title-row">
             <div class="section-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <span>7-Daagse KNMI Verwachting</span>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>7-Daagse Verwachting</span>
             </div>
           </div>
 
           <div class="daily-list" id="daily-list">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-
-        <!-- Live RainViewer Radar Card -->
-        <div class="glass-card radar-card">
-          <div class="card-title-row">
-            <div class="section-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/></svg>
-              <span>Live Regenradar (NL)</span>
-            </div>
-            <div class="radar-time-label" id="radar-time-label">Live radar</div>
-          </div>
-
-          <div class="radar-map-wrapper">
-            <div id="mini-radar-map"></div>
-          </div>
-
-          <div class="radar-controls-row">
-            <button class="m3-action-btn" id="radar-play-btn" style="padding: 6px 14px; font-size: 0.78rem;">
-              <span id="radar-play-icon">▶</span> <span id="radar-play-text">Animatie Afspelen</span>
-            </button>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Bron: RainViewer Open Radar</span>
+            <!-- Populated via JS -->
           </div>
         </div>
 
@@ -1917,7 +1804,7 @@
 
       <!-- Live Search Box -->
       <div class="search-box-container">
-        <svg class="search-icon-fixed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <svg class="search-icon-fixed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="text" class="location-search-input" id="location-search-input" placeholder="Zoek Nederlandse stad, dorp of postcode..." autocomplete="off" />
         <div class="search-results-list" id="search-results-list"></div>
       </div>
@@ -1940,10 +1827,10 @@
         </div>
       </div>
 
-      <!-- Commute Time & Rider Preferences -->
+      <!-- Commute Timing -->
       <div>
         <div class="settings-section-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Jouw Woon-Werk Reistijden
         </div>
         <div class="settings-grid">
@@ -1953,7 +1840,7 @@
               <strong id="val-morning-time">08:00</strong>
             </label>
             <select class="setting-select" id="setting-morning-time">
-              <option value="06:00">06:00 - Vroege vogel</option>
+              <option value="06:00">06:00 - Vroeg</option>
               <option value="07:00">07:00</option>
               <option value="07:30">07:30</option>
               <option value="08:00" selected>08:00 (Standaard)</option>
@@ -1981,9 +1868,10 @@
         </div>
       </div>
 
+      <!-- Biker Tolerances -->
       <div>
         <div class="settings-section-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           Motorrijder Comfort & Toleranties
         </div>
         <div class="settings-grid">
@@ -2006,7 +1894,7 @@
       </div>
 
       <div class="modal-footer">
-        <button class="m3-action-btn" id="save-settings-btn" style="background: var(--sky-accent); color: #0b132b; font-weight: 800;">
+        <button class="city-chip" id="save-settings-btn" style="background: var(--sky-accent); color: #0b132b; font-weight: 800; padding: 8px 18px;">
           Instellingen Opslaan
         </button>
       </div>
@@ -2035,14 +1923,7 @@
         maxGusts: 55,
         rainTolerance: 'normal'
       },
-      weatherData: null,
-      radarData: null,
-      radarMap: null,
-      radarLayer: null,
-      radarFrames: [],
-      radarCurrentFrameIdx: 0,
-      radarInterval: null,
-      isRadarPlaying: false
+      weatherData: null
     };
 
     // Load saved settings from localStorage
@@ -2099,7 +1980,7 @@
       99: { text: "Zware onweersbui met hagel", icon: "thunder", state: "storm" }
     };
 
-    // SVG Weather Icons Generator
+    // Compact SVG Weather Icons Generator
     function getWeatherSvg(iconType, isNight = false) {
       if (isNight && (iconType === 'sun' || iconType === 'partly-cloudy')) {
         return `
@@ -2199,7 +2080,6 @@
       const refreshIcon = document.getElementById('refresh-icon');
       if (refreshIcon) refreshIcon.classList.add('spin');
 
-      // The open-meteo knmi_seamless model integrates KNMI HARMONIE-AROME 2km resolution with seamless stitching
       const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,uv_index&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&models=knmi_seamless&timezone=auto`;
 
       try {
@@ -2223,15 +2103,12 @@
       const hourly = weatherData.hourly;
       const times = hourly.time;
 
-      // Current Date YYYY-MM-DD
       const now = new Date();
       const todayDateStr = now.toISOString().slice(0, 10);
 
-      // Parse user configured commute hours
       const morningHour = parseInt(AppState.commute.morningTime.split(':')[0], 10);
       const eveningHour = parseInt(AppState.commute.eveningTime.split(':')[0], 10);
 
-      // Extract indices for morning commute (e.g. morningHour-1 to morningHour+1)
       function getCommuteSlice(targetHour) {
         let indices = [];
         for (let i = 0; i < times.length; i++) {
@@ -2242,10 +2119,7 @@
             }
           }
         }
-        // Fallback if today evening has passed: look at next 24h
-        if (indices.length === 0) {
-          indices = [0, 1, 2];
-        }
+        if (indices.length === 0) indices = [0, 1, 2];
 
         let maxTemp = -999, minTemp = 999, totalPrecip = 0, maxPrecipProb = 0, maxGusts = 0, worstCode = 0;
         indices.forEach(idx => {
@@ -2274,12 +2148,10 @@
       const morningData = getCommuteSlice(morningHour);
       const eveningData = getCommuteSlice(eveningHour);
 
-      // Calculate Scores (0 - 100)
       function scoreRide(slot) {
         let score = 100;
         let reasons = [];
 
-        // Precipitation penalty
         if (slot.totalPrecip > 3.0 || slot.maxPrecipProb > 80) {
           score -= 45;
           reasons.push("Zware regen of plensbuien");
@@ -2291,7 +2163,6 @@
           reasons.push("Lichte miezer mogelijk");
         }
 
-        // Wind gusts penalty
         if (slot.maxGusts > 70) {
           score -= 50;
           reasons.push("Gevaarlijke windstoten (>70 km/u)");
@@ -2303,7 +2174,6 @@
           reasons.push("Merkbare wind op de snelweg");
         }
 
-        // Temperature penalty
         if (slot.avgTemp < 2) {
           score -= 60;
           reasons.push("Kans op gladheid / ijzel!");
@@ -2315,7 +2185,6 @@
           reasons.push("Erg warm in motorpak (>30°C)");
         }
 
-        // Severe weather codes
         if ([95, 96, 99].includes(slot.worstCode)) {
           score -= 60;
           reasons.push("Onweer en hagel voorspeld");
@@ -2339,12 +2208,11 @@
       const morningScore = scoreRide(morningData);
       const eveningScore = scoreRide(eveningData);
 
-      // Overall Day Verdict
       const minScore = Math.min(morningScore.score, eveningScore.score);
       let dayVerdict = "green";
       let dayHeadline = "Groen licht: Heerlijk weer voor twee wielen!";
       let dayPill = "🏍️ RIDE ON!";
-      let dayExplanation = "Zowel de ochtendrit als de avondrit zijn droog en veilig. Ideale temperaturen en weinig wind.";
+      let dayExplanation = "Zowel de ochtendrit als de avondrit zijn droog en veilig. Ideale temperaturen en kalme wind.";
 
       if (minScore < 50) {
         dayVerdict = "red";
@@ -2353,7 +2221,7 @@
 
         const allReasons = [...morningScore.reasons, ...eveningScore.reasons];
         const uniqueReasons = [...new Set(allReasons)].join(". ");
-        dayExplanation = `Onveilige motorcondities: ${uniqueReasons || "slecht weer voorspeld"}. Te veel risico op nat pak, windstoten of gevaarlijk wegdek.`;
+        dayExplanation = `Onveilige condities: ${uniqueReasons || "slecht weer voorspeld"}. Te veel risico op nat pak, wind of gladheid.`;
       } else if (minScore < 80) {
         dayVerdict = "yellow";
         dayHeadline = "Rijden kan, maar let goed op!";
@@ -2361,33 +2229,32 @@
 
         const allReasons = [...morningScore.reasons, ...eveningScore.reasons];
         const uniqueReasons = [...new Set(allReasons)].join(", ");
-        dayExplanation = `Rijden is mogelijk, maar wees voorbereid: ${uniqueReasons || "wisselvallig"}. Zorg voor de juiste kleding en pas je snelheid aan op open stukken.`;
+        dayExplanation = `Rijden kan, wees voorbereid: ${uniqueReasons || "wisselvallig"}. Pas snelheid aan op open stukken.`;
       }
 
-      // Gear Recommendations
       const maxDayTemp = Math.max(morningData.avgTemp, eveningData.avgTemp);
       const minDayTemp = Math.min(morningData.avgTemp, eveningData.avgTemp);
       let gearPills = [];
 
       if (minDayTemp < 7) {
-        gearPills.push("🧤 Winterhandschoenen / Handvatverwarming");
+        gearPills.push("🧤 Winterhandschoenen");
         gearPills.push("🧥 Thermovoering & Kol");
       } else if (minDayTemp < 15) {
         gearPills.push("🧥 Textieljas met tussenlaag");
         gearPills.push("🧤 Middenhandschoenen");
       } else if (maxDayTemp > 24) {
-        gearPills.push("🧥 Doorwaaijas / Geperforeerd Leer");
+        gearPills.push("🧥 Doorwaaijas / Leer");
         gearPills.push("🧤 Zomerhandschoenen");
         gearPills.push("🕶️ Zonnevizier");
       } else {
-        gearPills.push("🧥 Allround Leer of Textiel");
+        gearPills.push("🧥 Allround Leer/Textiel");
         gearPills.push("🧤 All-season handschoenen");
       }
 
       if (morningData.totalPrecip > 0.3 || eveningData.totalPrecip > 0.3) {
         gearPills.push("🌧️ Regenpak & Pinlock Vizier");
       } else {
-        gearPills.push("✨ Droog wegdek - Regenpak thuis laten");
+        gearPills.push("✨ Regenpak niet nodig");
       }
 
       return {
@@ -2404,31 +2271,27 @@
       };
     }
 
-    // Render Everything to the DOM
+    // Render Dashboard
     function renderDashboard(data) {
       const current = data.current;
       const daily = data.daily;
       const hourly = data.hourly;
 
-      // Update Nav Location
       document.getElementById('nav-location-label').textContent = `${AppState.location.name}, ${AppState.location.country || 'NL'}`;
       document.getElementById('hero-city-name').textContent = AppState.location.name;
 
-      // Date string
       const now = new Date();
-      const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+      const options = { weekday: 'long', day: 'numeric', month: 'long' };
       const dateStr = now.toLocaleDateString('nl-NL', options);
       document.getElementById('hero-date-str').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
       document.getElementById('hero-update-time').textContent = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 
-      // Weather state & background
       const code = current.weather_code || 0;
       const wmoInfo = WMO_DICT[code] || { text: "Helder", icon: "sun", state: "sunny" };
       const isNight = current.is_day === 0;
       const effectiveState = isNight ? 'night' : wmoInfo.state;
       document.body.setAttribute('data-weather-state', effectiveState);
 
-      // Hero Temp & Condition
       document.getElementById('hero-temp').textContent = Math.round(current.temperature_2m);
       document.getElementById('hero-condition').textContent = wmoInfo.text;
       document.getElementById('hero-feels-like').textContent = `${Math.round(current.apparent_temperature)}°C`;
@@ -2439,7 +2302,6 @@
         document.getElementById('hero-min-temp').textContent = `${Math.round(daily.temperature_2m_min[0])}°`;
       }
 
-      // Specs Grid
       document.getElementById('spec-wind-speed').textContent = `${Math.round(current.wind_speed_10m)} km/u`;
       document.getElementById('spec-wind-dir').textContent = `${getWindDirectionText(current.wind_direction_10m)} (${Math.round(current.wind_direction_10m)}°)`;
       document.getElementById('spec-wind-gusts').textContent = `${Math.round(current.wind_gusts_10m)} km/u`;
@@ -2454,15 +2316,12 @@
       document.getElementById('spec-uv').textContent = (current.uv_index !== undefined && current.uv_index !== null) ? current.uv_index.toFixed(1) : '--';
       document.getElementById('spec-pressure').textContent = current.surface_pressure ? `${Math.round(current.surface_pressure)} hPa` : '1016 hPa';
 
-      // Visibility calculation
       const visMeters = hourly && hourly.visibility ? hourly.visibility[0] : 25000;
       const visKm = Math.round(visMeters / 1000);
       document.getElementById('spec-visibility').textContent = visKm > 20 ? '> 20 km' : `${visKm} km`;
 
-      // Compute Motorcycle Commute Advise
       const advice = computeCommuteAdvise(data);
 
-      // Render Master Verdict Banner
       const verdictCard = document.getElementById('master-verdict-card');
       const verdictPill = document.getElementById('master-verdict-pill');
       const verdictScore = document.getElementById('master-verdict-score');
@@ -2494,7 +2353,6 @@
         verdictPill.style.color = 'var(--verdict-die-text)';
       }
 
-      // Render Morning Slot Card
       document.getElementById('morning-slot-time').textContent = `${AppState.commute.morningTime} (Heenrit)`;
       document.getElementById('morning-temp').textContent = `${advice.morningData.avgTemp}°C`;
       document.getElementById('morning-rain').textContent = `${advice.morningData.totalPrecip} mm`;
@@ -2502,15 +2360,13 @@
       document.getElementById('morning-status-badge').textContent = advice.morningScore.badgeText;
       document.getElementById('morning-note').innerHTML = `<span>👉</span> ${advice.morningScore.reasons.length ? advice.morningScore.reasons.join(". ") : "Ideale ochtendrit! Droog asfalt en kalme wind."}`;
 
-      // Render Evening Slot Card
       document.getElementById('evening-slot-time').textContent = `${AppState.commute.eveningTime} (Terugrit)`;
       document.getElementById('evening-temp').textContent = `${advice.eveningData.avgTemp}°C`;
       document.getElementById('evening-rain').textContent = `${advice.eveningData.totalPrecip} mm`;
       document.getElementById('evening-gusts').textContent = `${advice.eveningData.maxGusts} km/u`;
       document.getElementById('evening-status-badge').textContent = advice.eveningScore.badgeText;
-      document.getElementById('evening-note').innerHTML = `<span>👉</span> ${advice.eveningScore.reasons.length ? advice.eveningScore.reasons.join(". ") : "Prettige terugreis! Asfalt is opgewarmd en goed begaanbaar."}`;
+      document.getElementById('evening-note').innerHTML = `<span>👉</span> ${advice.eveningScore.reasons.length ? advice.eveningScore.reasons.join(". ") : "Prettige terugreis! Asfalt is droog en goed begaanbaar."}`;
 
-      // Render 4 Safety Gauges
       const maxGustOverall = Math.max(advice.morningData.maxGusts, advice.eveningData.maxGusts);
       document.getElementById('meter-wind-val').textContent = `${maxGustOverall} km/u`;
       document.getElementById('meter-wind-bft').textContent = kmhToBeaufort(maxGustOverall);
@@ -2520,7 +2376,6 @@
       windFill.style.background = maxGustOverall > 65 ? '#ef4444' : maxGustOverall > 45 ? '#f59e0b' : '#10b981';
       document.getElementById('meter-wind-tag').textContent = maxGustOverall > 65 ? 'Gevaarlijk' : maxGustOverall > 45 ? 'Alert' : 'Veilig';
 
-      // Grip Gauge
       const maxRain = Math.max(advice.morningData.totalPrecip, advice.eveningData.totalPrecip);
       const gripVal = maxRain > 2.0 ? 55 : maxRain > 0.5 ? 75 : 100;
       document.getElementById('meter-grip-val').textContent = `${gripVal}%`;
@@ -2529,7 +2384,6 @@
       gripFill.style.background = gripVal === 100 ? '#10b981' : gripVal > 70 ? '#f59e0b' : '#ef4444';
       document.getElementById('meter-grip-tag').textContent = gripVal === 100 ? 'Optimaal' : gripVal > 70 ? 'Vochtig' : 'Glad/Nat';
 
-      // Rain Probability Gauge
       const maxProb = Math.max(advice.morningData.maxPrecipProb, advice.eveningData.maxPrecipProb);
       document.getElementById('meter-rain-val').textContent = `${maxProb}%`;
       document.getElementById('meter-rain-mm').textContent = `${maxRain} mm`;
@@ -2538,30 +2392,22 @@
       rainFill.style.background = maxProb > 70 ? '#ef4444' : maxProb > 30 ? '#f59e0b' : '#10b981';
       document.getElementById('meter-rain-tag').textContent = maxProb > 70 ? 'Hoge Kans' : maxProb > 30 ? 'Kans op bui' : 'Droog';
 
-      // Temp Gauge
       const tempAvg = Math.round((advice.morningData.avgTemp + advice.eveningData.avgTemp) / 2);
       document.getElementById('meter-temp-val').textContent = `${tempAvg}°C`;
       const tempPercent = Math.min(100, Math.max(10, Math.round(((tempAvg + 5) / 40) * 100)));
       const tempFill = document.getElementById('meter-temp-bar');
       tempFill.style.width = `${tempPercent}%`;
       tempFill.style.background = tempAvg < 4 ? '#38bdf8' : tempAvg > 29 ? '#f59e0b' : '#10b981';
-      document.getElementById('meter-temp-tag').textContent = tempAvg < 4 ? 'Koud/Vorst' : tempAvg > 29 ? 'Warm' : 'Behaaglijk';
+      document.getElementById('meter-temp-tag').textContent = tempAvg < 4 ? 'Koud' : tempAvg > 29 ? 'Warm' : 'Behaaglijk';
 
-      // Render Gear Chips
       const gearContainer = document.getElementById('gear-chips-container');
       gearContainer.innerHTML = advice.gearPills.map(pill => `<span class="gear-pill">${pill}</span>`).join('');
 
-      // Render Hourly Forecast Strip
       renderHourlyStrip(hourly);
-
-      // Render 7-Day Forecast
       renderDailyForecast(daily);
-
-      // Init or Update Live RainViewer Radar
-      initRainRadar();
     }
 
-    // Render Horizontal Hourly Commute Strip
+    // Render Hourly Strip
     function renderHourlyStrip(hourly) {
       const strip = document.getElementById('hourly-strip');
       if (!strip || !hourly || !hourly.time) return;
@@ -2569,15 +2415,13 @@
       const morningHour = parseInt(AppState.commute.morningTime.split(':')[0], 10);
       const eveningHour = parseInt(AppState.commute.eveningTime.split(':')[0], 10);
 
-      // Display next 24 hours
       let html = '';
-      const limit = Math.min(30, hourly.time.length);
+      const limit = Math.min(26, hourly.time.length);
       for (let i = 0; i < limit; i++) {
         const timeObj = new Date(hourly.time[i]);
         const hourNum = timeObj.getHours();
         const hourStr = `${hourNum.toString().padStart(2, '0')}:00`;
         const temp = Math.round(hourly.temperature_2m[i]);
-        const rainMm = hourly.precipitation[i] || 0;
         const rainProb = hourly.precipitation_probability[i] || 0;
         const code = hourly.weather_code[i] || 0;
         const iconType = (WMO_DICT[code] || {}).icon || 'sun';
@@ -2592,16 +2436,14 @@
             <span class="hour-time">${hourStr}</span>
             <div class="hour-icon">${getWeatherSvg(iconType, isNight)}</div>
             <span class="hour-temp">${temp}°</span>
-            <span class="hour-rain">
-              ${rainProb > 10 ? `💧 ${rainProb}%` : '☀️ 0%'}
-            </span>
+            <span class="hour-rain">${rainProb > 10 ? `💧 ${rainProb}%` : '☀️ 0%'}</span>
           </div>
         `;
       }
       strip.innerHTML = html;
     }
 
-    // Render 7-Day Forecast List
+    // Render 7-Day Forecast
     function renderDailyForecast(daily) {
       const container = document.getElementById('daily-list');
       if (!container || !daily || !daily.time) return;
@@ -2620,7 +2462,6 @@
         const rainSum = daily.precipitation_sum[i] || 0;
         const rainProb = daily.precipitation_probability_max[i] || 0;
 
-        // Approximate bar fill %
         const barLeft = Math.max(5, Math.min(70, ((minTemp + 5) / 35) * 100));
         const barWidth = Math.max(15, Math.min(80, ((maxTemp - minTemp) / 20) * 80));
 
@@ -2635,115 +2476,14 @@
               </div>
               <span class="daily-max">${maxTemp}°</span>
             </div>
-            <span class="daily-rain-pill">${rainSum > 0.2 ? `🌧️ ${rainSum.toFixed(1)}mm` : `${rainProb}%`}</span>
+            <span class="daily-rain-pill">${rainSum > 0.2 ? `🌧️ ${rainSum.toFixed(1)}m` : `${rainProb}%`}</span>
           </div>
         `;
       }
       container.innerHTML = html;
     }
 
-    // Live RainViewer Open Radar Implementation
-    async function initRainRadar() {
-      const lat = AppState.location.latitude;
-      const lon = AppState.location.longitude;
-
-      if (!AppState.radarMap) {
-        try {
-          AppState.radarMap = L.map('mini-radar-map', {
-            zoomControl: false,
-            attributionControl: false,
-            dragging: true,
-            scrollWheelZoom: false
-          }).setView([lat, lon], 8);
-
-          // Dark CartoDB Base Map
-          L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            maxZoom: 18,
-            subdomains: 'abcd'
-          }).addTo(AppState.radarMap);
-
-          // Add Current Location Pulse Marker
-          const markerIcon = L.divIcon({
-            className: 'radar-marker-icon',
-            html: '<div style="width:14px;height:14px;border-radius:50%;background:#38bdf8;border:2px solid #fff;box-shadow:0 0 10px #38bdf8;"></div>',
-            iconSize: [14, 14],
-            iconAnchor: [7, 7]
-          });
-          L.marker([lat, lon], { icon: markerIcon }).addTo(AppState.radarMap);
-
-          // Fetch RainViewer radar tiles metadata
-          fetchRadarTiles();
-        } catch (e) {
-          console.error("Leaflet init error:", e);
-        }
-      } else {
-        AppState.radarMap.setView([lat, lon], 8);
-      }
-    }
-
-    async function fetchRadarTiles() {
-      try {
-        const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-        if (!res.ok) return;
-        const data = await res.json();
-        AppState.radarData = data;
-        if (data.radar && data.radar.past && data.radar.past.length > 0) {
-          AppState.radarFrames = data.radar.past;
-          AppState.radarCurrentFrameIdx = AppState.radarFrames.length - 1;
-          showRadarFrame(AppState.radarCurrentFrameIdx);
-        }
-      } catch (err) {
-        console.warn("Kon RainViewer data niet laden:", err);
-      }
-    }
-
-    function showRadarFrame(index) {
-      if (!AppState.radarData || !AppState.radarFrames[index] || !AppState.radarMap) return;
-
-      const frame = AppState.radarFrames[index];
-      const host = AppState.radarData.host;
-      const tileUrl = `${host}${frame.path}/256/{z}/{x}/{y}/2/1_1.png`;
-
-      if (AppState.radarLayer) {
-        AppState.radarMap.removeLayer(AppState.radarLayer);
-      }
-
-      AppState.radarLayer = L.tileLayer(tileUrl, {
-        opacity: 0.75,
-        zIndex: 10
-      }).addTo(AppState.radarMap);
-
-      const d = new Date(frame.time * 1000);
-      const timeStr = d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-      const label = document.getElementById('radar-time-label');
-      if (label) label.textContent = `Radar: ${timeStr} (Live)`;
-    }
-
-    function toggleRadarAnimation() {
-      const playIcon = document.getElementById('radar-play-icon');
-      const playText = document.getElementById('radar-play-text');
-
-      if (AppState.isRadarPlaying) {
-        clearInterval(AppState.radarInterval);
-        AppState.isRadarPlaying = false;
-        playIcon.textContent = '▶';
-        playText.textContent = 'Animatie Afspelen';
-      } else {
-        AppState.isRadarPlaying = true;
-        playIcon.textContent = '⏸';
-        playText.textContent = 'Pauzeren';
-
-        AppState.radarInterval = setInterval(() => {
-          AppState.radarCurrentFrameIdx++;
-          if (AppState.radarCurrentFrameIdx >= AppState.radarFrames.length) {
-            AppState.radarCurrentFrameIdx = 0;
-          }
-          showRadarFrame(AppState.radarCurrentFrameIdx);
-        }, 650);
-      }
-    }
-
-    // Geocoding Search via Open-Meteo Geocoding API
+    // Geocoding Search
     let searchTimeout = null;
     function handleLocationSearch(query) {
       clearTimeout(searchTimeout);
@@ -2769,7 +2509,7 @@
             `).join('');
             resultsList.classList.add('show');
           } else {
-            resultsList.innerHTML = `<div style="padding:12px;font-size:0.85rem;color:#94a3b8;text-align:center;">Geen resultaten gevonden in Nederland</div>`;
+            resultsList.innerHTML = `<div style="padding:10px;font-size:0.8rem;color:#94a3b8;text-align:center;">Geen resultaten gevonden in Nederland</div>`;
             resultsList.classList.add('show');
           }
         } catch (err) {
@@ -2778,7 +2518,7 @@
       }, 350);
     }
 
-    // UI Toast
+    // Toast
     let toastTimeout = null;
     function showToast(msg) {
       const toast = document.getElementById('toast-pill');
@@ -2788,7 +2528,7 @@
       clearTimeout(toastTimeout);
       toastTimeout = setTimeout(() => {
         toast.classList.remove('show');
-      }, 3000);
+      }, 2500);
     }
 
     // GPS Geolocation Handler
@@ -2799,17 +2539,9 @@
       }
       showToast("GPS locatie bepalen...");
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
+        (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
-
-          // Reverse name lookup or general NL tag
-          let cityName = "Mijn Locatie";
-          try {
-            const revRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${lat.toFixed(2)},${lon.toFixed(2)}&count=1&language=nl&format=json`);
-            // Alternatively use coords as label
-          } catch(e) {}
-
           AppState.location = {
             name: 'Mijn Locatie',
             latitude: lat,
@@ -2827,6 +2559,19 @@
       );
     }
 
+    // Fullscreen Toggle (Crucial for 7-8" cockpit / dashboard screens)
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch((err) => {
+          showToast(`Kon scherm niet maximaliseren: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
     // Modal Handlers
     function setupModalEvents() {
       const modal = document.getElementById('settings-modal');
@@ -2837,14 +2582,12 @@
       const resultsList = document.getElementById('search-results-list');
       const saveBtn = document.getElementById('save-settings-btn');
 
-      // Sliders & inputs
       const selMorning = document.getElementById('setting-morning-time');
       const selEvening = document.getElementById('setting-evening-time');
       const rangeMinTemp = document.getElementById('setting-min-temp');
       const rangeMaxGusts = document.getElementById('setting-max-gusts');
 
       const openModal = () => {
-        // Sync inputs with state
         selMorning.value = AppState.commute.morningTime;
         selEvening.value = AppState.commute.eveningTime;
         rangeMinTemp.value = AppState.commute.minTemp;
@@ -2871,10 +2614,8 @@
         if (e.target === modal) closeModal();
       });
 
-      // Search typing
       searchInput.addEventListener('input', (e) => handleLocationSearch(e.target.value));
 
-      // Click on search result
       resultsList.addEventListener('click', (e) => {
         const item = e.target.closest('.search-result-item');
         if (item) {
@@ -2890,9 +2631,9 @@
         }
       });
 
-      // Preset city chips
       document.querySelectorAll('.city-chip').forEach(btn => {
         btn.addEventListener('click', () => {
+          if (btn.id === 'save-settings-btn') return;
           const lat = parseFloat(btn.dataset.lat);
           const lon = parseFloat(btn.dataset.lon);
           const name = btn.dataset.name;
@@ -2904,7 +2645,6 @@
         });
       });
 
-      // Settings sliders live update
       selMorning.addEventListener('change', (e) => {
         document.getElementById('val-morning-time').textContent = e.target.value;
       });
@@ -2918,7 +2658,6 @@
         document.getElementById('val-max-gusts').textContent = `${e.target.value} km/u`;
       });
 
-      // Save settings
       saveBtn.addEventListener('click', () => {
         AppState.commute.morningTime = selMorning.value;
         AppState.commute.eveningTime = selEvening.value;
@@ -2933,12 +2672,12 @@
       });
     }
 
-    // Refresh & GPS buttons
+    // Refresh, GPS & Fullscreen buttons
     document.getElementById('refresh-btn').addEventListener('click', () => {
       fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
     });
     document.getElementById('gps-btn').addEventListener('click', requestGPSLocation);
-    document.getElementById('radar-play-btn').addEventListener('click', toggleRadarAnimation);
+    document.getElementById('fullscreen-btn').addEventListener('click', toggleFullScreen);
 
     // Initial Start
     window.addEventListener('DOMContentLoaded', () => {
@@ -2946,7 +2685,6 @@
       setupModalEvents();
       fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
 
-      // Auto-refresh every 15 minutes
       setInterval(() => {
         fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
       }, 15 * 60 * 1000);
