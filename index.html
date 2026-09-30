@@ -721,6 +721,7 @@
       align-items: center;
       gap: 6px;
       min-width: 0;
+      flex-wrap: wrap;
     }
 
     .slot-label-group {
@@ -728,6 +729,7 @@
       align-items: center;
       gap: 6px;
       min-width: 0;
+      flex: 1 1 auto;
     }
 
     .slot-icon-badge {
@@ -743,6 +745,13 @@
       flex-shrink: 0;
     }
 
+    .slot-text-wrap {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
     .slot-name {
       font-family: var(--font-display);
       font-size: 0.9rem;
@@ -756,17 +765,21 @@
       font-family: var(--font-mono);
       font-size: 0.68rem;
       color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .slot-status-badge {
       font-size: 0.68rem;
-      font-weight: 700;
+      font-weight: 800;
       padding: 2px 7px;
       border-radius: var(--radius-pill);
       text-transform: uppercase;
       letter-spacing: 0.03em;
       white-space: nowrap;
       flex-shrink: 0;
+      margin-left: auto;
     }
 
     .slot-metrics-grid {
@@ -778,6 +791,7 @@
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
       min-width: 0;
+      text-align: center;
     }
 
     .slot-metric-item {
@@ -804,13 +818,15 @@
     .slot-note-text {
       font-size: 0.74rem;
       color: var(--text-muted);
-      line-height: 1.3;
+      line-height: 1.35;
       display: flex;
       align-items: flex-start;
       gap: 4px;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
 
-    /* 4 Safety Matrix Meters (Strictly Scaled) */
+    /* 4 Safety Matrix Meters (Strictly Scaled - No Overlap) */
     .safety-matrix-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -822,10 +838,10 @@
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-md);
-      padding: 8px 10px;
+      padding: 8px 8px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       min-width: 0;
       overflow: hidden;
     }
@@ -834,31 +850,41 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 4px;
-      font-size: 0.66rem;
+      gap: 3px;
+      font-size: 0.65rem;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       white-space: nowrap;
       min-width: 0;
+      overflow: hidden;
+    }
+    .meter-header span:first-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .meter-header span:last-child {
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
     .meter-val-row {
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 4px;
+      gap: 3px;
       min-width: 0;
     }
     .meter-primary-val {
       font-family: var(--font-display);
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 800;
       color: var(--text-main);
       white-space: nowrap;
     }
     .meter-status-tag {
-      font-size: 0.64rem;
+      font-size: 0.63rem;
       font-weight: 700;
       padding: 1px 5px;
       border-radius: var(--radius-pill);
@@ -1418,7 +1444,16 @@
     /* ==========================================================================
        RESPONSIVE ADAPTATIONS: FLUID SCALING ON ANY RESOLUTION
        ========================================================================== */
-    @media (max-width: 1060px) {
+    @media (max-width: 1160px) {
+      .dashboard-wrapper {
+        padding: 8px 10px;
+      }
+      .safety-matrix-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1040px) {
       .dashboard-grid {
         grid-template-columns: 1fr 1fr;
       }
@@ -1428,7 +1463,7 @@
       }
     }
 
-    @media (max-width: 680px) {
+    @media (max-width: 768px) {
       .top-navbar {
         flex-direction: column;
         align-items: stretch;
@@ -1439,6 +1474,10 @@
       .dashboard-grid {
         grid-template-columns: 1fr;
       }
+      .col-hero {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
       .commute-slots-container {
         grid-template-columns: 1fr;
       }
@@ -1446,6 +1485,12 @@
         grid-template-columns: repeat(2, 1fr);
       }
       .settings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .col-hero {
         grid-template-columns: 1fr;
       }
     }
@@ -1719,9 +1764,9 @@
             <div class="slot-top-row">
               <div class="slot-label-group">
                 <div class="slot-icon-badge">🌅</div>
-                <div>
-                  <div class="slot-name">Ochtendrit (Heen)</div>
-                  <div class="slot-time" id="morning-slot-time">08:00 (Heenrit)</div>
+                <div class="slot-text-wrap">
+                  <div class="slot-name">Ochtendrit</div>
+                  <div class="slot-time" id="morning-slot-time">08:00 (Heen)</div>
                 </div>
               </div>
               <span class="slot-status-badge" id="morning-status-badge">🟢 GOED</span>
@@ -1752,9 +1797,9 @@
             <div class="slot-top-row">
               <div class="slot-label-group">
                 <div class="slot-icon-badge">🌇</div>
-                <div>
-                  <div class="slot-name">Avondrit (Terug)</div>
-                  <div class="slot-time" id="evening-slot-time">17:00 (Terugrit)</div>
+                <div class="slot-text-wrap">
+                  <div class="slot-name">Avondrit</div>
+                  <div class="slot-time" id="evening-slot-time">17:00 (Terug)</div>
                 </div>
               </div>
               <span class="slot-status-badge" id="evening-status-badge">🟢 GOED</span>
@@ -2382,13 +2427,13 @@
         score = Math.max(0, Math.min(100, score));
 
         let verdict = "green";
-        let badgeText = "🟢 GOED TE DOEN";
+        let badgeText = "🟢 GOED";
         if (score < 50) {
           verdict = "red";
-          badgeText = "🔴 NIET VERSTANDIG";
+          badgeText = "🔴 PAS OP";
         } else if (score < 80) {
           verdict = "yellow";
-          badgeText = "🟡 ALERT ZIJN";
+          badgeText = "🟡 OPLETTEN";
         }
 
         return { score, verdict, badgeText, reasons };
@@ -2550,14 +2595,14 @@
         verdictScore.style.borderColor = 'var(--verdict-die-border)';
       }
 
-      document.getElementById('morning-slot-time').textContent = `${AppState.commute.morningTime} (Heenrit)`;
+      document.getElementById('morning-slot-time').textContent = `${AppState.commute.morningTime} (Heen)`;
       document.getElementById('morning-temp').textContent = `${advice.morningData.avgTemp}°C`;
       document.getElementById('morning-rain').textContent = `${advice.morningData.totalPrecip} mm`;
       document.getElementById('morning-gusts').textContent = `${advice.morningData.maxGusts} km/u`;
       document.getElementById('morning-status-badge').textContent = advice.morningScore.badgeText;
       document.getElementById('morning-note').innerHTML = `<span>👉</span> ${advice.morningScore.reasons.length ? advice.morningScore.reasons.join(". ") : "Ideale ochtendrit! Droog asfalt en kalme wind."}`;
 
-      document.getElementById('evening-slot-time').textContent = `${AppState.commute.eveningTime} (Terugrit)`;
+      document.getElementById('evening-slot-time').textContent = `${AppState.commute.eveningTime} (Terug)`;
       document.getElementById('evening-temp').textContent = `${advice.eveningData.avgTemp}°C`;
       document.getElementById('evening-rain').textContent = `${advice.eveningData.totalPrecip} mm`;
       document.getElementById('evening-gusts').textContent = `${advice.eveningData.maxGusts} km/u`;
