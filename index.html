@@ -2550,30 +2550,155 @@
       }
     }
 
-    /* 3. DESKTOP / LARGE DISPLAY (1080p, 1440p, Tablet) */
+    /* 3. DESKTOP / LARGE DISPLAY (1080p, 1440p) - Ruimtelijk & Ademend */
     @media (min-width: 960px) and (min-height: 581px) {
+      body.is-simple-mode .dashboard-wrapper {
+        padding: 24px !important;
+      }
       .simple-combined-card {
-        max-width: 900px !important;
+        max-width: 1040px !important;
         height: auto !important;
-        max-height: calc(100vh - 40px) !important;
-        padding: 18px 24px !important;
-        gap: 12px !important;
-        border-radius: var(--radius-xl) !important;
+        max-height: calc(100vh - 48px) !important;
+        padding: 24px 30px !important;
+        gap: 16px !important;
+        border-radius: 28px !important;
+      }
+      .simple-header-row {
+        padding-bottom: 12px !important;
+      }
+      .simple-city-name {
+        font-size: 1.45rem !important;
+      }
+      .simple-location-pin {
+        width: 38px !important;
+        height: 38px !important;
+      }
+      .simple-date-str {
+        font-size: 0.78rem !important;
+      }
+      .simple-time-badge {
+        font-size: 0.82rem !important;
+        padding: 5px 12px !important;
+      }
+      .simple-theme-btn {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 14px !important;
+      }
+      .simple-switch-text {
+        display: inline !important;
+      }
+      .simple-switch-btn {
+        padding: 6px 14px !important;
+        font-size: 0.82rem !important;
+        gap: 7px !important;
       }
       .simple-main-grid {
         display: grid !important;
-        grid-template-columns: 290px auto 1fr !important;
-        gap: 18px !important;
+        grid-template-columns: 320px auto 1fr !important;
+        gap: 24px !important;
         align-items: center !important;
       }
       .simple-divider {
         display: block !important;
+        min-height: 140px !important;
+      }
+      .simple-weather-section {
+        gap: 8px !important;
+      }
+      .simple-temp-val {
+        font-size: 3.2rem !important;
+      }
+      .simple-temp-unit {
+        font-size: 1.5rem !important;
+      }
+      .simple-icon-wrap {
+        width: 56px !important;
+        height: 56px !important;
+      }
+      .simple-condition-text {
+        font-size: 1.15rem !important;
+      }
+      .simple-stats-pills {
+        gap: 6px !important;
+      }
+      .simple-stat-pill {
+        padding: 4px 10px !important;
+        font-size: 0.76rem !important;
+      }
+      .simple-wind-bar {
+        padding: 6px 12px !important;
+        font-size: 0.78rem !important;
+      }
+      .simple-verdict-section {
+        gap: 8px !important;
+      }
+      .simple-verdict-headline {
+        font-size: 1.25rem !important;
+        line-height: 1.25 !important;
+      }
+      .simple-verdict-explanation {
+        font-size: 0.84rem !important;
+        line-height: 1.45 !important;
+      }
+      .simple-commute-preview {
+        gap: 10px !important;
+      }
+      .simple-commute-chip {
+        padding: 8px 12px !important;
+        gap: 10px !important;
+        border-radius: var(--radius-md) !important;
+      }
+      .simple-commute-icon {
+        font-size: 1.35rem !important;
+      }
+      .simple-commute-name {
+        font-size: 0.76rem !important;
+      }
+      .simple-commute-badge {
+        font-size: 0.68rem !important;
+        padding: 2px 7px !important;
+      }
+      .simple-commute-status {
+        font-size: 0.78rem !important;
       }
       .simple-extra-section {
         display: flex !important;
+        padding-top: 14px !important;
+        gap: 12px !important;
       }
       .simple-safety-grid {
         grid-template-columns: repeat(4, 1fr) !important;
+        gap: 10px !important;
+      }
+      .simple-safety-mini-card {
+        padding: 8px 12px !important;
+        gap: 4px !important;
+        border-radius: var(--radius-md) !important;
+      }
+      .simple-safety-label {
+        font-size: 0.72rem !important;
+      }
+      .simple-safety-tag {
+        font-size: 0.68rem !important;
+      }
+      .simple-safety-val {
+        font-size: 0.95rem !important;
+      }
+      .simple-gear-box {
+        padding: 8px 14px !important;
+        gap: 10px !important;
+        border-radius: var(--radius-md) !important;
+      }
+      .simple-gear-icon {
+        font-size: 1.2rem !important;
+      }
+      .simple-gear-chips {
+        gap: 6px !important;
+      }
+      .simple-gear-chips .gear-pill {
+        padding: 4px 10px !important;
+        font-size: 0.74rem !important;
       }
     }
 
