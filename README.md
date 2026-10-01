@@ -8,8 +8,8 @@
 
 - **🏍️ Woon-Werk Motoradvies (Commute Command Center)**:
   Beantwoordt direct de belangrijkste vraag: *"Kan ik vandaag veilig en droog met de motor naar het werk en weer terug?"*. Analyseert jouw specifieke vertrektijd voor de **ochtendrit (heen)** en **avondrit (terug)**, toont een directe score (*Index 0-100*) en een duidelijk verdict: 🟢 **RIDE ON!**, 🟡 **PAS OP!** of 🔴 **RIDE OR DIE!**.
-- **⛶ Fullscreen Kiosk Mode (`#fullscreen`)**:
-  Met één klik op de fullscreen-knop (of via URL hash `#fullscreen`) opent de app in randloze kiosk-modus. Op grotere displays (zoals laptops, tablets en 1280x720 / 1280x800 cockpit-schermen) **vergroot de interface schermvullend mee tot max 125%** voor maximale leesbaarheid tijdens het rijden. Sluit af via de knop of met **ESC**.
+- **⛶ Adaptieve Schaling & Fullscreen Kiosk Mode (`#fullscreen`)**:
+  Met één klik op de fullscreen-knop (of via URL hash `#fullscreen`) opent de app in randloze kiosk-modus. Op grotere schermen (zoals een **24 inch monitor**, desktop of tablet) **schaalt de interface dynamisch mee (tot 145% in fullscreen en 125% in normale venstermodus)** zodat alles royaal ademt en perfect leesbaar is. Op compacte schermen (zoals 7-8 inch cockpits of laptops) blijft de lay-out automatisch strak en compact vergrendeld op 100%. Sluit fullscreen af via de knop of met **ESC**.
 - **🔲 Simple Mode — 1 Schermvullend Widget (`#simple`)**:
   Activeer via de toggle-knop naast de fullscreen-knop (of via `#simple`). Verbergt alle secundaire grafieken en tabellen en combineert het **Actuele Weer** en het **Motoradvies** tot **één rustig, schermvullend glazen widget**. Ideaal als minimalistische boordcomputer op het stuur of dashboard.
 - **☀️ Heldere Light Mode Standaard**:
@@ -34,9 +34,10 @@ Met de **Simple Mode** knop (direct naast de fullscreen knop in de navigatiebalk
 - **Cockpit Focus**: Geen afleiding van lange lijsten of tabellen; alle essentiële info is in één snelle blik leesbaar.
 - **Geheugen & URL**: Jouw keuze wordt bewaard in `localStorage` en gesynchroniseerd in de browserlink (`#simple`).
 
-### 2. Fullscreen Kiosk Mode (Max 125% Vergroot)
-- **Adaptieve Kiosk Schaling**: Berekent de schermverhouding en vergroot de UI dynamisch tot maximaal **125%** (`zoom: 1.25`) op schermen met voldoende ruimte (zoals 1080p, 1440p of 7-8 inch tablets in landscape).
-- **Veilig voor kleinere schermen**: Op schermen smaller dan 1260px blijft de schaalfactor vergrendeld op `1.0`, zodat mobiele media-queries en layoutregels behouden blijven zonder vervorming.
+### 2. Adaptieve Schaling & Fullscreen Kiosk Mode (Meer ademruimte)
+- **Royale Weergave op Grote Schermen**: Op grotere monitoren (bijv. een 24 inch 1080p scherm of groter) schaalt de interface automatisch mee en krijgen widgets meer tussenruimte (gap/padding), zodat de pagina natuurlijk ademt in plaats van gecentreerd te zijn in een smal koker-kader.
+- **Fullscreen Kiosk Schaling (tot 145%)**: In fullscreen berekent de app de beschikbare resolutie en vergroot mee tot maximaal **145%** (`zoom: 1.45`), waardoor het hele display indrukwekkend schermvullend gevuld wordt.
+- **Compact op Kleinere Displays**: Wordt het venster kleiner of draait de app op een 7-8 inch cockpit (1280x720 / 1280x800) of tablet, dan vergrendelt de schaalfactor automatisch op `1.0` (100%), waardoor de lay-out compact en strak blijft zonder scrollbars of vervorming.
 - **URL Koppeling**: Voegt automatisch `#fullscreen` toe aan de URL. Een bladwijzer of snelkoppeling direct naar `index.html#fullscreen` start meteen in kiosk-stand.
 - **Combineren mogelijk**: Je kunt Simple Mode en Fullscreen gelijktijdig gebruiken (`#fullscreen&simple`) voor een volwaardige digitale motorcockpit.
 

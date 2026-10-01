@@ -204,7 +204,8 @@
     }
 
     /* ==========================================================================
-       SCALABLE DASHBOARD WRAPPER: PERFECT FIT FOR 1280x720 / 1280x800
+       SCALABLE DASHBOARD WRAPPER: ADAPTIVE ON ANY SCREEN
+       Compact on 7-8" cockpits/tablets, spacious & breathing on 24" monitors
        ========================================================================== */
     .dashboard-wrapper {
       width: 100%;
@@ -216,6 +217,26 @@
       gap: 10px;
       min-height: 100vh;
       box-sizing: border-box;
+      zoom: var(--ui-scale, var(--fs-scale, 1.0));
+      transition: gap 0.2s ease, padding 0.2s ease;
+    }
+
+    /* Extra breathing room on large desktop screens (e.g. 24" monitor >= 1440px) */
+    @media (min-width: 1440px) and (min-height: 760px) {
+      .dashboard-wrapper {
+        gap: 13px;
+        padding: 12px 18px 46px;
+      }
+      .dashboard-grid {
+        gap: 13px;
+      }
+      .col-hero, .col-commute, .col-forecast {
+        gap: 13px;
+      }
+      .app-footer {
+        font-size: 0.76rem;
+        padding: 6px 18px;
+      }
     }
 
     /* Top Navigation Bar */
@@ -1619,15 +1640,15 @@
 
     html.is-fullscreen .dashboard-wrapper,
     :fullscreen .dashboard-wrapper {
-      zoom: var(--fs-scale, 1.25);
+      zoom: var(--ui-scale, var(--fs-scale, 1.35));
       max-width: 1260px;
       width: 100%;
     }
 
     html.is-fullscreen .app-footer,
     :fullscreen .app-footer {
-      font-size: 0.72rem;
-      padding: 7px 16px;
+      font-size: 0.74rem;
+      padding: 8px 18px;
     }
 
     /* ==========================================================================
@@ -3646,32 +3667,46 @@
       }
     }
 
-    // Fullscreen & Kiosk Scaling Management (Scales up to max 125%, adaptive on any screen)
+    // Dynamic Adaptive Scaling: Compact on smaller screens, spacious & breathing on large screens (e.g. 24" monitors)
     function updateFullscreenScale() {
-      const isFs = document.fullscreenElement || window.location.hash.includes('fullscreen') || document.documentElement.classList.contains('is-fullscreen');
-      if (!isFs) {
-        document.documentElement.style.removeProperty('--fs-scale');
-        document.documentElement.classList.remove('is-fullscreen');
-        updateFullscreenButtonUI(false);
-        return;
-      }
-
-      document.documentElement.classList.add('is-fullscreen');
-      updateFullscreenButtonUI(true);
-
+      const isFs = !!(document.fullscreenElement || window.location.hash.includes('fullscreen') || document.documentElement.classList.contains('is-fullscreen'));
       const w = window.innerWidth;
       const h = window.innerHeight;
 
-      // When screen width and height have space beyond baseline (1260x680)
-      if (w >= 1260 && h >= 680) {
-        const scaleW = w / 1260;
-        const scaleH = h / 680;
-        // Scale up to max 1.25 (125%)
-        const scale = Math.min(1.25, Math.min(scaleW, scaleH));
-        document.documentElement.style.setProperty('--fs-scale', scale.toFixed(3));
+      if (isFs) {
+        document.documentElement.classList.add('is-fullscreen');
+        updateFullscreenButtonUI(true);
+
+        if (w >= 1260 && h >= 680) {
+          const scaleW = (w - 32) / 1260;
+          const scaleH = (h - 52) / 680;
+          // Scale up to max 1.45 (145%) on large monitors like 24" 1080p/1440p
+          const scale = Math.min(1.45, Math.max(1.0, Math.min(scaleW, scaleH)));
+          document.documentElement.style.setProperty('--ui-scale', scale.toFixed(3));
+          document.documentElement.style.setProperty('--fs-scale', scale.toFixed(3));
+        } else {
+          // Compact 1.0 on smaller displays (7-8" cockpit, tablet, mobile)
+          document.documentElement.style.setProperty('--ui-scale', '1.0');
+          document.documentElement.style.setProperty('--fs-scale', '1.0');
+        }
       } else {
-        // Keeps 1.0 on smaller screens so responsive layout stays crisp without distortion
-        document.documentElement.style.setProperty('--fs-scale', '1.0');
+        document.documentElement.classList.remove('is-fullscreen');
+        updateFullscreenButtonUI(false);
+
+        // In normal desktop mode on larger displays (e.g. 24" monitor >= 1440x760):
+        // Automatically scale up so the interface breathes and fills the display nicely
+        if (w >= 1440 && h >= 760) {
+          const scaleW = (w - 60) / 1260;
+          const scaleH = (h - 80) / 680;
+          // Scale between 1.0 and 1.25 for comfortable desktop viewing
+          const scale = Math.min(1.25, Math.max(1.0, Math.min(scaleW, scaleH)));
+          document.documentElement.style.setProperty('--ui-scale', scale.toFixed(3));
+          document.documentElement.style.setProperty('--fs-scale', scale.toFixed(3));
+        } else {
+          // Keep compact 1.0 on smaller displays, laptops or snapped windows
+          document.documentElement.style.setProperty('--ui-scale', '1.0');
+          document.documentElement.style.setProperty('--fs-scale', '1.0');
+        }
       }
     }
 
@@ -3709,7 +3744,7 @@
         if (document.documentElement.requestFullscreen) {
           document.documentElement.requestFullscreen().catch(() => {});
         }
-        showToast("Schermvullend vergroot (max 125%) ⛶");
+        showToast("Schermvullend vergroot ⛶");
       } else {
         document.documentElement.classList.remove('is-fullscreen');
         syncUrlHash(false, AppState.isSimpleMode);
@@ -3786,9 +3821,7 @@
     });
 
     window.addEventListener('resize', () => {
-      if (document.documentElement.classList.contains('is-fullscreen') || document.fullscreenElement) {
-        updateFullscreenScale();
-      }
+      updateFullscreenScale();
     });
 
     // Setup Modal & Button Handlers
@@ -3912,6 +3945,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedState();
       checkInitialHashModes();
+      updateFullscreenScale();
       setupModalEvents();
       fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
 
