@@ -8,8 +8,10 @@
 
 - **🏍️ Woon-Werk Motoradvies (Commute Command Center)**:
   Beantwoordt direct de belangrijkste vraag: *"Kan ik vandaag veilig en droog met de motor naar het werk en weer terug?"*. Analyseert jouw specifieke vertrektijd voor de **ochtendrit (heen)** en **avondrit (terug)**, toont een directe score (*Index 0-100*) en een duidelijk verdict: 🟢 **RIDE ON!**, 🟡 **PAS OP!** of 🔴 **RIDE OR DIE!**.
+- **📍 Gecentreerde Locatiekiezer in de Navigatiebalk**:
+  Midden in de navigatiebalk staat de actieve locatie als interactieve knop (op mobiel direct met de duim bereikbaar). Opent een eigen, dedicated scherm om binnen seconden van stad te wisselen via GPS, live zoeken of snelle stadsknoppen.
 - **⛶ Adaptieve Schaling & Fullscreen Kiosk Mode (`#fullscreen`)**:
-  Met één klik op de fullscreen-knop (of via URL hash `#fullscreen`) opent de app in randloze kiosk-modus. Op grotere schermen (zoals een **24 inch monitor**, desktop of tablet) **schaalt de interface dynamisch mee (tot 145% in fullscreen en 125% in normale venstermodus)** zodat alles royaal ademt en perfect leesbaar is. Op compacte schermen (zoals 7-8 inch cockpits of laptops) blijft de lay-out automatisch strak en compact vergrendeld op 100%. Sluit fullscreen af via de knop of met **ESC**.
+  Met één klik op de fullscreen-knop (of via `#fullscreen`) opent de app in randloze kiosk-modus. Op grotere schermen (zoals een **24 inch monitor**, desktop of tablet) **schaalt de interface dynamisch mee (tot 145% in fullscreen en 125% in normale venstermodus)** zodat alles royaal ademt en perfect leesbaar is. Op compacte schermen (zoals 7-8 inch cockpits of laptops) blijft de lay-out automatisch strak en compact vergrendeld op 100%. Sluit fullscreen af via de knop of met **ESC**.
 - **🔲 Simple Mode — 1 Schermvullend Widget (`#simple`)**:
   Activeer via de toggle-knop naast de fullscreen-knop (of via `#simple`). Verbergt alle secundaire grafieken en tabellen en combineert het **Actuele Weer** en het **Motoradvies** tot **één rustig, schermvullend glazen widget**. Ideaal als minimalistische boordcomputer op het stuur of dashboard.
 - **☀️ Heldere Light Mode Standaard**:
@@ -19,9 +21,9 @@
 - **⏱️ Slimme Tijdlijn (Vanaf afgelopen uur)**:
   Begint exact bij het afgelopen uur en toont wat er aankomt (`het afgelopen uur + komende 24 uur`), met visuele highlights voor het actuele uur en jouw woon-werktijden.
 - **📱 100% Schaalbaar & Responsief**:
-  Volledig geoptimaliseerd tegen tekstoverlap en afsnijden. Schaalt vloeiend van compacte 7-8 inch cockpit-schermen en desktop breedbeeld tot smartphones (met gecentreerde mobiele header).
-- **🚀 100% Single-File & GitHub Pages Ready**:
-  Alle HTML, CSS en JavaScript bevindt zich in één enkel `index.html` bestand. Geen build tools, geen Node.js en **geen Python** vereist.
+  Volledig geoptimaliseerd tegen tekstoverlap en afsnijden. Schaalt vloeiend van compacte 7-8 inch cockpit-schermen en desktop breedbeeld tot smartphones (met gecentreerde mobiele navigatie).
+- **🚀 100% Single-File & Standalone**:
+  Alle HTML, CSS en JavaScript bevindt zich in één enkel `index.html` bestand. Geen build tools, geen Node.js, geen externe server en **geen Python** vereist. Werkt direct in elke moderne webbrowser.
 
 ---
 
@@ -58,10 +60,28 @@ Met de **Simple Mode** knop (direct naast de fullscreen knop in de navigatiebalk
 
 ---
 
+## 📍 Snelle Locatiewissel & Instellingen
+ 
+- **📍 Gecentreerde Locatiekiezer in de Navigatiebalk**:
+  Midden in de navigatiebalk (op mobiel én desktop direct met de duim bereikbaar) staat jouw huidige locatie weergegeven als een duidelijke interactieve pill-knop. Eén klik opent direct het speciale **Locatiescherm**:
+  - Direct zoeken op elke Nederlandse plaatsnaam of postcode met realtime zoeksuggesties.
+  - Snelle knoppen voor populaire steden (*Utrecht, Amsterdam, Rotterdam, Den Haag, Eindhoven, Groningen, Arnhem, Zwolle, Maastricht, Middelburg, Texel*).
+  - Snelle GPS-knop om je actuele coördinaten direct over te nemen.
+  - Een klik op een plaats stelt deze direct in en sluit het venster automatisch.
+  - Ook het aantikken van de stadsnaam in het hoofdscherm opent direct deze locatiekiezer.
+- **⚙️ Instellingen & Reistijden (`#settings-modal`)**:
+  Klik op het tandwiel-icoon rechtsboven voor jouw persoonlijke motorvoorkeuren:
+  - **Themakeuze**: Wissel snel tussen Licht (standaard), Automatisch en Donker.
+  - **Woon-werk Vertrektijden**: Stel jouw ochtendvertrektijd (heen) en avondvertrektijd (terug) in.
+  - **Motorrijder Comfort & Toleranties**: Stel jouw minimale comforttemperatuur en maximale windstoot-limiet in.
+  - Klik op "Instellingen Opslaan" om het advies en de risicometers direct opnieuw te berekenen.
+
+---
+
 ## 🎨 Design & Stijl
 
 - **Custom Chopper / Cruiser Logo**: Strak vector-embleem van een cruiser motor met voorvork, teardrop tank, drag pipes en een subtiele weerszon aan de horizon.
-- **Material You 3 & Glassmorphism**: Hoogwaardige acryl blur effecten (`backdrop-filter: blur(28px)`), zachte borders en een dynamische achtergrondmesh die zacht mee-animeert.
+- **Material You 3 & Glassmorphism**: Hoogwaardige acryl blur effecten (`backdrop-filter: blur(28px)`), zachte borders en een dynamische achtergrondmesh die subtiel mee-animeert.
 - **Minimalistische Vaste Footer**: Discreet onderaan het scherm geplaatst zonder storende kaders: modelvermelding, databron en opensource copyright.
 - **Thema-opties**:
   - ☀️ **Licht**: Heldere, contrastrijke dagweergave (standaard).
@@ -77,41 +97,17 @@ Je kunt de web app direct opstarten in een gewenste stand via de browser-URL:
 | URL Hash | Resultaat |
 | :--- | :--- |
 | *(geen hash)* | Standaard dashboard met alle tegels en tabellen |
-| `#fullscreen` | Start direct schermvullend (tot max 125% vergroot) |
+| `#fullscreen` | Start direct schermvullend (automatisch vergroot voor grote schermen) |
 | `#simple` | Start direct in Simple Mode (1 gecombineerd widget) |
 | `#fullscreen&simple` | Start schermvullend én in Simple Mode (ultieme cockpitstand) |
 
 ---
 
-## 📍 Snelle Locatiewissel & Instellingen
- 
-- **📍 Gecentreerde Locatiekiezer in de Navigatiebalk**:
-  Midden in de navigatiebalk (op mobiel én desktop direct met de duim bereikbaar) staat jouw huidige locatie weergegeven als een duidelijke interactieve pill-knop. Eén klik opent direct het speciale **Locatiescherm**:
-  - Direct zoeken op elke Nederlandse plaatsnaam of postcode met realtime zoeksuggesties.
-  - Snelle knoppen voor populaire steden (*Utrecht, Amsterdam, Rotterdam, Den Haag, Eindhoven, Groningen, etc.*).
-  - Snelle GPS-knop om je actuele coördinaten direct over te nemen.
-  - Een klik op een plaats stelt deze direct in en sluit het venster automatisch.
-- **⚙️ Instellingen & Reistijden (`#settings-modal`)**:
-  Klik op het tandwiel-icoon rechtsboven voor jouw persoonlijke motorvoorkeuren:
-  - **Themakeuze**: Wissel snel tussen Licht (standaard), Automatisch en Donker.
-  - **Woon-werk Vertrektijden**: Stel jouw ochtendvertrektijd (heen) en avondvertrektijd (terug) in.
-  - **Motorrijder Comfort & Toleranties**: Stel jouw minimale comforttemperatuur en maximale windstoot-limiet in.
-  - Klik op "Instellingen Opslaan" om het advies en de risicometers direct opnieuw te berekenen.
+## 🚀 Direct Gebruiken
 
----
-
-## 🚀 Publiceren naar GitHub Pages
-
-De app is 100% self-contained in `index.html` en draait zonder server of build-stappen:
-
-1. Push `index.html` en `README.md` naar jouw GitHub repository (bijv. `RideOrDieWeather`).
-2. Ga in GitHub naar **Settings** ➔ **Pages**.
-3. Selecteer onder **Build and deployment** bij Source: **Deploy from a branch**.
-4. Kies branch `master` (of `main`) en map `/ (root)`, en klik op **Save**.
-5. Binnen circa 1 minuut is jouw cockpit live op:
-   ```
-   https://<jouw-github-gebruikersnaam>.github.io/RideOrDieWeather/
-   ```
+De app is 100% self-contained in `index.html` en vereist geen installatie, server of build-proces:
+- Dubbelklik op `index.html` of open het bestand in een moderne browser (Chrome, Edge, Safari, Firefox).
+- Alle instellingen (locatie, reistijden, thema en eenvoudige weergave) worden automatisch lokaal in je browser opgeslagen via `localStorage`.
 
 ---
 
