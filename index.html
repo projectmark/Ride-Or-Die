@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>☀️ Ride Or Die ⛈️</title>
   <meta name="description" content="Het ultieme motorweer dashboard voor Nederland, aangedreven door het open-source KNMI Harmonie-AROME weermodel. Volledig schaalbaar voor 1280x720/1280x800 displays met automatisch schakelend Licht/Donker thema." />
-  <meta name="theme-color" content="#f0f7ff" />
+  <meta name="theme-color" content="#f5f8fc" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛅</text></svg>" />
 
   <!-- Google Fonts: Outfit, Plus Jakarta Sans & JetBrains Mono -->
@@ -22,72 +22,90 @@
       --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
 
-      --radius-sm: 8px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
-      --radius-xl: 26px;
+      /* Material 3 Expressive Shape Radii */
+      --radius-xs: 6px;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --radius-xl: 28px;
       --radius-pill: 9999px;
 
-      --transition-spring: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      /* Material 3 Expressive Motion Curves */
+      --transition-spring: all 0.28s cubic-bezier(0.2, 0.0, 0, 1.0);
+      --transition-bounce: all 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
       --transition-smooth: all 0.2s ease;
     }
 
-    /* ☀️ LIGHT THEME (STANDAARD / VOORKEUR) */
+    /* ☀️ MATERIAL YOU 3 EXPRESSIVE - LIGHT THEME (Fresh, Bright, Airy & High Clarity) */
     html[data-theme="light"] {
-      --bg-base: #f1f6fc;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --text-faint: #64748b;
+      --bg-base: #f5f8fc;
+      --text-main: #0c1829;
+      --text-muted: #4b586d;
+      --text-faint: #6e7c91;
 
-      /* Sky Gradients (Day Sunny Light) */
+      /* M3 Tonal Surface Containers */
+      --m3-surface: #ffffff;
+      --m3-surface-dim: #e4ebf5;
+      --m3-surface-bright: #ffffff;
+      --m3-surface-container-lowest: #ffffff;
+      --m3-surface-container-low: rgba(244, 248, 254, 0.90);
+      --m3-surface-container: rgba(238, 243, 251, 0.92);
+      --m3-surface-container-high: rgba(230, 237, 248, 0.96);
+      --m3-surface-container-highest: #d9e4f2;
+
+      /* M3 Accent Primaries */
+      --sky-accent: #0284c7;
+      --sky-accent-hover: #0369a1;
+      --sky-glow: rgba(2, 132, 199, 0.18);
+      --primary-container: #d9ecff;
+      --on-primary-container: #001d36;
+
+      /* M3 Atmospheric Sky Gradients */
       --sky-grad-1: #dbeafe;
       --sky-grad-2: #bfdbfe;
       --sky-grad-3: #fed7aa;
-      --sky-accent: #0284c7;
-      --sky-glow: rgba(2, 132, 199, 0.18);
 
-      /* Frosted Glass Acrylic (White Translucent) */
-      --glass-bg: rgba(255, 255, 255, 0.82);
-      --glass-bg-subtle: rgba(241, 245, 249, 0.85);
-      --glass-bg-elevated: rgba(255, 255, 255, 0.94);
-      --glass-border: rgba(203, 213, 225, 0.8);
-      --glass-border-light: rgba(255, 255, 255, 1);
-      --glass-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+      /* Frosted Acrylic Glass */
+      --glass-bg: rgba(255, 255, 255, 0.84);
+      --glass-bg-subtle: rgba(243, 247, 253, 0.88);
+      --glass-bg-elevated: rgba(255, 255, 255, 0.96);
+      --glass-border: rgba(194, 211, 233, 0.65);
+      --glass-border-light: rgba(255, 255, 255, 0.95);
+      --glass-shadow: 0 10px 30px -4px rgba(12, 24, 41, 0.06), 0 2px 8px -2px rgba(12, 24, 41, 0.03);
 
-      /* Semantic Verdict Colors (High-Contrast Clean Light) */
+      /* Semantic Verdict Tokens (Clean, High Contrast) */
       --verdict-ride-bg: #ecfdf5;
       --verdict-ride-border: #10b981;
-      --verdict-ride-text: #065f46;
-      --verdict-ride-glow: rgba(16, 185, 129, 0.2);
+      --verdict-ride-text: #047857;
+      --verdict-ride-glow: rgba(16, 185, 129, 0.18);
 
       --verdict-warn-bg: #fffbeb;
       --verdict-warn-border: #f59e0b;
-      --verdict-warn-text: #92400e;
-      --verdict-warn-glow: rgba(245, 158, 11, 0.2);
+      --verdict-warn-text: #b45309;
+      --verdict-warn-glow: rgba(245, 158, 11, 0.18);
 
       --verdict-die-bg: #fef2f2;
       --verdict-die-border: #ef4444;
-      --verdict-die-text: #991b1b;
-      --verdict-die-glow: rgba(239, 68, 68, 0.2);
+      --verdict-die-text: #b91c1c;
+      --verdict-die-glow: rgba(239, 68, 68, 0.18);
 
-      /* Progress Bar Background */
-      --bar-track: rgba(148, 163, 184, 0.28);
+      --bar-track: rgba(148, 163, 184, 0.25);
     }
 
-    /* Light Weather States */
+    /* Light Weather States (Dynamic Atmospheric Mesh Adaptation) */
     html[data-theme="light"][data-weather-state="sunny"] {
       --sky-grad-1: #e0f2fe;
       --sky-grad-2: #bae6fd;
       --sky-grad-3: #fef08a;
       --sky-accent: #0369a1;
-      --sky-glow: rgba(3, 105, 161, 0.15);
+      --sky-glow: rgba(3, 105, 161, 0.16);
     }
     html[data-theme="light"][data-weather-state="cloudy"] {
       --sky-grad-1: #e2e8f0;
       --sky-grad-2: #cbd5e1;
       --sky-grad-3: #94a3b8;
       --sky-accent: #1e40af;
-      --sky-glow: rgba(30, 64, 175, 0.15);
+      --sky-glow: rgba(30, 64, 175, 0.16);
     }
     html[data-theme="light"][data-weather-state="rain"] {
       --sky-grad-1: #dbeafe;
@@ -101,45 +119,93 @@
       --sky-grad-2: #c7d2fe;
       --sky-grad-3: #a5b4fc;
       --sky-accent: #4338ca;
-      --sky-glow: rgba(67, 56, 202, 0.2);
+      --sky-glow: rgba(67, 56, 202, 0.22);
     }
 
-    /* 🌙 DARK THEME (OPTIONEEL / NACHT) */
+    /* 🌙 MATERIAL YOU 3 EXPRESSIVE - DARK THEME (Deep Midnight, High Contrast & Luminous) */
     html[data-theme="dark"] {
-      --bg-base: #070d18;
-      --text-main: #f8fafc;
+      --bg-base: #09101d;
+      --text-main: #f1f5f9;
       --text-muted: #94a3b8;
       --text-faint: #64748b;
 
+      /* M3 Tonal Surface Containers */
+      --m3-surface: #0f1828;
+      --m3-surface-dim: #09101d;
+      --m3-surface-bright: #1c273c;
+      --m3-surface-container-lowest: #050a12;
+      --m3-surface-container-low: rgba(17, 26, 42, 0.82);
+      --m3-surface-container: rgba(23, 35, 57, 0.85);
+      --m3-surface-container-high: rgba(30, 45, 72, 0.92);
+      --m3-surface-container-highest: #263857;
+
+      /* M3 Accent Primaries */
+      --sky-accent: #38bdf8;
+      --sky-accent-hover: #7dd3fc;
+      --sky-glow: rgba(56, 189, 248, 0.25);
+      --primary-container: #004c6f;
+      --on-primary-container: #c6e7ff;
+
+      /* Atmospheric Gradients */
       --sky-grad-1: #0b152d;
       --sky-grad-2: #162f68;
       --sky-grad-3: #1e4bb5;
-      --sky-accent: #38bdf8;
-      --sky-glow: rgba(56, 189, 248, 0.22);
 
-      --glass-bg: rgba(16, 24, 43, 0.72);
-      --glass-bg-subtle: rgba(22, 33, 58, 0.6);
-      --glass-bg-elevated: rgba(26, 38, 66, 0.86);
+      /* Frosted Acrylic Glass */
+      --glass-bg: rgba(17, 26, 43, 0.76);
+      --glass-bg-subtle: rgba(23, 35, 58, 0.65);
+      --glass-bg-elevated: rgba(28, 43, 70, 0.88);
       --glass-border: rgba(255, 255, 255, 0.12);
       --glass-border-light: rgba(255, 255, 255, 0.22);
-      --glass-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.45);
+      --glass-shadow: 0 14px 40px -6px rgba(0, 0, 0, 0.55);
 
-      --verdict-ride-bg: rgba(16, 185, 129, 0.16);
-      --verdict-ride-border: rgba(16, 185, 129, 0.55);
+      /* Semantic Verdict Tokens (Luminous Tonal Accents) */
+      --verdict-ride-bg: rgba(16, 185, 129, 0.15);
+      --verdict-ride-border: rgba(16, 185, 129, 0.65);
       --verdict-ride-text: #34d399;
-      --verdict-ride-glow: rgba(16, 185, 129, 0.35);
+      --verdict-ride-glow: rgba(16, 185, 129, 0.32);
 
-      --verdict-warn-bg: rgba(245, 158, 11, 0.16);
-      --verdict-warn-border: rgba(245, 158, 11, 0.55);
+      --verdict-warn-bg: rgba(245, 158, 11, 0.15);
+      --verdict-warn-border: rgba(245, 158, 11, 0.65);
       --verdict-warn-text: #fbbf24;
-      --verdict-warn-glow: rgba(245, 158, 11, 0.35);
+      --verdict-warn-glow: rgba(245, 158, 11, 0.32);
 
-      --verdict-die-bg: rgba(239, 68, 68, 0.16);
-      --verdict-die-border: rgba(239, 68, 68, 0.6);
+      --verdict-die-bg: rgba(239, 68, 68, 0.15);
+      --verdict-die-border: rgba(239, 68, 68, 0.65);
       --verdict-die-text: #f87171;
-      --verdict-die-glow: rgba(239, 68, 68, 0.4);
+      --verdict-die-glow: rgba(239, 68, 68, 0.38);
 
       --bar-track: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Dark Weather States */
+    html[data-theme="dark"][data-weather-state="sunny"] {
+      --sky-grad-1: #0f1c3a;
+      --sky-grad-2: #1e3a73;
+      --sky-grad-3: #2563eb;
+      --sky-accent: #60a5fa;
+      --sky-glow: rgba(96, 165, 250, 0.22);
+    }
+    html[data-theme="dark"][data-weather-state="cloudy"] {
+      --sky-grad-1: #0f172a;
+      --sky-grad-2: #1e293b;
+      --sky-grad-3: #334155;
+      --sky-accent: #94a3b8;
+      --sky-glow: rgba(148, 163, 184, 0.18);
+    }
+    html[data-theme="dark"][data-weather-state="rain"] {
+      --sky-grad-1: #0b152d;
+      --sky-grad-2: #13274f;
+      --sky-grad-3: #1d4ed8;
+      --sky-accent: #38bdf8;
+      --sky-glow: rgba(56, 189, 248, 0.22);
+    }
+    html[data-theme="dark"][data-weather-state="storm"] {
+      --sky-grad-1: #111029;
+      --sky-grad-2: #1e1b4b;
+      --sky-grad-3: #4338ca;
+      --sky-accent: #818cf8;
+      --sky-glow: rgba(129, 140, 248, 0.25);
     }
 
     * {
@@ -767,6 +833,62 @@
       font-size: 0.84rem;
       line-height: 1.4;
       color: var(--text-muted);
+    }
+
+    /* Dynamic Semantic Verdict States (Material You 3 Expressive) */
+    .master-verdict-card,
+    .simple-combined-card {
+      transition: background 0.4s var(--transition-spring), border-color 0.4s var(--transition-spring), box-shadow 0.4s var(--transition-spring);
+    }
+    .master-verdict-card[data-verdict="green"],
+    .simple-combined-card[data-verdict="green"] {
+      background: linear-gradient(135deg, var(--verdict-ride-bg), var(--glass-bg-elevated));
+      border-color: var(--verdict-ride-border);
+      box-shadow: 0 16px 40px var(--verdict-ride-glow);
+    }
+    .master-verdict-card[data-verdict="yellow"],
+    .simple-combined-card[data-verdict="yellow"] {
+      background: linear-gradient(135deg, var(--verdict-warn-bg), var(--glass-bg-elevated));
+      border-color: var(--verdict-warn-border);
+      box-shadow: 0 16px 40px var(--verdict-warn-glow);
+    }
+    .master-verdict-card[data-verdict="red"],
+    .simple-combined-card[data-verdict="red"] {
+      background: linear-gradient(135deg, var(--verdict-die-bg), var(--glass-bg-elevated));
+      border-color: var(--verdict-die-border);
+      box-shadow: 0 16px 40px var(--verdict-die-glow);
+    }
+
+    .verdict-pill-badge[data-verdict="green"] {
+      background: var(--verdict-ride-bg);
+      border: 1px solid var(--verdict-ride-border);
+      color: var(--verdict-ride-text);
+    }
+    .verdict-pill-badge[data-verdict="yellow"] {
+      background: var(--verdict-warn-bg);
+      border: 1px solid var(--verdict-warn-border);
+      color: var(--verdict-warn-text);
+    }
+    .verdict-pill-badge[data-verdict="red"] {
+      background: var(--verdict-die-bg);
+      border: 1px solid var(--verdict-die-border);
+      color: var(--verdict-die-text);
+    }
+
+    .verdict-score-pill[data-verdict="green"] {
+      background: var(--verdict-ride-bg);
+      border: 1px solid var(--verdict-ride-border);
+      color: var(--verdict-ride-text);
+    }
+    .verdict-score-pill[data-verdict="yellow"] {
+      background: var(--verdict-warn-bg);
+      border: 1px solid var(--verdict-warn-border);
+      color: var(--verdict-warn-text);
+    }
+    .verdict-score-pill[data-verdict="red"] {
+      background: var(--verdict-die-bg);
+      border: 1px solid var(--verdict-die-border);
+      color: var(--verdict-die-text);
     }
 
     /* Commute Slots Side-by-Side */
@@ -1488,7 +1610,7 @@
       gap: 5px;
     }
     .city-chip {
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: var(--radius-pill);
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
@@ -1496,18 +1618,24 @@
       font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
-      transition: var(--transition-smooth);
+      transition: var(--transition-spring);
     }
     .city-chip:hover {
       background: var(--sky-accent);
+      border-color: var(--sky-accent);
       color: #fff;
+      transform: translateY(-1px);
     }
-    .location-city-chip.is-current {
+    .city-chip:active {
+      transform: scale(0.96);
+    }
+    .location-city-chip.is-current,
+    .city-chip.is-current {
       background: var(--sky-accent);
       color: #fff;
       border-color: var(--sky-accent);
       font-weight: 800;
-      box-shadow: 0 2px 8px var(--sky-glow);
+      box-shadow: 0 3px 12px var(--sky-glow);
     }
 
     .location-modal-card {
@@ -1533,12 +1661,15 @@
       font-size: 0.84rem;
       font-weight: 700;
       cursor: pointer;
-      transition: var(--transition-smooth);
+      transition: var(--transition-spring);
     }
     .location-gps-bar:hover {
       background: var(--sky-glow);
       border-style: solid;
       transform: translateY(-1px);
+    }
+    .location-gps-bar:active {
+      transform: scale(0.97);
     }
 
     .settings-section-title {
@@ -2723,18 +2854,8 @@
       <!-- Quick Preset City Chips -->
       <div>
         <div class="chips-label">Populaire Plaatsen in Nederland</div>
-        <div class="city-chips-wrapper">
-          <button class="city-chip location-city-chip" data-lat="52.0908" data-lon="5.1222" data-name="Utrecht">Utrecht</button>
-          <button class="city-chip location-city-chip" data-lat="52.3676" data-lon="4.9041" data-name="Amsterdam">Amsterdam</button>
-          <button class="city-chip location-city-chip" data-lat="51.9244" data-lon="4.4777" data-name="Rotterdam">Rotterdam</button>
-          <button class="city-chip location-city-chip" data-lat="52.0705" data-lon="4.3007" data-name="Den Haag">Den Haag</button>
-          <button class="city-chip location-city-chip" data-lat="51.4416" data-lon="5.4697" data-name="Eindhoven">Eindhoven</button>
-          <button class="city-chip location-city-chip" data-lat="53.2194" data-lon="6.5665" data-name="Groningen">Groningen</button>
-          <button class="city-chip location-city-chip" data-lat="51.9851" data-lon="5.8987" data-name="Arnhem">Arnhem</button>
-          <button class="city-chip location-city-chip" data-lat="52.5168" data-lon="6.0830" data-name="Zwolle">Zwolle</button>
-          <button class="city-chip location-city-chip" data-lat="50.8514" data-lon="5.6910" data-name="Maastricht">Maastricht</button>
-          <button class="city-chip location-city-chip" data-lat="51.5000" data-lon="3.6136" data-name="Middelburg">Middelburg</button>
-          <button class="city-chip location-city-chip" data-lat="53.0543" data-lon="4.7975" data-name="Texel">Texel</button>
+        <div class="city-chips-wrapper" id="preset-cities-container">
+          <!-- Dynamisch gegenereerd via PRESET_CITIES -->
         </div>
       </div>
     </div>
@@ -2946,9 +3067,10 @@
       // Update meta theme-color for browser tab
       const metaTheme = document.querySelector('meta[name="theme-color"]');
       if (metaTheme) {
-        metaTheme.setAttribute('content', effectiveTheme === 'light' ? '#f1f6fc' : '#070d18');
+        metaTheme.setAttribute('content', effectiveTheme === 'light' ? '#f5f8fc' : '#09101d');
       }
 
+      updateThemeButtonsUI();
       saveState();
       if (showFeedback) {
         showToast(themeMode === 'light' ? 'Thema: Licht ☀️' : themeMode === 'auto' ? 'Thema: Automatisch (Dag/Nacht) 🔄' : 'Thema: Donker 🌙');
@@ -3089,33 +3211,211 @@
       return '10+ Bft';
     }
 
-    // Fetch Weather Data from KNMI Harmonie model
-    async function fetchWeatherData(lat, lon) {
-      showToast("KNMI Harmonie model data ophalen...");
+    // Shared Formatters (DRY - Deduplicated)
+    function formatDisplayDate(date = new Date()) {
+      const options = { weekday: 'long', day: 'numeric', month: 'long' };
+      const str = date.toLocaleDateString('nl-NL', options);
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function formatDisplayTime(date = new Date()) {
+      return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatCommuteSlotStatus(slotData, slotScore) {
+      if (!slotData || !slotScore) return '--';
+      const rainStr = slotData.totalPrecip > 0.05 
+        ? `${slotData.totalPrecip} mm` 
+        : (slotData.maxPrecipProb > 50 ? `0.0 mm (${slotData.maxPrecipProb}%)` : 'Droog (0 mm)');
+      return `${slotData.avgTemp}°C • ${rainStr} • ${slotScore.badgeText}`;
+    }
+
+    // Preset Cities Source of Truth (Single Source, No Repetition)
+    const PRESET_CITIES = [
+      { name: 'Utrecht', lat: 52.0908, lon: 5.1222 },
+      { name: 'Amsterdam', lat: 52.3676, lon: 4.9041 },
+      { name: 'Rotterdam', lat: 51.9244, lon: 4.4777 },
+      { name: 'Den Haag', lat: 52.0705, lon: 4.3007 },
+      { name: 'Eindhoven', lat: 51.4416, lon: 5.4697 },
+      { name: 'Groningen', lat: 53.2194, lon: 6.5665 },
+      { name: 'Arnhem', lat: 51.9851, lon: 5.8987 },
+      { name: 'Zwolle', lat: 52.5168, lon: 6.0830 },
+      { name: 'Maastricht', lat: 50.8514, lon: 5.6910 },
+      { name: 'Middelburg', lat: 51.5000, lon: 3.6136 },
+      { name: 'Texel', lat: 53.0543, lon: 4.7975 }
+    ];
+
+    function renderPresetCityChips() {
+      const container = document.getElementById('preset-cities-container');
+      if (!container) return;
+      const currentName = (AppState.location.name || '').toLowerCase();
+      container.innerHTML = PRESET_CITIES.map(city => {
+        const isCurrent = city.name.toLowerCase() === currentName;
+        return `<button class="city-chip location-city-chip ${isCurrent ? 'is-current' : ''}" data-lat="${city.lat}" data-lon="${city.lon}" data-name="${city.name}">${city.name}</button>`;
+      }).join('');
+    }
+
+    function updateActiveCityChip() {
+      const currentName = (AppState.location.name || '').toLowerCase();
+      document.querySelectorAll('.location-city-chip').forEach(chip => {
+        const chipName = (chip.dataset.name || '').toLowerCase();
+        if (chipName === currentName) {
+          chip.classList.add('is-current');
+        } else {
+          chip.classList.remove('is-current');
+        }
+      });
+    }
+
+    // Unified Location Change Handler (Deduplicates Location Switch Logic)
+    function selectNewLocation(name, lat, lon, country = 'NL') {
+      AppState.location = { name, latitude: lat, longitude: lon, country };
+      saveState();
+
+      const locModal = document.getElementById('location-modal');
+      if (locModal) locModal.classList.remove('open');
+      const resultsList = document.getElementById('search-results-list');
+      if (resultsList) resultsList.classList.remove('show');
+
+      const navLoc = document.getElementById('nav-location-label');
+      if (navLoc) navLoc.textContent = `${name}, ${country}`;
+
+      updateActiveCityChip();
+      fetchWeatherData(lat, lon, false);
+      showToast(`Locatie gewijzigd naar ${name}`);
+    }
+
+    // ==========================================================================
+    // SMART WEATHER CACHE & API THROTTLING ENGINE
+    // 10-min TTL cache, zero-latency instant rendering, abort controller, and offline fallback
+    // ==========================================================================
+    const WeatherCache = {
+      TTL_MS: 10 * 60 * 1000, // 10 minutes cache TTL (aligned with model update frequencies)
+
+      getCacheKey(lat, lon) {
+        return `rideordie_weather_${Number(lat).toFixed(3)}_${Number(lon).toFixed(3)}`;
+      },
+
+      get(lat, lon) {
+        try {
+          const key = this.getCacheKey(lat, lon);
+          const raw = localStorage.getItem(key);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || !parsed.data || !parsed.timestamp) return null;
+          const age = Date.now() - parsed.timestamp;
+          return {
+            data: parsed.data,
+            timestamp: parsed.timestamp,
+            isFresh: age < this.TTL_MS,
+            ageMinutes: Math.floor(age / 60000)
+          };
+        } catch (e) {
+          console.warn("Fout bij lezen weer-cache:", e);
+          return null;
+        }
+      },
+
+      set(lat, lon, data) {
+        try {
+          const key = this.getCacheKey(lat, lon);
+          const entry = {
+            timestamp: Date.now(),
+            data: data
+          };
+          localStorage.setItem(key, JSON.stringify(entry));
+        } catch (e) {
+          console.warn("Fout bij opslaan in weer-cache:", e);
+        }
+      }
+    };
+
+    let currentFetchController = null;
+
+    // Fetch Weather Data from KNMI Harmonie model with intelligent cache & throttling
+    async function fetchWeatherData(lat, lon, force = false) {
       const refreshIcon = document.getElementById('refresh-icon');
+
+      // 1. Check cache first if not forced
+      const cached = WeatherCache.get(lat, lon);
+      if (!force && cached && cached.isFresh) {
+        // Instant 0ms render from cache!
+        AppState.weatherData = cached.data;
+        if (AppState.theme === 'auto') {
+          applyTheme('auto', false);
+        }
+        renderDashboard(cached.data);
+        return;
+      }
+
+      // If we have existing data in cache (even slightly older), render immediately while fetching fresh data
+      if (!force && cached && cached.data) {
+        AppState.weatherData = cached.data;
+        if (AppState.theme === 'auto') {
+          applyTheme('auto', false);
+        }
+        renderDashboard(cached.data);
+      }
+
+      // 2. Abort prior in-flight fetch if user switched locations quickly
+      if (currentFetchController) {
+        currentFetchController.abort();
+      }
+      currentFetchController = new AbortController();
+      const signal = currentFetchController.signal;
+
       if (refreshIcon) refreshIcon.classList.add('spin');
+      if (force) {
+        showToast("KNMI data forceren & vernieuwen...");
+      } else if (!cached) {
+        showToast("KNMI Harmonie model data ophalen...");
+      }
 
       const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,uv_index&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&models=knmi_seamless&timezone=auto`;
 
       try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl, { signal });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
+
+        // Update cache and app state
+        WeatherCache.set(lat, lon, data);
         AppState.weatherData = data;
 
-        // Apply theme if in auto mode
         if (AppState.theme === 'auto') {
           applyTheme('auto', false);
         }
 
         renderDashboard(data);
-        showToast("KNMI data actueel bijgewerkt!");
+        showToast(force ? "KNMI data direct vernieuwd! 🔄" : "KNMI data actueel bijgewerkt!");
       } catch (err) {
+        if (err.name === 'AbortError') {
+          // Normal abort when user switches location quickly
+          return;
+        }
         console.error("Fout bij ophalen weerdata:", err);
-        showToast("Fout bij laden van KNMI gegevens. Probeer opnieuw.");
+        if (cached && cached.data) {
+          showToast("Netwerkfout: recente opgeslagen weerdata getoond");
+        } else {
+          showToast("Fout bij laden van KNMI gegevens. Probeer opnieuw.");
+        }
       } finally {
         if (refreshIcon) refreshIcon.classList.remove('spin');
       }
+    }
+
+    // Smart Background Polling (pauses when tab is hidden, resumes when visible if stale)
+    let pollInterval = null;
+    function startWeatherPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(() => {
+        if (!document.hidden) {
+          const cached = WeatherCache.get(AppState.location.latitude, AppState.location.longitude);
+          if (!cached || !cached.isFresh) {
+            fetchWeatherData(AppState.location.latitude, AppState.location.longitude, false);
+          }
+        }
+      }, 10 * 60 * 1000); // Check every 10 minutes
     }
 
     // Master Motorcycle Commute Algorithm
@@ -3309,10 +3609,8 @@
       document.getElementById('hero-city-name').textContent = AppState.location.name;
 
       const now = new Date();
-      const options = { weekday: 'long', day: 'numeric', month: 'long' };
-      const dateStr = now.toLocaleDateString('nl-NL', options);
-      document.getElementById('hero-date-str').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-      document.getElementById('hero-update-time').textContent = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('hero-date-str').textContent = formatDisplayDate(now);
+      document.getElementById('hero-update-time').textContent = formatDisplayTime(now);
 
       const code = current.weather_code || 0;
       const wmoInfo = WMO_DICT[code] || { text: "Helder", icon: "sun", state: "sunny" };
@@ -3374,34 +3672,10 @@
       verdictScore.textContent = `Index: ${advice.minScore}/100`;
       verdictExpl.textContent = advice.dayExplanation;
 
-      if (advice.dayVerdict === 'green') {
-        verdictCard.style.background = 'linear-gradient(135deg, var(--verdict-ride-bg), var(--glass-bg-elevated))';
-        verdictCard.style.borderColor = 'var(--verdict-ride-border)';
-        verdictPill.style.background = 'var(--verdict-ride-bg)';
-        verdictPill.style.border = '1px solid var(--verdict-ride-border)';
-        verdictPill.style.color = 'var(--verdict-ride-text)';
-        verdictScore.style.background = 'var(--verdict-ride-bg)';
-        verdictScore.style.color = 'var(--verdict-ride-text)';
-        verdictScore.style.borderColor = 'var(--verdict-ride-border)';
-      } else if (advice.dayVerdict === 'yellow') {
-        verdictCard.style.background = 'linear-gradient(135deg, var(--verdict-warn-bg), var(--glass-bg-elevated))';
-        verdictCard.style.borderColor = 'var(--verdict-warn-border)';
-        verdictPill.style.background = 'var(--verdict-warn-bg)';
-        verdictPill.style.border = '1px solid var(--verdict-warn-border)';
-        verdictPill.style.color = 'var(--verdict-warn-text)';
-        verdictScore.style.background = 'var(--verdict-warn-bg)';
-        verdictScore.style.color = 'var(--verdict-warn-text)';
-        verdictScore.style.borderColor = 'var(--verdict-warn-border)';
-      } else {
-        verdictCard.style.background = 'linear-gradient(135deg, var(--verdict-die-bg), var(--glass-bg-elevated))';
-        verdictCard.style.borderColor = 'var(--verdict-die-border)';
-        verdictPill.style.background = 'var(--verdict-die-bg)';
-        verdictPill.style.border = '1px solid var(--verdict-die-border)';
-        verdictPill.style.color = 'var(--verdict-die-text)';
-        verdictScore.style.background = 'var(--verdict-die-bg)';
-        verdictScore.style.color = 'var(--verdict-die-text)';
-        verdictScore.style.borderColor = 'var(--verdict-die-border)';
-      }
+      // Pure CSS-driven verdict states (Material You 3 Expressive)
+      verdictCard.dataset.verdict = advice.dayVerdict;
+      verdictPill.dataset.verdict = advice.dayVerdict;
+      verdictScore.dataset.verdict = advice.dayVerdict;
 
       document.getElementById('morning-slot-time').textContent = `${AppState.commute.morningTime} (Heen)`;
       document.getElementById('morning-temp').textContent = `${advice.morningData.avgTemp}°C`;
@@ -3492,13 +3766,11 @@
       if (cityNameEl) cityNameEl.textContent = AppState.location.name;
 
       const now = new Date();
-      const options = { weekday: 'long', day: 'numeric', month: 'long' };
-      const dateStr = now.toLocaleDateString('nl-NL', options);
       const dateEl = document.getElementById('simple-date-str');
-      if (dateEl) dateEl.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+      if (dateEl) dateEl.textContent = formatDisplayDate(now);
 
       const timeEl = document.getElementById('simple-update-time');
-      if (timeEl) timeEl.textContent = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+      if (timeEl) timeEl.textContent = formatDisplayTime(now);
 
       // Weather condition
       const code = current.weather_code || 0;
@@ -3530,7 +3802,7 @@
       const windTextEl = document.getElementById('simple-wind-text');
       if (windTextEl) windTextEl.textContent = `Wind: ${windSpeed} km/u (${windDir}) • Stoten: ${windGusts} km/u`;
 
-      // Master Verdict / Advice Banner
+      // Master Verdict / Advice Banner (CSS-driven states)
       const verdictCard = document.getElementById('simple-combined-card');
       const verdictPill = document.getElementById('simple-verdict-pill');
       const verdictScore = document.getElementById('simple-verdict-score');
@@ -3542,56 +3814,24 @@
       if (verdictScore) verdictScore.textContent = `Index: ${advice.minScore}/100`;
       if (verdictExpl) verdictExpl.textContent = advice.dayExplanation;
 
-      if (verdictCard && verdictPill && verdictScore) {
-        if (advice.dayVerdict === 'green') {
-          verdictCard.style.background = 'linear-gradient(135deg, var(--verdict-ride-bg), var(--glass-bg-elevated))';
-          verdictCard.style.borderColor = 'var(--verdict-ride-border)';
-          verdictCard.style.boxShadow = '0 16px 40px rgba(16, 185, 129, 0.15)';
-          verdictPill.style.background = 'var(--verdict-ride-bg)';
-          verdictPill.style.border = '1px solid var(--verdict-ride-border)';
-          verdictPill.style.color = 'var(--verdict-ride-text)';
-          verdictScore.style.background = 'var(--verdict-ride-bg)';
-          verdictScore.style.color = 'var(--verdict-ride-text)';
-          verdictScore.style.borderColor = 'var(--verdict-ride-border)';
-        } else if (advice.dayVerdict === 'yellow') {
-          verdictCard.style.background = 'linear-gradient(135deg, var(--verdict-warn-bg), var(--glass-bg-elevated))';
-          verdictCard.style.borderColor = 'var(--verdict-warn-border)';
-          verdictCard.style.boxShadow = '0 16px 40px rgba(245, 158, 11, 0.15)';
-          verdictPill.style.background = 'var(--verdict-warn-bg)';
-          verdictPill.style.border = '1px solid var(--verdict-warn-border)';
-          verdictPill.style.color = 'var(--verdict-warn-text)';
-          verdictScore.style.background = 'var(--verdict-warn-bg)';
-          verdictScore.style.color = 'var(--verdict-warn-text)';
-          verdictScore.style.borderColor = 'var(--verdict-warn-border)';
-        } else {
-          verdictCard.style.background = 'linear-gradient(135deg, var(--verdict-die-bg), var(--glass-bg-elevated))';
-          verdictCard.style.borderColor = 'var(--verdict-die-border)';
-          verdictCard.style.boxShadow = '0 16px 40px rgba(239, 68, 68, 0.18)';
-          verdictPill.style.background = 'var(--verdict-die-bg)';
-          verdictPill.style.border = '1px solid var(--verdict-die-border)';
-          verdictPill.style.color = 'var(--verdict-die-text)';
-          verdictScore.style.background = 'var(--verdict-die-bg)';
-          verdictScore.style.color = 'var(--verdict-die-text)';
-          verdictScore.style.borderColor = 'var(--verdict-die-border)';
-        }
-      }
+      if (verdictCard) verdictCard.dataset.verdict = advice.dayVerdict;
+      if (verdictPill) verdictPill.dataset.verdict = advice.dayVerdict;
+      if (verdictScore) verdictScore.dataset.verdict = advice.dayVerdict;
 
-      // Commute highlights
+      // Commute highlights (Morning & Evening)
       const mornTimeEl = document.getElementById('simple-morning-time');
       const mornStatusEl = document.getElementById('simple-morning-status');
-      if (mornTimeEl) mornTimeEl.textContent = `(${AppState.commute.morningTime})`;
-      if (mornStatusEl && advice.morningData) {
-        const rainStr = advice.morningData.totalPrecip > 0.05 
-          ? `${advice.morningData.totalPrecip} mm` 
-          : 'Droog (0 mm)';
-        mornStatusEl.textContent = `${advice.morningData.avgTemp}°C • ${rainStr} • ${advice.morningScore.badgeText}`;
-      }
+      const eveTimeEl = document.getElementById('simple-evening-time');
+      const eveStatusEl = document.getElementById('simple-evening-status');
 
+      if (mornTimeEl) mornTimeEl.textContent = `(${AppState.commute.morningTime})`;
+      if (eveTimeEl) eveTimeEl.textContent = `(${AppState.commute.eveningTime})`;
+
+      if (mornStatusEl && advice.morningData) {
+        mornStatusEl.textContent = formatCommuteSlotStatus(advice.morningData, advice.morningScore);
+      }
       if (eveStatusEl && advice.eveningData) {
-        const rainStr = advice.eveningData.totalPrecip > 0.05 
-          ? `${advice.eveningData.totalPrecip} mm` 
-          : 'Droog (0 mm)';
-        eveStatusEl.textContent = `${advice.eveningData.avgTemp}°C • ${rainStr} • ${advice.eveningScore.badgeText}`;
+        eveStatusEl.textContent = formatCommuteSlotStatus(advice.eveningData, advice.eveningScore);
       }
     }
 
@@ -3729,35 +3969,55 @@
       container.innerHTML = html;
     }
 
-    // Geocoding Search
+    // Geocoding Search (with memory cache & debounce)
+    const geocodingCache = new Map();
     let searchTimeout = null;
+
+    function renderSearchResults(results) {
+      const resultsList = document.getElementById('search-results-list');
+      if (!resultsList) return;
+
+      if (results && results.length > 0) {
+        resultsList.innerHTML = results.map(item => `
+          <div class="search-result-item" data-lat="${item.latitude}" data-lon="${item.longitude}" data-name="${item.name}" data-country="${item.country_code || 'NL'}">
+            <span class="search-result-name">${item.name}</span>
+            <span class="search-result-province">${item.admin1 || item.country || ''}</span>
+          </div>
+        `).join('');
+        resultsList.classList.add('show');
+      } else {
+        resultsList.innerHTML = `<div style="padding:10px;font-size:0.8rem;color:var(--text-muted);text-align:center;">Geen resultaten gevonden in Nederland</div>`;
+        resultsList.classList.add('show');
+      }
+    }
+
     function handleLocationSearch(query) {
       clearTimeout(searchTimeout);
       const resultsList = document.getElementById('search-results-list');
 
-      if (!query || query.trim().length < 2) {
-        resultsList.classList.remove('show');
+      const trimmed = (query || '').trim();
+      if (trimmed.length < 2) {
+        if (resultsList) {
+          resultsList.classList.remove('show');
+          resultsList.innerHTML = '';
+        }
+        return;
+      }
+
+      const cacheKey = trimmed.toLowerCase();
+      if (geocodingCache.has(cacheKey)) {
+        renderSearchResults(geocodingCache.get(cacheKey));
         return;
       }
 
       searchTimeout = setTimeout(async () => {
         try {
-          const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8&language=nl&format=json`);
+          const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(trimmed)}&count=8&language=nl&format=json`);
           if (!res.ok) return;
           const data = await res.json();
-
-          if (data.results && data.results.length > 0) {
-            resultsList.innerHTML = data.results.map(item => `
-              <div class="search-result-item" data-lat="${item.latitude}" data-lon="${item.longitude}" data-name="${item.name}" data-country="${item.country_code || 'NL'}">
-                <span class="search-result-name">${item.name}</span>
-                <span class="search-result-province">${item.admin1 || item.country || ''}</span>
-              </div>
-            `).join('');
-            resultsList.classList.add('show');
-          } else {
-            resultsList.innerHTML = `<div style="padding:8px;font-size:0.78rem;color:var(--text-muted);text-align:center;">Geen resultaten gevonden in Nederland</div>`;
-            resultsList.classList.add('show');
-          }
+          const results = (data && data.results) ? data.results : [];
+          geocodingCache.set(cacheKey, results);
+          renderSearchResults(results);
         } catch (err) {
           console.error("Geocoding zoekfout:", err);
         }
@@ -3777,7 +4037,7 @@
       }, 2500);
     }
 
-    // GPS Geolocation Handler
+    // GPS Geolocation Handler (Routed through selectNewLocation)
     function requestGPSLocation() {
       if (!navigator.geolocation) {
         showToast("Geolocatie wordt niet ondersteund door je browser");
@@ -3788,18 +4048,11 @@
         (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
-          AppState.location = {
-            name: 'Mijn Locatie',
-            latitude: lat,
-            longitude: lon,
-            country: 'NL'
-          };
-          saveState();
-          fetchWeatherData(lat, lon);
+          selectNewLocation('Mijn Locatie', lat, lon, 'NL');
         },
         (error) => {
           console.warn("GPS fout:", error.message);
-          showToast("Locatie toegang geweigerd. Standaard op Utrecht gezet.");
+          showToast("Locatie toegang geweigerd. Huidige locatie behouden.");
         },
         { timeout: 10000, enableHighAccuracy: true }
       );
@@ -4040,6 +4293,7 @@
 
       const openLocationModal = () => {
         if (!locModal) return;
+        renderPresetCityChips();
         locModal.classList.add('open');
         if (searchInput) {
           searchInput.value = '';
@@ -4048,17 +4302,6 @@
           resultsList.classList.remove('show');
           resultsList.innerHTML = '';
         }
-
-        // Highlight currently active city chip
-        document.querySelectorAll('.location-city-chip').forEach(chip => {
-          const chipName = (chip.dataset.name || '').toLowerCase();
-          const currentName = (AppState.location.name || '').toLowerCase();
-          if (chipName === currentName) {
-            chip.classList.add('is-current');
-          } else {
-            chip.classList.remove('is-current');
-          }
-        });
 
         setTimeout(() => {
           if (searchInput) searchInput.focus();
@@ -4097,6 +4340,7 @@
         searchInput.addEventListener('input', (e) => handleLocationSearch(e.target.value));
       }
 
+      // Delegated click handler on search results
       if (resultsList) {
         resultsList.addEventListener('click', (e) => {
           const item = e.target.closest('.search-result-item');
@@ -4105,33 +4349,24 @@
             const lon = parseFloat(item.dataset.lon);
             const name = item.dataset.name;
             const country = item.dataset.country || 'NL';
-
-            AppState.location = { name, latitude: lat, longitude: lon, country };
-            saveState();
-            closeLocationModal();
-            const navLoc = document.getElementById('nav-location-label');
-            if (navLoc) navLoc.textContent = `${name}, ${country}`;
-            fetchWeatherData(lat, lon);
-            showToast(`Locatie gewijzigd naar ${name}`);
+            selectNewLocation(name, lat, lon, country);
           }
         });
       }
 
-      document.querySelectorAll('.location-city-chip').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const lat = parseFloat(btn.dataset.lat);
-          const lon = parseFloat(btn.dataset.lon);
-          const name = btn.dataset.name;
-
-          AppState.location = { name, latitude: lat, longitude: lon, country: 'NL' };
-          saveState();
-          closeLocationModal();
-          const navLoc = document.getElementById('nav-location-label');
-          if (navLoc) navLoc.textContent = `${name}, NL`;
-          fetchWeatherData(lat, lon);
-          showToast(`Locatie gewijzigd naar ${name}`);
+      // Delegated click handler on preset city chips
+      const presetContainer = document.getElementById('preset-cities-container');
+      if (presetContainer) {
+        presetContainer.addEventListener('click', (e) => {
+          const btn = e.target.closest('.location-city-chip');
+          if (btn) {
+            const lat = parseFloat(btn.dataset.lat);
+            const lon = parseFloat(btn.dataset.lon);
+            const name = btn.dataset.name;
+            selectNewLocation(name, lat, lon, 'NL');
+          }
         });
-      });
+      }
 
       if (modalGpsBtn) {
         modalGpsBtn.addEventListener('click', () => {
@@ -4170,6 +4405,7 @@
         document.getElementById('val-min-temp').textContent = `${AppState.commute.minTemp}°C`;
         document.getElementById('val-max-gusts').textContent = `${AppState.commute.maxGusts} km/u`;
 
+        updateThemeButtonsUI();
         settingsModal.classList.add('open');
       };
 
@@ -4230,9 +4466,23 @@
       }
     }
 
-    // Refresh, GPS, Theme, Simple Mode & Fullscreen buttons
+    // Synchronize Theme Buttons in Settings Modal
+    function updateThemeButtonsUI() {
+      ['light', 'auto', 'dark'].forEach(mode => {
+        const btn = document.getElementById(`theme-btn-${mode}`);
+        if (btn) {
+          if (AppState.theme === mode) {
+            btn.classList.add('is-current');
+          } else {
+            btn.classList.remove('is-current');
+          }
+        }
+      });
+    }
+
+    // Refresh (forces fresh network fetch & cache bypass), GPS, Theme, Simple Mode & Fullscreen
     document.getElementById('refresh-btn').addEventListener('click', () => {
-      fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
+      fetchWeatherData(AppState.location.latitude, AppState.location.longitude, true);
     });
     document.getElementById('gps-btn').addEventListener('click', requestGPSLocation);
     const simpleModeBtn = document.getElementById('simple-mode-btn');
@@ -4242,17 +4492,26 @@
     document.getElementById('fullscreen-btn').addEventListener('click', toggleFullScreen);
     document.getElementById('theme-toggle-btn').addEventListener('click', cycleTheme);
 
-    // Initial Start
+    // Initial Start & Smart Lifecycle Management
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedState();
       checkInitialHashModes();
       updateFullscreenScale();
+      renderPresetCityChips();
+      updateThemeButtonsUI();
       setupModalEvents();
-      fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
+      fetchWeatherData(AppState.location.latitude, AppState.location.longitude, false);
+      startWeatherPolling();
 
-      setInterval(() => {
-        fetchWeatherData(AppState.location.latitude, AppState.location.longitude);
-      }, 15 * 60 * 1000);
+      // Page Visibility Awareness: refresh if data is stale when switching back to tab
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          const cached = WeatherCache.get(AppState.location.latitude, AppState.location.longitude);
+          if (!cached || !cached.isFresh) {
+            fetchWeatherData(AppState.location.latitude, AppState.location.longitude, false);
+          }
+        }
+      });
     });
   </script>
 </body>
