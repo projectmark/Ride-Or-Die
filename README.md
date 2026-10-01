@@ -7,7 +7,7 @@
 ## ⚡ TL;DR — Belangrijkste Features op een rij
 
 - **🏍️ Woon-Werk Motoradvies (Commute Command Center)**:
-  Beantwoordt direct de belangrijkste vraag: *"Kan ik vandaag veilig en droog met de motor naar het werk en weer terug?"*. Analyseert jouw specifieke vertrektijd voor de **ochtendrit (heen)** en **avondrit (terug)**, toont een directe score (*Index 0-100*) en een duidelijk verdict: 🟢 **RIDE ON!**, 🟡 **PAS OP!** of 🔴 **RIDE OR DIE!**.
+  Beantwoordt direct de belangrijkste vraag: *"Kan ik vandaag veilig en droog met de motor naar het werk en weer terug?"*. Analyseert jouw specifieke vertrektijd voor de **ochtendrit (heen)** en **avondrit (terug)**, toont een directe score (*Index 0-100*) en een duidelijk verdict: 🟢 **RIDE ON!**, 🟡 **OPLETTEN** of 🔴 **DIE HARD ONLY (Koekblik Dag)**.
 - **📍 Gecentreerde Locatiekiezer in de Navigatiebalk**:
   Midden in de navigatiebalk staat de actieve locatie als interactieve knop (op mobiel direct met de duim bereikbaar). Opent een eigen, dedicated scherm om binnen seconden van stad te wisselen via GPS, live zoeken of snelle stadsknoppen.
 - **⛶ Adaptieve Schaling & Fullscreen Kiosk Mode (`#fullscreen`)**:
@@ -47,16 +47,66 @@ Met de **Simple Mode** knop (direct naast de fullscreen knop in de navigatiebalk
 
 ## 🏍️ Het "Ride Or Die" Commute Command Center
 
-1. **Rit-analyse per Dagdeel**:
-   - **Ochtendrit (Heen)**: Neerslagkans, temperatuur, windstoten en conditie op jouw ingestelde ochtendtijd.
-   - **Avondrit (Terug)**: Analyse voor de terugrit aan het einde van de werkdag.
-2. **Veiligheidsmatrix (4 Meters)**:
-   - **Wegdek & Grip**: Berekent gripcondities (Optimaal / Glad / Risico op ijzel of aquaplaning).
-   - **Regenrisico & Hoeveelheid**: Direct inzicht in millimeters neerslag en buienkansen.
-   - **Zijwind & Stoten**: Berekent windkracht en rukwinden voor stabiel rijden op snelweg en bruggen.
-   - **Thermisch Comfort**: Aangepast op gevoelstemperatuur en rijwind.
-3. **Uitrusting & Kledingadvies**:
-   - Dynamische badges voor doorwaaijas, thermovoering, regenpak, vizierkeuze en handschoenen.
+Het motoradvies in de app wordt **100% berekend op basis van actuele en uurlijkse weersdata** uit het numerieke KNMI Harmonie-AROME weermodel (2 km resolutie) via het algoritme in `computeCommuteAdvise()`.
+
+### 🧠 Hoe het Motoradvies Berekend Wordt (Data & Combinaties)
+
+Geen enkel weerelement staat op zichzelf; voor motorrijders zijn met name **combinaties van weersfactoren** doorslaggevend voor de veiligheid en het comfort op de weg.
+
+#### 1. Tijdvenster-analyse per Rit (Ochtend & Avond)
+In plaats van een algemeen daggemiddelde analyseert het algoritme een specifiek **venster van 3 uur** rond jouw vertrektijden (standaard 07:00 heen en 16:30 terug, instelbaar via het tandwiel-icoon):
+- **Neerslagvolume én Neerslagkans**: Zowel de verwachte millimeters neerslag (`totalPrecip`) als de buienkans (`maxPrecipProb`). Een lokaal spatje van 0.2 mm met 60% kans krijgt een heel ander advies dan 3 mm aanhoudende regen.
+- **Piek-windstoten (`maxGusts`)**: Er wordt gekeken naar de maximale windstoot in km/u binnen je tijdvak (met name windvlagen op dijken, viaducten en open polders).
+- **Temperatuur (`avgTemp`)**: Zowel gevoelstemperatuur als absolute temperatuur ten opzichte van jouw ingestelde minimumtemperatuur.
+- **Gevaarcodes (`worstCode`)**: WMO-weercodes voor onweer (95, 96, 99), hagel, dichte mist of sneeuw.
+
+#### 2. Het Cumulatieve 100-punts Aftreksysteem
+Elke rit start met een perfecte score van **100/100**. Risicofactoren trekken cumulatief strafpunten af:
+
+| Risicofactor | Drempelwaarde | Aftrek | Reden in advies |
+| :--- | :--- | :--- | :--- |
+| **Hevige regen** | > 3.0 mm (of > 1.5 mm bij > 75% kans) | **-45 pt** | *Stevige regenval verwacht (>3 mm)* |
+| **Regenbui** | > 0.8 mm (of > 0.3 mm bij > 60% kans) | **-25 pt** | *Kans op bui (x.x mm)* |
+| **Lichte bui / motregen** | 0.2 – 0.8 mm | **-15 pt** | *Lichte bui of motregen* |
+| **Spatje neerslag** | 0.05 – 0.2 mm | **-5 pt** | *Mogelijk enkel spatje neerslag* |
+| **Regionale onzekerheid** | 0.0 mm maar regenkans > 65% | **-5 pt** | *Overwegend droog (buienkans in regio)* |
+| **Gevaarlijke stormstoten**| Piekstoten > 70 km/u | **-50 pt** | *Gevaarlijke windstoten (>70 km/u)* |
+| **Felle zijwind** | Piekstoten > 50 km/u | **-25 pt** | *Felle zijwind op bruggen/dijken* |
+| **Merkbare wind** | Piekstoten > 40 km/u | **-10 pt** | *Merkbare wind op snelweg* |
+| **Kans op gladheid / ijzel**| Temperatuur < 2°C | **-60 pt** | *Kans op gladheid / ijzel!* |
+| **Kou / Onder comfort** | Temp < ingestelde minimum | **-20 pt** | *Koud (x°C) - thermokleding vereist* |
+| **Hitte in motorpak** | Temperatuur > 31°C | **-20 pt** | *Erg warm in motorpak (>30°C)* |
+| **Onweer of hagel** | WMO-code 95, 96, 99 | **-60 pt** | *Onweer en hagel voorspeld* |
+
+#### 3. Scoregrenzen & Verdicten
+- 🟢 **80 – 100 pt (🏍️ RIDE ON!)**: Ideale omstandigheden. Droog asfalt, kalme wind en aangename temperatuur.
+- 🟡 **50 – 79 pt (⚠️ OPLETTEN)**: Rijden kan prima, maar wees voorbereid. Pas je snelheid aan op open stukken en houd rekening met een bui of zijwind.
+- 🔴 **< 50 pt (🚗 DIE HARD ONLY / KOEKBLIK DAG)**: Onveilige condities. Te veel risico op een nat pak, gevaarlijke windstoten of gladheid. Pak liever de auto of het OV!
+
+#### 4. Hoe Combinaties in de Praktijk Werken
+Het algoritme straft combinaties van ongunstige omstandigheden cumulatief af:
+- **Eén milde factor**: Alleen zijwindstoten van 52 km/u (-25 pt) op een droge lentedag (18°C) $\rightarrow$ Score: **75/100 (🟡 Geel)**. Je kunt verantwoord rijden als je alert bent op dijken en viaducten.
+- **Dubbele combinatie (Wind + Regen)**: Windstoten van 52 km/u (-25 pt) **én** een bui van 1.2 mm (-25 pt) $\rightarrow$ Score: **50/100 (🟡/🔴 randgeval)**.
+- **Drievoudige combinatie (Wind + Regen + Kou)**: Windstoten 52 km/u (-25 pt) + regenbui 1.2 mm (-25 pt) + temperatuur onder minimum (-20 pt) $\rightarrow$ Score: **30/100 (🔴 Rood: Koekblik Dag)**.
+
+#### 5. Het "Zwakste Schakel"-principe
+Het uiteindelijke dagadvies wordt bepaald door de **laagste score** van de ochtend- en avondrit (`minScore = Math.min(morning, evening)`):
+> *Als de ochtendrit een score van **95/100 (zonnig en droog)** heeft, maar de avondrit door een overtrekkende buienlijn met windstoten daalt naar **35/100 (Rood)**, dan toont de app direct **🔴 "Koekblik Dag: Pak liever de auto of OV!"**.*  
+Als motorrijder moet je immers aan het einde van de werkdag ook weer veilig en droog thuiskomen.
+
+#### 6. Dynamisch Kleding- & Uitrustingsadvies
+Op basis van de extremen over de ritten adviseert de cockpit direct de juiste uitrusting:
+- **< 7°C**: Winterhandschoenen, thermovoering en kol.
+- **7°C – 15°C**: Textieljas met tussenlaag, middenhandschoenen.
+- **15°C – 24°C**: Allround leer/textiel, all-season handschoenen.
+- **> 24°C**: Doorwaaijas/leer, zomerhandschoenen, zonnevizier.
+- **Neerslag > 0.3 mm**: Regenpak & Pinlock vizier verplicht mee; anders blijft het regenpak veilig thuis.
+
+#### 7. Veiligheidsmatrix (4 Live Meters)
+- **✦ Zijwind & Stoten**: Meet piek-windstoten en vertaalt deze naar Beaufort en veiligheidsstatus (*Veilig / Alert / Gevaarlijk*).
+- **🚵 Wegdek & Grip**: Berekent gripcondities op basis van verwachte neerslag (*Optimaal / Vochtig / Glad of Nat*).
+- **🌧️ Regenrisico & Volume**: Toont neerslaghoeveelheid in mm en buienkans in % (*Droog / Spatje / Bui / Plensbui*).
+- **🌡️ Thermisch Comfort**: Koppelt gevoelstemperatuur en actuele temperatuur aan comfortniveaus (*Koud / Behaaglijk / Warm*).
 
 ---
 
