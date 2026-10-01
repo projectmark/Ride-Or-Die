@@ -1864,22 +1864,17 @@
     }
 
     /* ==========================================================================
-       SIMPLE MODE: COMPACTE PHONE OVERVIEW WIDGET (GEEN SCROLLEN, GEEN NAVBAR)
-       Geoptimaliseerd conform mobiele overzichtswidget / Material You 3
+       SIMPLE MODE: SCHERMVULLEND WIDGET (GEEN WITTE VLAKTES, GEEN TEKSTAFKAPPING)
+       Optimaal geschaald voor Pixel 10 Developer Mode, Smartphones & Landscape Cockpit
        ========================================================================== */
     body.is-simple-mode {
       overflow: hidden !important;
       height: 100vh !important;
+      width: 100vw !important;
     }
 
-    body.is-simple-mode .top-navbar {
-      display: none !important;
-    }
-
-    body.is-simple-mode .app-footer {
-      display: none !important;
-    }
-
+    body.is-simple-mode .top-navbar,
+    body.is-simple-mode .app-footer,
     body.is-simple-mode .dashboard-grid {
       display: none !important;
     }
@@ -1888,7 +1883,7 @@
       min-height: 100vh !important;
       height: 100vh !important;
       max-height: 100vh !important;
-      padding: 12px !important;
+      padding: 10px !important;
       display: flex !important;
       flex-direction: column !important;
       align-items: center !important;
@@ -1915,28 +1910,37 @@
     }
 
     @keyframes fadeInSimple {
-      from { opacity: 0; transform: scale(0.97) translateY(8px); }
+      from { opacity: 0; transform: scale(0.98) translateY(6px); }
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    /* Compact Phone Widget Container */
+    /* Core Combined Widget Container */
     .simple-combined-card {
       width: 100%;
-      max-width: 680px;
       background: var(--glass-bg-elevated);
       backdrop-filter: blur(28px) saturate(180%);
       -webkit-backdrop-filter: blur(28px) saturate(180%);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-radius: var(--radius-xl);
       box-shadow: var(--glass-shadow);
-      padding: 18px 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
       box-sizing: border-box;
       position: relative;
       overflow: hidden;
       transition: var(--transition-spring);
+    }
+
+    /* Dynamic Border & Subtle Glow based on Master Verdict */
+    .simple-combined-card[data-verdict="green"] {
+      border-color: rgba(16, 185, 129, 0.45);
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.12);
+    }
+    .simple-combined-card[data-verdict="yellow"] {
+      border-color: rgba(245, 158, 11, 0.5);
+      box-shadow: 0 8px 30px rgba(245, 158, 11, 0.14);
+    }
+    .simple-combined-card[data-verdict="red"] {
+      border-color: rgba(239, 68, 68, 0.5);
+      box-shadow: 0 8px 30px rgba(239, 68, 68, 0.15);
     }
 
     /* Widget Header */
@@ -1944,21 +1948,23 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      padding-bottom: 12px;
+      gap: 8px;
+      padding-bottom: 8px;
       border-bottom: 1px solid var(--glass-border);
       width: 100%;
+      flex-shrink: 0;
     }
 
     .simple-location-group {
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 8px;
       cursor: pointer;
       border-radius: var(--radius-md);
       padding: 3px 6px;
       margin: -3px -6px;
       transition: var(--transition-spring);
+      min-width: 0;
     }
     .simple-location-group:hover {
       background: var(--sky-glow);
@@ -1968,8 +1974,8 @@
     }
 
     .simple-location-pin {
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: var(--glass-bg);
       border: 1px solid var(--glass-border);
@@ -1990,23 +1996,27 @@
     .simple-city-wrap {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
     .simple-city-name {
       font-family: var(--font-display);
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       font-weight: 900;
       color: var(--text-main);
       margin: 0;
       line-height: 1.1;
       letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .simple-chevron {
       color: var(--text-muted);
       opacity: 0.7;
       transition: transform 0.2s ease;
+      flex-shrink: 0;
     }
     .simple-location-group:hover .simple-chevron {
       opacity: 1;
@@ -2015,10 +2025,13 @@
     }
 
     .simple-date-str {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       color: var(--text-muted);
       font-weight: 600;
       margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .simple-header-badges {
@@ -2030,32 +2043,34 @@
 
     .simple-time-badge {
       font-family: var(--font-mono);
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 700;
       color: var(--text-muted);
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
-      padding: 5px 10px;
+      padding: 4px 9px;
       border-radius: var(--radius-pill);
+      white-space: nowrap;
     }
 
     /* Switch Button: Grote normale pagina terugzetten */
     .simple-switch-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 13px;
+      gap: 5px;
+      padding: 5px 11px;
       border-radius: var(--radius-pill);
       background: var(--sky-accent);
       color: #ffffff;
       border: 1px solid var(--sky-accent);
       font-family: var(--font-body);
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 700;
       cursor: pointer;
       transition: var(--transition-spring);
       box-shadow: 0 2px 8px var(--sky-glow);
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .simple-switch-btn:hover {
       background: var(--sky-accent-hover, #0369a1);
@@ -2069,8 +2084,8 @@
 
     /* Quick Theme Switcher in Widget Header */
     .simple-theme-btn {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       padding: 0;
       border-radius: 50%;
       background: var(--glass-bg-subtle);
@@ -2082,6 +2097,7 @@
       cursor: pointer;
       font-size: 13px;
       transition: var(--transition-spring);
+      flex-shrink: 0;
     }
     .simple-theme-btn:hover {
       background: var(--glass-bg-elevated);
@@ -2092,28 +2108,11 @@
       transform: scale(0.92);
     }
 
-    /* Main Grid (Sensibly Scaled & Proportioned) */
-    .simple-main-grid {
-      display: grid;
-      grid-template-columns: 235px auto 1fr;
-      gap: 16px;
-      align-items: center;
-      width: 100%;
-      min-width: 0;
-    }
-
-    .simple-divider {
-      width: 1px;
-      height: 100%;
-      min-height: 140px;
-      background: linear-gradient(180deg, transparent, var(--glass-border), transparent);
-    }
-
-    /* Left: Current Weather */
+    /* Weather Section */
     .simple-weather-section {
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
       min-width: 0;
     }
 
@@ -2121,7 +2120,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 6px;
+      gap: 8px;
     }
 
     .simple-temp-wrap {
@@ -2132,7 +2131,7 @@
 
     .simple-temp-val {
       font-family: var(--font-display);
-      font-size: 2.8rem;
+      font-size: 2.7rem;
       font-weight: 900;
       color: var(--text-main);
       letter-spacing: -0.04em;
@@ -2140,7 +2139,7 @@
 
     .simple-temp-unit {
       font-family: var(--font-display);
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: var(--sky-accent);
       margin-top: 1px;
@@ -2148,8 +2147,8 @@
     }
 
     .simple-icon-wrap {
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2163,7 +2162,7 @@
 
     .simple-condition-text {
       font-family: var(--font-display);
-      font-size: 1.02rem;
+      font-size: 1rem;
       font-weight: 800;
       color: var(--text-main);
       line-height: 1.15;
@@ -2204,25 +2203,24 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.74rem;
+      font-size: 0.75rem;
       font-weight: 700;
       color: var(--text-muted);
-      padding: 4px 10px;
+      padding: 4px 9px;
       border-radius: var(--radius-sm);
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
       width: fit-content;
       max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal;
+      box-sizing: border-box;
     }
 
-    /* Right: Verdict & Commute Section */
+    /* Verdict & Commute Section */
     .simple-verdict-section {
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
       min-width: 0;
     }
 
@@ -2235,17 +2233,17 @@
 
     .simple-verdict-headline {
       font-family: var(--font-display);
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 800;
       color: var(--text-main);
-      line-height: 1.22;
+      line-height: 1.2;
       margin: 0;
       letter-spacing: -0.015em;
     }
 
     .simple-verdict-explanation {
-      font-size: 0.8rem;
-      line-height: 1.38;
+      font-size: 0.78rem;
+      line-height: 1.35;
       color: var(--text-muted);
       margin: 0;
       display: -webkit-box;
@@ -2254,11 +2252,13 @@
       overflow: hidden;
     }
 
+    /* Commute preview tiles: 2-line structure so NO text ever gets clipped */
     .simple-commute-preview {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
       margin-top: 2px;
+      width: 100%;
     }
 
     .simple-commute-chip {
@@ -2271,10 +2271,11 @@
       border-radius: var(--radius-sm);
       transition: var(--transition-smooth);
       min-width: 0;
+      box-sizing: border-box;
     }
 
     .simple-commute-icon {
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       line-height: 1;
       flex-shrink: 0;
     }
@@ -2282,12 +2283,22 @@
     .simple-commute-info {
       display: flex;
       flex-direction: column;
+      gap: 2px;
       min-width: 0;
+      flex: 1;
       overflow: hidden;
     }
 
+    .simple-commute-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      min-width: 0;
+    }
+
     .simple-commute-name {
-      font-size: 0.68rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--text-muted);
       white-space: nowrap;
@@ -2295,8 +2306,40 @@
       text-overflow: ellipsis;
     }
 
+    .simple-commute-badge {
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: var(--radius-pill);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .simple-commute-badge[data-verdict="green"] {
+      background: rgba(16, 185, 129, 0.15);
+      color: #059669;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    .simple-commute-badge[data-verdict="yellow"] {
+      background: rgba(245, 158, 11, 0.15);
+      color: #d97706;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .simple-commute-badge[data-verdict="red"] {
+      background: rgba(239, 68, 68, 0.15);
+      color: #dc2626;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .simple-commute-row-bottom {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
     .simple-commute-status {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 800;
       color: var(--text-main);
       white-space: nowrap;
@@ -2304,60 +2347,253 @@
       text-overflow: ellipsis;
     }
 
-    /* Responsive Adaptation for Phones */
-    @media (max-width: 680px) {
+    /* Extra Section: 4 Safety Gauges & Gear Advisor (Portrait & Desktop Widget) */
+    .simple-extra-section {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      width: 100%;
+      border-top: 1px solid var(--glass-border);
+      padding-top: 7px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+
+    .simple-safety-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .simple-safety-mini-card {
+      background: var(--glass-bg-subtle);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .simple-safety-mini-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .simple-safety-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .simple-safety-tag {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: var(--sky-accent);
+      white-space: nowrap;
+    }
+
+    .simple-safety-val {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .simple-gear-box {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--glass-bg-subtle);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 5px 9px;
+      width: 100%;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    .simple-gear-icon {
+      font-size: 1.05rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .simple-gear-chips {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .simple-gear-chips .gear-pill {
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-pill);
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    /* ==========================================================================
+       ORIENTATION & VIEWPORT ADAPTATIONS (Pixel 10, Smart Display, Desktop)
+       ========================================================================== */
+
+    /* 1. PORTRAIT / TALL SMARTPHONE (Pixel 10: 412 x 924) */
+    @media (orientation: portrait), (max-aspect-ratio: 1/1) {
       body.is-simple-mode .dashboard-wrapper {
         padding: 8px !important;
+        align-items: center !important;
+        justify-content: center !important;
       }
       .simple-combined-card {
-        max-width: 440px;
-        padding: 14px 16px;
-        gap: 10px;
-        border-radius: var(--radius-lg);
+        width: 100% !important;
+        max-width: 460px !important;
+        height: calc(100vh - 16px) !important;
+        min-height: calc(100vh - 16px) !important;
+        max-height: calc(100vh - 16px) !important;
+        padding: 14px 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        border-radius: 26px !important;
       }
       .simple-main-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: 1 !important;
+        justify-content: space-around !important;
       }
       .simple-divider {
-        display: none;
-      }
-      .simple-header-row {
-        padding-bottom: 8px;
-      }
-      .simple-city-name {
-        font-size: 1.2rem;
-      }
-      .simple-temp-val {
-        font-size: 2.3rem;
-      }
-      .simple-icon-wrap {
-        width: 42px;
-        height: 42px;
-      }
-      .simple-switch-text {
-        display: none;
-      }
-      .simple-switch-btn {
-        padding: 5px 9px;
+        display: none !important;
       }
       .simple-commute-preview {
-        grid-template-columns: 1fr;
-        gap: 5px;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+      }
+      .simple-extra-section {
+        display: flex !important;
+      }
+      .simple-switch-text {
+        display: none !important;
+      }
+      .simple-switch-btn {
+        padding: 5px 9px !important;
       }
     }
 
-    @media (max-height: 620px) {
+    /* 2. LANDSCAPE / COCKPIT MODE (Pixel 10: 924 x 412) */
+    @media (orientation: landscape) and (max-height: 580px), (min-aspect-ratio: 1.4/1) and (max-height: 580px) {
+      body.is-simple-mode .dashboard-wrapper {
+        padding: 6px 10px !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
       .simple-combined-card {
-        padding: 10px 14px;
-        gap: 6px;
+        width: 100% !important;
+        max-width: 920px !important;
+        height: calc(100vh - 12px) !important;
+        max-height: calc(100vh - 12px) !important;
+        padding: 10px 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+        border-radius: 22px !important;
+      }
+      .simple-main-grid {
+        display: grid !important;
+        grid-template-columns: minmax(280px, 320px) auto minmax(360px, 1.4fr) !important;
+        gap: 14px !important;
+        align-items: center !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+      .simple-divider {
+        display: block !important;
+        width: 1px !important;
+        height: 100% !important;
+        min-height: 110px !important;
+        background: linear-gradient(180deg, transparent, var(--glass-border), transparent) !important;
+      }
+      .simple-extra-section {
+        display: none !important;
       }
       .simple-temp-val {
-        font-size: 2.1rem;
+        font-size: 2.4rem !important;
       }
       .simple-icon-wrap {
-        width: 36px;
-        height: 36px;
+        width: 42px !important;
+        height: 42px !important;
+      }
+      .simple-verdict-headline {
+        font-size: 1.05rem !important;
+      }
+      .simple-commute-chip {
+        padding: 5px 8px !important;
+      }
+    }
+
+    /* 3. DESKTOP / LARGE DISPLAY (1080p, 1440p, Tablet) */
+    @media (min-width: 960px) and (min-height: 581px) {
+      .simple-combined-card {
+        max-width: 900px !important;
+        height: auto !important;
+        max-height: calc(100vh - 40px) !important;
+        padding: 18px 24px !important;
+        gap: 12px !important;
+        border-radius: var(--radius-xl) !important;
+      }
+      .simple-main-grid {
+        display: grid !important;
+        grid-template-columns: 290px auto 1fr !important;
+        gap: 18px !important;
+        align-items: center !important;
+      }
+      .simple-divider {
+        display: block !important;
+      }
+      .simple-extra-section {
+        display: flex !important;
+      }
+      .simple-safety-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+      }
+    }
+
+    /* 4. SHORT PORTRAIT SCREENS (< 700px height, e.g. older phones) */
+    @media (orientation: portrait) and (max-height: 700px) {
+      .simple-combined-card {
+        height: auto !important;
+        min-height: auto !important;
+        padding: 10px 14px !important;
+        gap: 6px !important;
+      }
+      .simple-extra-section {
+        display: none !important;
+      }
+      .simple-temp-val {
+        font-size: 2.2rem !important;
+      }
+      .simple-icon-wrap {
+        width: 38px !important;
+        height: 38px !important;
       }
     }
   </style>
@@ -2936,25 +3172,93 @@
               Zowel de ochtendrit als de avondrit zijn droog en veilig. Ideale temperaturen en kalme wind.
             </p>
 
-            <!-- Woon-werk Snelle Blik (Ochtend & Avond) -->
+            <!-- Woon-werk Snelle Blik (Ochtend & Avond) met 2-regelige weergave -->
             <div class="simple-commute-preview">
               <div class="simple-commute-chip" id="simple-morning-chip">
                 <span class="simple-commute-icon">🌅</span>
                 <div class="simple-commute-info">
-                  <span class="simple-commute-name">Ochtendrit <small id="simple-morning-time">(08:00)</small></span>
-                  <span class="simple-commute-status" id="simple-morning-status">--°C • Droog • 🟢 GOED</span>
+                  <div class="simple-commute-row-top">
+                    <span class="simple-commute-name">Ochtendrit <small id="simple-morning-time">(08:00)</small></span>
+                    <span class="simple-commute-badge" id="simple-morning-badge">🟢 GOED</span>
+                  </div>
+                  <div class="simple-commute-row-bottom">
+                    <span class="simple-commute-status" id="simple-morning-status">--°C • Droog • 25 km/u</span>
+                  </div>
                 </div>
               </div>
               <div class="simple-commute-chip" id="simple-evening-chip">
                 <span class="simple-commute-icon">🌇</span>
                 <div class="simple-commute-info">
-                  <span class="simple-commute-name">Avondrit <small id="simple-evening-time">(17:00)</small></span>
-                  <span class="simple-commute-status" id="simple-evening-status">--°C • Droog • 🟢 GOED</span>
+                  <div class="simple-commute-row-top">
+                    <span class="simple-commute-name">Avondrit <small id="simple-evening-time">(17:00)</small></span>
+                    <span class="simple-commute-badge" id="simple-evening-badge">🟢 GOED</span>
+                  </div>
+                  <div class="simple-commute-row-bottom">
+                    <span class="simple-commute-status" id="simple-evening-status">--°C • Droog • 20 km/u</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
+        </div>
+
+        <!-- Extra Section: 4 Safety Gauges & Gear Advisor (Portrait & Desktop Widget) -->
+        <div class="simple-extra-section" id="simple-extra-section">
+          <!-- 4 Mini Safety Gauges -->
+          <div class="simple-safety-grid">
+            <div class="simple-safety-mini-card">
+              <div class="simple-safety-mini-header">
+                <span class="simple-safety-label">💨 Zijwind</span>
+                <span class="simple-safety-tag" id="simple-wind-tag">Veilig</span>
+              </div>
+              <div class="simple-safety-val" id="simple-wind-val">-- km/u</div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill" id="simple-wind-bar-fill" style="width: 25%; background: #10b981;"></div>
+              </div>
+            </div>
+
+            <div class="simple-safety-mini-card">
+              <div class="simple-safety-mini-header">
+                <span class="simple-safety-label">🛣️ Grip</span>
+                <span class="simple-safety-tag" id="simple-grip-tag">Optimaal</span>
+              </div>
+              <div class="simple-safety-val" id="simple-grip-val">100%</div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill" id="simple-grip-bar-fill" style="width: 100%; background: #10b981;"></div>
+              </div>
+            </div>
+
+            <div class="simple-safety-mini-card">
+              <div class="simple-safety-mini-header">
+                <span class="simple-safety-label">🌧️ Regenkans</span>
+                <span class="simple-safety-tag" id="simple-rain-tag">Droog</span>
+              </div>
+              <div class="simple-safety-val" id="simple-rain-val">0.0 mm</div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill" id="simple-rain-bar-fill" style="width: 5%; background: #10b981;"></div>
+              </div>
+            </div>
+
+            <div class="simple-safety-mini-card">
+              <div class="simple-safety-mini-header">
+                <span class="simple-safety-label">🌡️ Comfort</span>
+                <span class="simple-safety-tag" id="simple-temp-tag">Behaaglijk</span>
+              </div>
+              <div class="simple-safety-val" id="simple-temp-val">--°C</div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill" id="simple-temp-bar-fill" style="width: 65%; background: #10b981;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gear Pills in Simple View -->
+          <div class="simple-gear-box">
+            <span class="simple-gear-icon">🦺</span>
+            <div class="simple-gear-chips" id="simple-gear-chips">
+              <span class="gear-pill">Uitrusting laden...</span>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -3993,20 +4297,99 @@
       if (verdictPill) verdictPill.dataset.verdict = advice.dayVerdict;
       if (verdictScore) verdictScore.dataset.verdict = advice.dayVerdict;
 
-      // Commute highlights (Morning & Evening)
+      // Commute highlights (Morning & Evening) with separated Badge and Weather Stats
       const mornTimeEl = document.getElementById('simple-morning-time');
+      const mornBadgeEl = document.getElementById('simple-morning-badge');
       const mornStatusEl = document.getElementById('simple-morning-status');
+
       const eveTimeEl = document.getElementById('simple-evening-time');
+      const eveBadgeEl = document.getElementById('simple-evening-badge');
       const eveStatusEl = document.getElementById('simple-evening-status');
 
       if (mornTimeEl) mornTimeEl.textContent = `(${AppState.commute.morningTime})`;
       if (eveTimeEl) eveTimeEl.textContent = `(${AppState.commute.eveningTime})`;
 
-      if (mornStatusEl && advice.morningData) {
-        mornStatusEl.textContent = formatCommuteSlotStatus(advice.morningData, advice.morningScore);
+      if (advice.morningData && advice.morningScore) {
+        if (mornBadgeEl) {
+          mornBadgeEl.textContent = advice.morningScore.badgeText;
+          mornBadgeEl.dataset.verdict = advice.morningScore.verdict;
+        }
+        if (mornStatusEl) {
+          const rainText = advice.morningData.totalPrecip > 0.05 
+            ? `${advice.morningData.totalPrecip} mm` 
+            : (advice.morningData.maxPrecipProb > 50 ? `0.0 mm (${advice.morningData.maxPrecipProb}%)` : 'Droog (0 mm)');
+          mornStatusEl.textContent = `${advice.morningData.avgTemp}°C • ${rainText} • ${advice.morningData.maxGusts} km/u`;
+        }
       }
-      if (eveStatusEl && advice.eveningData) {
-        eveStatusEl.textContent = formatCommuteSlotStatus(advice.eveningData, advice.eveningScore);
+
+      if (advice.eveningData && advice.eveningScore) {
+        if (eveBadgeEl) {
+          eveBadgeEl.textContent = advice.eveningScore.badgeText;
+          eveBadgeEl.dataset.verdict = advice.eveningScore.verdict;
+        }
+        if (eveStatusEl) {
+          const rainText = advice.eveningData.totalPrecip > 0.05 
+            ? `${advice.eveningData.totalPrecip} mm` 
+            : (advice.eveningData.maxPrecipProb > 50 ? `0.0 mm (${advice.eveningData.maxPrecipProb}%)` : 'Droog (0 mm)');
+          eveStatusEl.textContent = `${advice.eveningData.avgTemp}°C • ${rainText} • ${advice.eveningData.maxGusts} km/u`;
+        }
+      }
+
+      // Simple Mode: 4 Mini Safety Gauges
+      const maxGustOverall = Math.max(advice.morningData.maxGusts, advice.eveningData.maxGusts);
+      const simpleWindVal = document.getElementById('simple-wind-val');
+      const simpleWindTag = document.getElementById('simple-wind-tag');
+      const simpleWindFill = document.getElementById('simple-wind-bar-fill');
+      if (simpleWindVal) simpleWindVal.textContent = `${maxGustOverall} km/u (${kmhToBeaufort(maxGustOverall)})`;
+      if (simpleWindTag) simpleWindTag.textContent = maxGustOverall > 65 ? 'Gevaarlijk' : maxGustOverall > 45 ? 'Alert' : 'Veilig';
+      if (simpleWindFill) {
+        simpleWindFill.style.width = `${Math.min(100, Math.max(10, Math.round((maxGustOverall / 80) * 100)))}%`;
+        simpleWindFill.style.background = maxGustOverall > 65 ? '#ef4444' : maxGustOverall > 45 ? '#f59e0b' : '#10b981';
+      }
+
+      const maxRain = Math.max(advice.morningData.totalPrecip, advice.eveningData.totalPrecip);
+      const gripVal = maxRain > 2.0 ? 55 : maxRain > 0.5 ? 75 : 100;
+      const simpleGripVal = document.getElementById('simple-grip-val');
+      const simpleGripTag = document.getElementById('simple-grip-tag');
+      const simpleGripFill = document.getElementById('simple-grip-bar-fill');
+      if (simpleGripVal) simpleGripVal.textContent = `${gripVal}%`;
+      if (simpleGripTag) simpleGripTag.textContent = gripVal === 100 ? 'Optimaal' : gripVal > 70 ? 'Vochtig' : 'Glad/Nat';
+      if (simpleGripFill) {
+        simpleGripFill.style.width = `${gripVal}%`;
+        simpleGripFill.style.background = gripVal === 100 ? '#10b981' : gripVal > 70 ? '#f59e0b' : '#ef4444';
+      }
+
+      const maxProb = Math.max(advice.morningData.maxPrecipProb, advice.eveningData.maxPrecipProb);
+      const simpleRainVal = document.getElementById('simple-rain-val');
+      const simpleRainTag = document.getElementById('simple-rain-tag');
+      const simpleRainFill = document.getElementById('simple-rain-bar-fill');
+      if (simpleRainVal) {
+        simpleRainVal.textContent = maxRain > 0.05 ? `${maxRain.toFixed(1)} mm` : `0.0 mm (${maxProb}%)`;
+      }
+      if (simpleRainTag) {
+        simpleRainTag.textContent = maxRain > 2.0 ? 'Plensbui' : maxRain > 0.2 ? 'Bui' : maxProb > 50 ? 'Droog' : 'Droog';
+      }
+      if (simpleRainFill) {
+        simpleRainFill.style.width = `${Math.min(100, Math.max(8, Math.round((maxProb / 100) * 100)))}%`;
+        simpleRainFill.style.background = maxRain > 1.5 ? '#ef4444' : maxRain > 0.2 ? '#f59e0b' : '#10b981';
+      }
+
+      const tempAvg = Math.round((advice.morningData.avgTemp + advice.eveningData.avgTemp) / 2);
+      const simpleTempVal = document.getElementById('simple-temp-val');
+      const simpleTempTag = document.getElementById('simple-temp-tag');
+      const simpleTempFill = document.getElementById('simple-temp-bar-fill');
+      if (simpleTempVal) simpleTempVal.textContent = `${tempAvg}°C`;
+      if (simpleTempTag) simpleTempTag.textContent = tempAvg < 4 ? 'Koud' : tempAvg > 29 ? 'Warm' : 'Behaaglijk';
+      if (simpleTempFill) {
+        const tempPercent = Math.min(100, Math.max(10, Math.round(((tempAvg + 5) / 40) * 100)));
+        simpleTempFill.style.width = `${tempPercent}%`;
+        simpleTempFill.style.background = tempAvg < 4 ? '#0284c7' : tempAvg > 29 ? '#f59e0b' : '#10b981';
+      }
+
+      // Simple Mode: Gear Pills
+      const simpleGearContainer = document.getElementById('simple-gear-chips');
+      if (simpleGearContainer && advice.gearPills) {
+        simpleGearContainer.innerHTML = advice.gearPills.map(pill => `<span class="gear-pill">${pill}</span>`).join('');
       }
     }
 
