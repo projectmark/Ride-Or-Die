@@ -83,13 +83,20 @@ Je kunt de web app direct opstarten in een gewenste stand via de browser-URL:
 
 ---
 
-## ⚙️ Aanpasbare Instellingen
-
-Klik op het tandwiel-icoon of de locatieknop om jouw voorkeuren aan te passen:
-- **Woon-werk Tijden**: Stel jouw exacte ochtend- en avondvertrektijd in (bijv. 07:30 en 16:30).
-- **Minimum Temperatuur**: Stel in vanaf welke temperatuur jij het comfortabel vindt om te rijden.
-- **Maximale Windstoten**: Bepaal jouw persoonlijke windlimiet (standaard 55 km/u).
-- **Locatie**: Kies via GPS, zoek op elke Nederlandse plaatsnaam/postcode, of gebruik de snelle stadsknoppen (*Utrecht, Amsterdam, Rotterdam, Ameide, Eindhoven, Groningen, etc.*).
+## 📍 Snelle Locatiewissel & Instellingen
+ 
+- **📍 Gecentreerde Locatiekiezer in de Navigatiebalk**:
+  Midden in de navigatiebalk (op mobiel én desktop direct met de duim bereikbaar) staat jouw huidige locatie weergegeven als een duidelijke interactieve pill-knop. Eén klik opent direct het speciale **Locatiescherm**:
+  - Direct zoeken op elke Nederlandse plaatsnaam of postcode met realtime zoeksuggesties.
+  - Snelle knoppen voor populaire steden (*Utrecht, Amsterdam, Rotterdam, Den Haag, Eindhoven, Groningen, etc.*).
+  - Snelle GPS-knop om je actuele coördinaten direct over te nemen.
+  - Een klik op een plaats stelt deze direct in en sluit het venster automatisch.
+- **⚙️ Instellingen & Reistijden (`#settings-modal`)**:
+  Klik op het tandwiel-icoon rechtsboven voor jouw persoonlijke motorvoorkeuren:
+  - **Themakeuze**: Wissel snel tussen Licht (standaard), Automatisch en Donker.
+  - **Woon-werk Vertrektijden**: Stel jouw ochtendvertrektijd (heen) en avondvertrektijd (terug) in.
+  - **Motorrijder Comfort & Toleranties**: Stel jouw minimale comforttemperatuur en maximale windstoot-limiet in.
+  - Klik op "Instellingen Opslaan" om het advies en de risicometers direct opnieuw te berekenen.
 
 ---
 

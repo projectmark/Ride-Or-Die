@@ -6,7 +6,7 @@
   <title>☀️ Ride Or Die ⛈️</title>
   <meta name="description" content="Het ultieme motorweer dashboard voor Nederland, aangedreven door het open-source KNMI Harmonie-AROME weermodel. Volledig schaalbaar voor 1280x720/1280x800 displays met automatisch schakelend Licht/Donker thema." />
   <meta name="theme-color" content="#f0f7ff" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☀️</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛅</text></svg>" />
 
   <!-- Google Fonts: Outfit, Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -308,6 +308,15 @@
       50% { opacity: 0.4; transform: scale(0.85); }
     }
 
+    .nav-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      margin: 0 10px;
+      min-width: 0;
+    }
+
     .nav-actions {
       display: flex;
       align-items: center;
@@ -316,22 +325,43 @@
     }
 
     .location-trigger {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 5px 12px;
+      gap: 6px;
+      padding: 6px 14px;
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-pill);
       color: var(--text-main);
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       font-weight: 700;
       cursor: pointer;
       transition: var(--transition-spring);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
     .location-trigger:hover {
       background: var(--glass-bg-elevated);
+      border-color: var(--sky-accent);
+      color: var(--sky-accent);
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--sky-glow);
+    }
+    .location-trigger:active {
+      transform: scale(0.96);
+    }
+    .location-trigger svg {
+      flex-shrink: 0;
+    }
+    .location-trigger .loc-chevron {
+      opacity: 0.6;
+      transition: transform 0.2s ease;
+    }
+    .location-trigger:hover .loc-chevron {
+      opacity: 1;
+      transform: translateY(1px);
     }
 
     /* Theme Toggle Pill Button */
@@ -1472,6 +1502,44 @@
       background: var(--sky-accent);
       color: #fff;
     }
+    .location-city-chip.is-current {
+      background: var(--sky-accent);
+      color: #fff;
+      border-color: var(--sky-accent);
+      font-weight: 800;
+      box-shadow: 0 2px 8px var(--sky-glow);
+    }
+
+    .location-modal-card {
+      max-width: 480px;
+    }
+    .location-modal-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .location-gps-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 9px 14px;
+      background: var(--glass-bg-subtle);
+      border: 1px dashed var(--sky-accent);
+      border-radius: var(--radius-md);
+      color: var(--sky-accent);
+      font-family: var(--font-body);
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .location-gps-bar:hover {
+      background: var(--sky-glow);
+      border-style: solid;
+      transform: translateY(-1px);
+    }
 
     .settings-section-title {
       font-family: var(--font-display);
@@ -1557,11 +1625,24 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        padding: 8px 12px;
+        padding: 9px 12px;
       }
       .brand-group {
         width: 100%;
         justify-content: center;
+      }
+      .nav-center {
+        width: 100%;
+        margin: 2px 0;
+        justify-content: center;
+      }
+      .location-trigger {
+        width: auto;
+        min-width: 180px;
+        max-width: 90%;
+        justify-content: center;
+        padding: 7px 16px;
+        font-size: 0.88rem;
       }
       .nav-actions {
         width: 100%;
@@ -2077,16 +2158,21 @@
         </div>
       </div>
 
-      <div class="nav-actions">
-        <!-- Location Pill Button -->
-        <button class="location-trigger" id="open-location-btn" title="Wijzig locatie">
+      <!-- Centered Location Pill Button in Navbar -->
+      <div class="nav-center">
+        <button class="location-trigger" id="open-location-btn" title="Kies andere locatie">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
             <circle cx="12" cy="10" r="3"></circle>
           </svg>
           <span id="nav-location-label">Utrecht, NL</span>
+          <svg class="loc-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
         </button>
+      </div>
 
+      <div class="nav-actions">
         <!-- Theme Toggle Button (Light / Auto / Dark) -->
         <button class="theme-toggle-btn" id="theme-toggle-btn" title="Wissel tussen Licht, Automatisch of Donker thema">
           <span id="theme-btn-icon">☀️</span>
@@ -2599,12 +2685,74 @@
   </footer>
 
   <!-- ==========================================================================
-       SETTINGS & LOCATION MODAL
+       DEDICATED LOCATION MODAL / SCREEN (Directly from Centered Navbar Pill)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="location-modal">
+    <div class="settings-modal-card location-modal-card">
+      <div class="modal-header">
+        <div class="location-modal-title-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sky-accent);">
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <h3 class="modal-title">Locatie Kiezen</h3>
+        </div>
+        <button class="close-modal-btn" id="close-location-modal-btn" title="Sluiten">&times;</button>
+      </div>
+
+      <!-- Quick GPS Locate Button in Location Modal -->
+      <button class="location-gps-bar" id="modal-gps-btn" title="Gebruik GPS">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="3"></circle>
+          <line x1="12" y1="2" x2="12" y2="5"></line>
+          <line x1="12" y1="19" x2="12" y2="22"></line>
+          <line x1="2" y1="12" x2="5" y2="12"></line>
+          <line x1="19" y1="12" x2="22" y2="12"></line>
+        </svg>
+        <span>Gebruik mijn huidige GPS-locatie</span>
+      </button>
+
+      <!-- Live Search Box -->
+      <div class="search-box-container">
+        <svg class="search-icon-fixed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" class="location-search-input" id="location-search-input" placeholder="Zoek stad, dorp of postcode in Nederland..." autocomplete="off" />
+        <div class="search-results-list" id="search-results-list"></div>
+      </div>
+
+      <!-- Quick Preset City Chips -->
+      <div>
+        <div class="chips-label">Populaire Plaatsen in Nederland</div>
+        <div class="city-chips-wrapper">
+          <button class="city-chip location-city-chip" data-lat="52.0908" data-lon="5.1222" data-name="Utrecht">Utrecht</button>
+          <button class="city-chip location-city-chip" data-lat="52.3676" data-lon="4.9041" data-name="Amsterdam">Amsterdam</button>
+          <button class="city-chip location-city-chip" data-lat="51.9244" data-lon="4.4777" data-name="Rotterdam">Rotterdam</button>
+          <button class="city-chip location-city-chip" data-lat="52.0705" data-lon="4.3007" data-name="Den Haag">Den Haag</button>
+          <button class="city-chip location-city-chip" data-lat="51.4416" data-lon="5.4697" data-name="Eindhoven">Eindhoven</button>
+          <button class="city-chip location-city-chip" data-lat="53.2194" data-lon="6.5665" data-name="Groningen">Groningen</button>
+          <button class="city-chip location-city-chip" data-lat="51.9851" data-lon="5.8987" data-name="Arnhem">Arnhem</button>
+          <button class="city-chip location-city-chip" data-lat="52.5168" data-lon="6.0830" data-name="Zwolle">Zwolle</button>
+          <button class="city-chip location-city-chip" data-lat="50.8514" data-lon="5.6910" data-name="Maastricht">Maastricht</button>
+          <button class="city-chip location-city-chip" data-lat="51.5000" data-lon="3.6136" data-name="Middelburg">Middelburg</button>
+          <button class="city-chip location-city-chip" data-lat="53.0543" data-lon="4.7975" data-name="Texel">Texel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       SETTINGS MODAL (Thema, Reistijden & Motorrijder Toleranties)
        ========================================================================== -->
   <div class="modal-backdrop" id="settings-modal">
     <div class="settings-modal-card">
       <div class="modal-header">
-        <h3 class="modal-title">Locatie, Thema & Instellingen</h3>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <h3 class="modal-title">Instellingen & Reistijden</h3>
+        </div>
         <button class="close-modal-btn" id="close-modal-btn" title="Sluiten">&times;</button>
       </div>
 
@@ -2616,33 +2764,8 @@
         </div>
         <div style="display: flex; gap: 8px;">
           <button class="city-chip" id="theme-btn-light" style="flex: 1; padding: 8px; text-align: center;">☀️ Licht (Standaard)</button>
-          <button class="city-chip" id="theme-btn-auto" style="flex: 1; padding: 8px; text-align: center;">🔄 Automatisch (Dag/Nacht)</button>
+          <button class="city-chip" id="theme-btn-auto" style="flex: 1; padding: 8px; text-align: center;">🔄 Automatisch</button>
           <button class="city-chip" id="theme-btn-dark" style="flex: 1; padding: 8px; text-align: center;">🌙 Donker</button>
-        </div>
-      </div>
-
-      <!-- Live Search Box -->
-      <div class="search-box-container">
-        <svg class="search-icon-fixed" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" class="location-search-input" id="location-search-input" placeholder="Zoek Nederlandse stad, dorp of postcode..." autocomplete="off" />
-        <div class="search-results-list" id="search-results-list"></div>
-      </div>
-
-      <!-- Quick Preset City Chips -->
-      <div>
-        <div class="chips-label">Populaire Plaatsen in Nederland</div>
-        <div class="city-chips-wrapper">
-          <button class="city-chip" data-lat="52.0908" data-lon="5.1222" data-name="Utrecht">Utrecht</button>
-          <button class="city-chip" data-lat="52.3676" data-lon="4.9041" data-name="Amsterdam">Amsterdam</button>
-          <button class="city-chip" data-lat="51.9244" data-lon="4.4777" data-name="Rotterdam">Rotterdam</button>
-          <button class="city-chip" data-lat="52.0705" data-lon="4.3007" data-name="Den Haag">Den Haag</button>
-          <button class="city-chip" data-lat="51.4416" data-lon="5.4697" data-name="Eindhoven">Eindhoven</button>
-          <button class="city-chip" data-lat="53.2194" data-lon="6.5665" data-name="Groningen">Groningen</button>
-          <button class="city-chip" data-lat="51.9851" data-lon="5.8987" data-name="Arnhem">Arnhem</button>
-          <button class="city-chip" data-lat="52.5168" data-lon="6.0830" data-name="Zwolle">Zwolle</button>
-          <button class="city-chip" data-lat="50.8514" data-lon="5.6910" data-name="Maastricht">Maastricht</button>
-          <button class="city-chip" data-lat="51.5000" data-lon="3.6136" data-name="Middelburg">Middelburg</button>
-          <button class="city-chip" data-lat="53.0543" data-lon="4.7975" data-name="Texel">Texel</button>
         </div>
       </div>
 
@@ -2755,7 +2878,13 @@
         else AppState.theme = 'light'; // Standaard Licht
 
         const savedLoc = localStorage.getItem('rideordie_loc');
-        if (savedLoc) AppState.location = JSON.parse(savedLoc);
+        if (savedLoc) {
+          AppState.location = JSON.parse(savedLoc);
+          const navLoc = document.getElementById('nav-location-label');
+          if (navLoc && AppState.location && AppState.location.name) {
+            navLoc.textContent = `${AppState.location.name}, ${AppState.location.country || 'NL'}`;
+          }
+        }
 
         const savedCommute = localStorage.getItem('rideordie_commute');
         if (savedCommute) AppState.commute = { ...AppState.commute, ...JSON.parse(savedCommute) };
@@ -3824,27 +3953,139 @@
       updateFullscreenScale();
     });
 
-    // Setup Modal & Button Handlers
+    // Setup Modal & Button Handlers (Separated Location Modal & Settings Modal)
     function setupModalEvents() {
-      const modal = document.getElementById('settings-modal');
+      // --- Dedicated Location Modal ---
+      const locModal = document.getElementById('location-modal');
       const openLocBtn = document.getElementById('open-location-btn');
-      const openSettingsBtn = document.getElementById('open-settings-btn');
-      const closeBtn = document.getElementById('close-modal-btn');
+      const closeLocBtn = document.getElementById('close-location-modal-btn');
       const searchInput = document.getElementById('location-search-input');
       const resultsList = document.getElementById('search-results-list');
-      const saveBtn = document.getElementById('save-settings-btn');
+      const modalGpsBtn = document.getElementById('modal-gps-btn');
+
+      const openLocationModal = () => {
+        if (!locModal) return;
+        locModal.classList.add('open');
+        if (searchInput) {
+          searchInput.value = '';
+        }
+        if (resultsList) {
+          resultsList.classList.remove('show');
+          resultsList.innerHTML = '';
+        }
+
+        // Highlight currently active city chip
+        document.querySelectorAll('.location-city-chip').forEach(chip => {
+          const chipName = (chip.dataset.name || '').toLowerCase();
+          const currentName = (AppState.location.name || '').toLowerCase();
+          if (chipName === currentName) {
+            chip.classList.add('is-current');
+          } else {
+            chip.classList.remove('is-current');
+          }
+        });
+
+        setTimeout(() => {
+          if (searchInput) searchInput.focus();
+        }, 60);
+      };
+
+      const closeLocationModal = () => {
+        if (locModal) locModal.classList.remove('open');
+        if (resultsList) resultsList.classList.remove('show');
+      };
+
+      if (openLocBtn) openLocBtn.addEventListener('click', openLocationModal);
+      if (closeLocBtn) closeLocBtn.addEventListener('click', closeLocationModal);
+      if (locModal) {
+        locModal.addEventListener('click', (e) => {
+          if (e.target === locModal) closeLocationModal();
+        });
+      }
+
+      // Quick-click on hero city header also triggers location picker
+      const heroCityEl = document.getElementById('hero-city-name');
+      if (heroCityEl) {
+        heroCityEl.style.cursor = 'pointer';
+        heroCityEl.setAttribute('title', 'Klik om locatie te wijzigen');
+        heroCityEl.addEventListener('click', openLocationModal);
+      }
+
+      const simpleCityEl = document.getElementById('simple-city-name');
+      if (simpleCityEl) {
+        simpleCityEl.style.cursor = 'pointer';
+        simpleCityEl.setAttribute('title', 'Klik om locatie te wijzigen');
+        simpleCityEl.addEventListener('click', openLocationModal);
+      }
+
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => handleLocationSearch(e.target.value));
+      }
+
+      if (resultsList) {
+        resultsList.addEventListener('click', (e) => {
+          const item = e.target.closest('.search-result-item');
+          if (item) {
+            const lat = parseFloat(item.dataset.lat);
+            const lon = parseFloat(item.dataset.lon);
+            const name = item.dataset.name;
+            const country = item.dataset.country || 'NL';
+
+            AppState.location = { name, latitude: lat, longitude: lon, country };
+            saveState();
+            closeLocationModal();
+            const navLoc = document.getElementById('nav-location-label');
+            if (navLoc) navLoc.textContent = `${name}, ${country}`;
+            fetchWeatherData(lat, lon);
+            showToast(`Locatie gewijzigd naar ${name}`);
+          }
+        });
+      }
+
+      document.querySelectorAll('.location-city-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const lat = parseFloat(btn.dataset.lat);
+          const lon = parseFloat(btn.dataset.lon);
+          const name = btn.dataset.name;
+
+          AppState.location = { name, latitude: lat, longitude: lon, country: 'NL' };
+          saveState();
+          closeLocationModal();
+          const navLoc = document.getElementById('nav-location-label');
+          if (navLoc) navLoc.textContent = `${name}, NL`;
+          fetchWeatherData(lat, lon);
+          showToast(`Locatie gewijzigd naar ${name}`);
+        });
+      });
+
+      if (modalGpsBtn) {
+        modalGpsBtn.addEventListener('click', () => {
+          closeLocationModal();
+          requestGPSLocation();
+        });
+      }
+
+      // --- Dedicated Settings Modal ---
+      const settingsModal = document.getElementById('settings-modal');
+      const openSettingsBtn = document.getElementById('open-settings-btn');
+      const closeSettingsBtn = document.getElementById('close-modal-btn');
+      const saveSettingsBtn = document.getElementById('save-settings-btn');
 
       const selMorning = document.getElementById('setting-morning-time');
       const selEvening = document.getElementById('setting-evening-time');
       const rangeMinTemp = document.getElementById('setting-min-temp');
       const rangeMaxGusts = document.getElementById('setting-max-gusts');
 
-      // Theme buttons inside modal
-      document.getElementById('theme-btn-light').addEventListener('click', () => applyTheme('light'));
-      document.getElementById('theme-btn-auto').addEventListener('click', () => applyTheme('auto'));
-      document.getElementById('theme-btn-dark').addEventListener('click', () => applyTheme('dark'));
+      // Theme buttons inside settings modal
+      const themeBtnLight = document.getElementById('theme-btn-light');
+      const themeBtnAuto = document.getElementById('theme-btn-auto');
+      const themeBtnDark = document.getElementById('theme-btn-dark');
+      if (themeBtnLight) themeBtnLight.addEventListener('click', () => applyTheme('light'));
+      if (themeBtnAuto) themeBtnAuto.addEventListener('click', () => applyTheme('auto'));
+      if (themeBtnDark) themeBtnDark.addEventListener('click', () => applyTheme('dark'));
 
-      const openModal = () => {
+      const openSettingsModal = () => {
+        if (!settingsModal) return;
         selMorning.value = AppState.commute.morningTime;
         selEvening.value = AppState.commute.eveningTime;
         rangeMinTemp.value = AppState.commute.minTemp;
@@ -3854,79 +4095,64 @@
         document.getElementById('val-min-temp').textContent = `${AppState.commute.minTemp}°C`;
         document.getElementById('val-max-gusts').textContent = `${AppState.commute.maxGusts} km/u`;
 
-        modal.classList.add('open');
-        searchInput.focus();
+        settingsModal.classList.add('open');
       };
 
-      const closeModal = () => {
-        modal.classList.remove('open');
-        resultsList.classList.remove('show');
+      const closeSettingsModal = () => {
+        if (settingsModal) settingsModal.classList.remove('open');
       };
 
-      openLocBtn.addEventListener('click', openModal);
-      openSettingsBtn.addEventListener('click', openModal);
-      closeBtn.addEventListener('click', closeModal);
-
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-      });
-
-      searchInput.addEventListener('input', (e) => handleLocationSearch(e.target.value));
-
-      resultsList.addEventListener('click', (e) => {
-        const item = e.target.closest('.search-result-item');
-        if (item) {
-          const lat = parseFloat(item.dataset.lat);
-          const lon = parseFloat(item.dataset.lon);
-          const name = item.dataset.name;
-          const country = item.dataset.country;
-
-          AppState.location = { name, latitude: lat, longitude: lon, country };
-          saveState();
-          closeModal();
-          fetchWeatherData(lat, lon);
-        }
-      });
-
-      document.querySelectorAll('.city-chip').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (btn.id && (btn.id.startsWith('theme-') || btn.id === 'save-settings-btn')) return;
-          const lat = parseFloat(btn.dataset.lat);
-          const lon = parseFloat(btn.dataset.lon);
-          const name = btn.dataset.name;
-
-          AppState.location = { name, latitude: lat, longitude: lon, country: 'NL' };
-          saveState();
-          closeModal();
-          fetchWeatherData(lat, lon);
+      if (openSettingsBtn) openSettingsBtn.addEventListener('click', openSettingsModal);
+      if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettingsModal);
+      if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+          if (e.target === settingsModal) closeSettingsModal();
         });
-      });
+      }
 
-      selMorning.addEventListener('change', (e) => {
-        document.getElementById('val-morning-time').textContent = e.target.value;
-      });
-      selEvening.addEventListener('change', (e) => {
-        document.getElementById('val-evening-time').textContent = e.target.value;
-      });
-      rangeMinTemp.addEventListener('input', (e) => {
-        document.getElementById('val-min-temp').textContent = `${e.target.value}°C`;
-      });
-      rangeMaxGusts.addEventListener('input', (e) => {
-        document.getElementById('val-max-gusts').textContent = `${e.target.value} km/u`;
-      });
-
-      saveBtn.addEventListener('click', () => {
-        AppState.commute.morningTime = selMorning.value;
-        AppState.commute.eveningTime = selEvening.value;
-        AppState.commute.minTemp = parseInt(rangeMinTemp.value, 10);
-        AppState.commute.maxGusts = parseInt(rangeMaxGusts.value, 10);
-        saveState();
-        closeModal();
-        if (AppState.weatherData) {
-          renderDashboard(AppState.weatherData);
-          showToast("Instellingen opgeslagen & advies herrekend!");
+      // Close either modal on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeLocationModal();
+          closeSettingsModal();
         }
       });
+
+      if (selMorning) {
+        selMorning.addEventListener('change', (e) => {
+          document.getElementById('val-morning-time').textContent = e.target.value;
+        });
+      }
+      if (selEvening) {
+        selEvening.addEventListener('change', (e) => {
+          document.getElementById('val-evening-time').textContent = e.target.value;
+        });
+      }
+      if (rangeMinTemp) {
+        rangeMinTemp.addEventListener('input', (e) => {
+          document.getElementById('val-min-temp').textContent = `${e.target.value}°C`;
+        });
+      }
+      if (rangeMaxGusts) {
+        rangeMaxGusts.addEventListener('input', (e) => {
+          document.getElementById('val-max-gusts').textContent = `${e.target.value} km/u`;
+        });
+      }
+
+      if (saveSettingsBtn) {
+        saveSettingsBtn.addEventListener('click', () => {
+          AppState.commute.morningTime = selMorning.value;
+          AppState.commute.eveningTime = selEvening.value;
+          AppState.commute.minTemp = parseInt(rangeMinTemp.value, 10);
+          AppState.commute.maxGusts = parseInt(rangeMaxGusts.value, 10);
+          saveState();
+          closeSettingsModal();
+          if (AppState.weatherData) {
+            renderDashboard(AppState.weatherData);
+            showToast("Instellingen opgeslagen & advies herrekend!");
+          }
+        });
+      }
     }
 
     // Refresh, GPS, Theme, Simple Mode & Fullscreen buttons
