@@ -1864,60 +1864,88 @@
     }
 
     /* ==========================================================================
-       SIMPLE MODE: 1 SCHERMVULLEND GECOMBINEERD WIDGET
-       Combineert Weer & Motoradvies
+       SIMPLE MODE: COMPACTE PHONE OVERVIEW WIDGET (GEEN SCROLLEN, GEEN NAVBAR)
+       Geoptimaliseerd conform mobiele overzichtswidget / Material You 3
        ========================================================================== */
+    body.is-simple-mode {
+      overflow: hidden !important;
+      height: 100vh !important;
+    }
+
+    body.is-simple-mode .top-navbar {
+      display: none !important;
+    }
+
+    body.is-simple-mode .app-footer {
+      display: none !important;
+    }
+
     body.is-simple-mode .dashboard-grid {
       display: none !important;
+    }
+
+    body.is-simple-mode .dashboard-wrapper {
+      min-height: 100vh !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      padding: 12px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      zoom: 1 !important;
     }
 
     .simple-mode-container {
       display: none;
       width: 100%;
-      flex: 1;
-      min-height: calc(100vh - 120px);
+      height: 100%;
+      max-height: 100%;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
       box-sizing: border-box;
-      margin: 4px 0 10px;
     }
 
     body.is-simple-mode .simple-mode-container {
       display: flex;
-      flex-direction: column;
-      justify-content: center;
-      animation: fadeInSimple 0.25s ease-out;
+      animation: fadeInSimple 0.28s var(--transition-spring);
     }
 
     @keyframes fadeInSimple {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: scale(0.97) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
+    /* Compact Phone Widget Container */
     .simple-combined-card {
       width: 100%;
-      flex: 1;
-      min-height: calc(100vh - 140px);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: clamp(20px, 3vw, 36px) clamp(22px, 3.5vw, 42px);
-      border-radius: var(--radius-xl);
-      box-sizing: border-box;
-      position: relative;
-      overflow: hidden;
-      background: var(--glass-bg);
+      max-width: 680px;
+      background: var(--glass-bg-elevated);
       backdrop-filter: blur(28px) saturate(180%);
       -webkit-backdrop-filter: blur(28px) saturate(180%);
       border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
       box-shadow: var(--glass-shadow);
-      transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition-spring);
     }
 
+    /* Widget Header */
     .simple-header-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      padding-bottom: 16px;
+      gap: 10px;
+      padding-bottom: 12px;
       border-bottom: 1px solid var(--glass-border);
       width: 100%;
     }
@@ -1925,25 +1953,49 @@
     .simple-location-group {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 9px;
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      padding: 3px 6px;
+      margin: -3px -6px;
+      transition: var(--transition-spring);
+    }
+    .simple-location-group:hover {
+      background: var(--sky-glow);
+    }
+    .simple-location-group:active {
+      transform: scale(0.97);
     }
 
     .simple-location-pin {
-      width: 40px;
-      height: 40px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
-      background: var(--glass-bg-elevated);
+      background: var(--glass-bg);
       border: 1px solid var(--glass-border);
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--sky-accent);
       flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .simple-loc-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .simple-city-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .simple-city-name {
       font-family: var(--font-display);
-      font-size: clamp(1.5rem, 2.8vw, 2.4rem);
+      font-size: 1.35rem;
       font-weight: 900;
       color: var(--text-main);
       margin: 0;
@@ -1951,80 +2003,136 @@
       letter-spacing: -0.02em;
     }
 
+    .simple-chevron {
+      color: var(--text-muted);
+      opacity: 0.7;
+      transition: transform 0.2s ease;
+    }
+    .simple-location-group:hover .simple-chevron {
+      opacity: 1;
+      color: var(--sky-accent);
+      transform: translateY(1px);
+    }
+
     .simple-date-str {
-      font-size: clamp(0.82rem, 1.3vw, 1rem);
+      font-size: 0.76rem;
       color: var(--text-muted);
       font-weight: 600;
-      margin-top: 3px;
+      margin-top: 1px;
     }
 
     .simple-header-badges {
       display: flex;
       align-items: center;
-      gap: 10px;
-    }
-
-    .simple-category-label {
-      font-size: clamp(0.75rem, 1.1vw, 0.88rem);
-      font-weight: 700;
-      color: var(--text-muted);
-      background: var(--glass-bg-subtle);
-      padding: 6px 14px;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--glass-border);
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     .simple-time-badge {
       font-family: var(--font-mono);
-      font-size: clamp(0.8rem, 1.2vw, 0.92rem);
-      font-weight: 800;
-      color: var(--text-main);
-      background: var(--glass-bg-elevated);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: var(--radius-pill);
-      letter-spacing: 0.05em;
     }
 
+    /* Switch Button: Grote normale pagina terugzetten */
+    .simple-switch-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 13px;
+      border-radius: var(--radius-pill);
+      background: var(--sky-accent);
+      color: #ffffff;
+      border: 1px solid var(--sky-accent);
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition-spring);
+      box-shadow: 0 2px 8px var(--sky-glow);
+      white-space: nowrap;
+    }
+    .simple-switch-btn:hover {
+      background: var(--sky-accent-hover, #0369a1);
+      border-color: var(--sky-accent-hover, #0369a1);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px var(--sky-glow);
+    }
+    .simple-switch-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Quick Theme Switcher in Widget Header */
+    .simple-theme-btn {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border-radius: 50%;
+      background: var(--glass-bg-subtle);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: var(--transition-spring);
+    }
+    .simple-theme-btn:hover {
+      background: var(--glass-bg-elevated);
+      border-color: var(--sky-accent);
+      transform: translateY(-1px);
+    }
+    .simple-theme-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Main Grid (Sensibly Scaled & Proportioned) */
     .simple-main-grid {
       display: grid;
-      grid-template-columns: 1fr auto 1.35fr;
-      gap: clamp(18px, 3.5vw, 44px);
+      grid-template-columns: 235px auto 1fr;
+      gap: 16px;
       align-items: center;
-      flex: 1;
-      padding: clamp(16px, 2.8vw, 32px) 0;
       width: 100%;
+      min-width: 0;
     }
 
     .simple-divider {
       width: 1px;
-      align-self: stretch;
+      height: 100%;
+      min-height: 140px;
       background: linear-gradient(180deg, transparent, var(--glass-border), transparent);
     }
 
-    /* Left: Current Weather Section */
+    /* Left: Current Weather */
     .simple-weather-section {
       display: flex;
       flex-direction: column;
-      gap: clamp(10px, 1.6vw, 18px);
+      gap: 7px;
       min-width: 0;
     }
 
     .simple-temp-row {
       display: flex;
       align-items: center;
-      gap: clamp(12px, 2.5vw, 24px);
+      justify-content: space-between;
+      gap: 6px;
     }
 
     .simple-temp-wrap {
       display: flex;
       align-items: flex-start;
-      line-height: 0.95;
+      line-height: 0.92;
     }
 
     .simple-temp-val {
       font-family: var(--font-display);
-      font-size: clamp(4rem, 8vw, 6.2rem);
+      font-size: 2.8rem;
       font-weight: 900;
       color: var(--text-main);
       letter-spacing: -0.04em;
@@ -2032,22 +2140,22 @@
 
     .simple-temp-unit {
       font-family: var(--font-display);
-      font-size: clamp(2rem, 4vw, 3rem);
+      font-size: 1.35rem;
       font-weight: 700;
       color: var(--sky-accent);
-      margin-top: 4px;
-      margin-left: 2px;
+      margin-top: 1px;
+      margin-left: 1px;
     }
 
     .simple-icon-wrap {
-      width: clamp(72px, 9vw, 105px);
-      height: clamp(72px, 9vw, 105px);
+      width: 50px;
+      height: 50px;
       display: flex;
       align-items: center;
       justify-content: center;
-      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.1));
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
+      flex-shrink: 0;
     }
-
     .simple-icon-wrap svg {
       width: 100%;
       height: 100%;
@@ -2055,27 +2163,30 @@
 
     .simple-condition-text {
       font-family: var(--font-display);
-      font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+      font-size: 1.02rem;
       font-weight: 800;
       color: var(--text-main);
-      line-height: 1.2;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .simple-stats-pills {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 4px;
     }
 
     .simple-stat-pill {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 6px 14px;
+      gap: 3px;
+      padding: 3px 8px;
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-pill);
-      font-size: clamp(0.78rem, 1.1vw, 0.9rem);
+      font-size: 0.72rem;
     }
 
     .simple-stat-lbl {
@@ -2092,86 +2203,100 @@
     .simple-wind-bar {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-size: clamp(0.82rem, 1.2vw, 0.95rem);
+      gap: 6px;
+      font-size: 0.74rem;
       font-weight: 700;
       color: var(--text-muted);
-      padding: 7px 14px;
+      padding: 4px 10px;
       border-radius: var(--radius-sm);
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
       width: fit-content;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* Right: Verdict & Advice Section */
+    /* Right: Verdict & Commute Section */
     .simple-verdict-section {
       display: flex;
       flex-direction: column;
-      gap: clamp(10px, 1.8vw, 20px);
+      gap: 7px;
       min-width: 0;
     }
 
     .simple-verdict-top-tags {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
     .simple-verdict-headline {
       font-family: var(--font-display);
-      font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+      font-size: 1.15rem;
       font-weight: 800;
       color: var(--text-main);
-      line-height: 1.25;
+      line-height: 1.22;
       margin: 0;
       letter-spacing: -0.015em;
     }
 
     .simple-verdict-explanation {
-      font-size: clamp(0.92rem, 1.4vw, 1.12rem);
-      line-height: 1.6;
+      font-size: 0.8rem;
+      line-height: 1.38;
       color: var(--text-muted);
       margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .simple-commute-preview {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 4px;
+      gap: 6px;
+      margin-top: 2px;
     }
 
     .simple-commute-chip {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
+      gap: 8px;
+      padding: 6px 9px;
       background: var(--glass-bg-subtle);
       border: 1px solid var(--glass-border);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-sm);
       transition: var(--transition-smooth);
+      min-width: 0;
     }
 
     .simple-commute-icon {
-      font-size: 1.4rem;
+      font-size: 1.15rem;
       line-height: 1;
+      flex-shrink: 0;
     }
 
     .simple-commute-info {
       display: flex;
       flex-direction: column;
       min-width: 0;
+      overflow: hidden;
     }
 
     .simple-commute-name {
-      font-size: 0.78rem;
+      font-size: 0.68rem;
       font-weight: 700;
       color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .simple-commute-status {
-      font-size: 0.86rem;
+      font-size: 0.76rem;
       font-weight: 800;
       color: var(--text-main);
       white-space: nowrap;
@@ -2179,34 +2304,60 @@
       text-overflow: ellipsis;
     }
 
-    /* Responsive Simple Mode */
-    @media (max-width: 900px) {
-      .simple-main-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-      .simple-divider {
-        width: 100%;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+    /* Responsive Adaptation for Phones */
+    @media (max-width: 680px) {
+      body.is-simple-mode .dashboard-wrapper {
+        padding: 8px !important;
       }
       .simple-combined-card {
-        min-height: auto;
+        max-width: 440px;
+        padding: 14px 16px;
+        gap: 10px;
+        border-radius: var(--radius-lg);
+      }
+      .simple-main-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .simple-divider {
+        display: none;
+      }
+      .simple-header-row {
+        padding-bottom: 8px;
+      }
+      .simple-city-name {
+        font-size: 1.2rem;
+      }
+      .simple-temp-val {
+        font-size: 2.3rem;
+      }
+      .simple-icon-wrap {
+        width: 42px;
+        height: 42px;
+      }
+      .simple-switch-text {
+        display: none;
+      }
+      .simple-switch-btn {
+        padding: 5px 9px;
       }
       .simple-commute-preview {
         grid-template-columns: 1fr;
+        gap: 5px;
       }
     }
 
-    @media (max-width: 600px) {
-      .simple-header-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+    @media (max-height: 620px) {
+      .simple-combined-card {
+        padding: 10px 14px;
+        gap: 6px;
       }
-      .simple-header-badges {
-        width: 100%;
-        justify-content: space-between;
+      .simple-temp-val {
+        font-size: 2.1rem;
+      }
+      .simple-icon-wrap {
+        width: 36px;
+        height: 36px;
       }
     }
   </style>
@@ -2695,24 +2846,33 @@
     <section class="simple-mode-container" id="simple-mode-container" aria-label="Eenvoudige Weergave">
       <div class="glass-card simple-combined-card" id="simple-combined-card">
         
-        <!-- Header: Locatie, Live Tijd & Advies Label -->
+        <!-- Header: Locatie, Live Tijd & Wisselknop naar Volledig Dashboard -->
         <div class="simple-header-row">
-          <div class="simple-location-group">
+          <div class="simple-location-group" id="simple-loc-trigger" role="button" tabindex="0" title="Locatie wijzigen">
             <div class="simple-location-pin">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
               </svg>
             </div>
             <div class="simple-loc-text">
-              <h1 class="simple-city-name" id="simple-city-name">Utrecht</h1>
+              <div class="simple-city-wrap">
+                <h1 class="simple-city-name" id="simple-city-name">Utrecht</h1>
+                <svg class="simple-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </div>
               <div class="simple-date-str" id="simple-date-str">Vandaag, live update</div>
             </div>
           </div>
 
           <div class="simple-header-badges">
-            <div class="simple-category-label">Woon-werk Motoradvies</div>
+            <button class="simple-theme-btn" id="simple-theme-btn" title="Thema wisselen (Licht / Auto / Donker)" aria-label="Thema wisselen">☀️</button>
             <div class="simple-time-badge" id="simple-update-time">--:--</div>
+            <button class="simple-switch-btn" id="simple-exit-btn" title="Schakel naar volledig dashboard" aria-label="Volledig dashboard bekijken">
+              <span>📊</span>
+              <span class="simple-switch-text">Volledig Dashboard</span>
+            </button>
           </div>
         </div>
 
@@ -3061,6 +3221,21 @@
         } else {
           btnIcon.textContent = '🌙';
           btnText.textContent = 'Donker';
+        }
+      }
+
+      // Update Simple Mode Quick Theme Button
+      const simpleThemeBtn = document.getElementById('simple-theme-btn');
+      if (simpleThemeBtn) {
+        if (themeMode === 'light') {
+          simpleThemeBtn.textContent = '☀️';
+          simpleThemeBtn.setAttribute('title', 'Huidig: Licht. Klik voor Auto');
+        } else if (themeMode === 'auto') {
+          simpleThemeBtn.textContent = '🔄';
+          simpleThemeBtn.setAttribute('title', 'Huidig: Auto (Dag/Nacht). Klik voor Donker');
+        } else {
+          simpleThemeBtn.textContent = '🌙';
+          simpleThemeBtn.setAttribute('title', 'Huidig: Donker. Klik voor Licht');
         }
       }
 
@@ -4334,6 +4509,30 @@
         simpleCityEl.style.cursor = 'pointer';
         simpleCityEl.setAttribute('title', 'Klik om locatie te wijzigen');
         simpleCityEl.addEventListener('click', openLocationModal);
+      }
+
+      // Simple View Header Trigger: Click or Enter/Space opens Location Modal
+      const simpleLocTrigger = document.getElementById('simple-loc-trigger');
+      if (simpleLocTrigger) {
+        simpleLocTrigger.addEventListener('click', openLocationModal);
+        simpleLocTrigger.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openLocationModal();
+          }
+        });
+      }
+
+      // Simple View Switch Button: Terug naar volledig dashboard
+      const simpleExitBtn = document.getElementById('simple-exit-btn');
+      if (simpleExitBtn) {
+        simpleExitBtn.addEventListener('click', () => toggleSimpleMode(false));
+      }
+
+      // Simple View Quick Theme Switcher
+      const simpleThemeBtn = document.getElementById('simple-theme-btn');
+      if (simpleThemeBtn) {
+        simpleThemeBtn.addEventListener('click', cycleTheme);
       }
 
       if (searchInput) {
