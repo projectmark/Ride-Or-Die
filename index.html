@@ -3173,15 +3173,22 @@
         let score = 100;
         let reasons = [];
 
-        if (slot.totalPrecip > 3.0 || slot.maxPrecipProb > 80) {
+        if (slot.totalPrecip > 3.0 || (slot.totalPrecip > 1.5 && slot.maxPrecipProb > 75)) {
           score -= 45;
-          reasons.push("Zware regen of plensbuien");
-        } else if (slot.totalPrecip > 0.8 || slot.maxPrecipProb > 50) {
+          reasons.push("Stevige regenval verwacht (>3 mm)");
+        } else if (slot.totalPrecip > 0.8 || (slot.totalPrecip > 0.3 && slot.maxPrecipProb > 60)) {
           score -= 25;
-          reasons.push("Kans op bui of nat wegdek");
-        } else if (slot.totalPrecip > 0.1 || slot.maxPrecipProb > 25) {
-          score -= 10;
-          reasons.push("Lichte miezer mogelijk");
+          reasons.push(`Kans op bui (${slot.totalPrecip} mm)`);
+        } else if (slot.totalPrecip > 0.2) {
+          score -= 15;
+          reasons.push(`Lichte bui of motregen (${slot.totalPrecip} mm)`);
+        } else if (slot.totalPrecip > 0.05) {
+          score -= 5;
+          reasons.push("Mogelijk enkel spatje neerslag (<0.2 mm)");
+        } else if (slot.maxPrecipProb > 65) {
+          // Hoofdzakelijk droog 0.0 mm, lichte regionale onzekerheid
+          score -= 5;
+          reasons.push(`Overwegend droog (0 mm, buienkans in regio ${slot.maxPrecipProb}%)`);
         }
 
         if (slot.maxGusts > 70) {
@@ -3332,7 +3339,21 @@
       else if (gustKmh > 45) gustStatus = "Matig/vlagerig";
       document.getElementById('spec-gust-status').textContent = gustStatus;
 
-      document.getElementById('spec-precip').textContent = `${(current.precipitation || 0).toFixed(1)} mm`;
+      const currentPrecip = current.precipitation || 0;
+      document.getElementById('spec-precip').textContent = `${currentPrecip.toFixed(1)} mm`;
+      const specPrecipProb = document.getElementById('spec-precip-prob');
+      if (specPrecipProb) {
+        const curProb = (hourly && hourly.precipitation_probability && hourly.precipitation_probability.length > 0)
+          ? hourly.precipitation_probability[0]
+          : 0;
+        if (currentPrecip > 0.1) {
+          specPrecipProb.textContent = `Regen (${curProb}%)`;
+        } else if (curProb > 45) {
+          specPrecipProb.textContent = `Droog (regio ${curProb}%)`;
+        } else {
+          specPrecipProb.textContent = `Droog (0%)`;
+        }
+      }
       document.getElementById('spec-uv').textContent = (current.uv_index !== undefined && current.uv_index !== null) ? current.uv_index.toFixed(1) : '--';
       document.getElementById('spec-pressure').textContent = current.surface_pressure ? `${Math.round(current.surface_pressure)} hPa` : '1016 hPa';
 
@@ -3384,14 +3405,18 @@
 
       document.getElementById('morning-slot-time').textContent = `${AppState.commute.morningTime} (Heen)`;
       document.getElementById('morning-temp').textContent = `${advice.morningData.avgTemp}°C`;
-      document.getElementById('morning-rain').textContent = `${advice.morningData.totalPrecip} mm`;
+      document.getElementById('morning-rain').textContent = advice.morningData.totalPrecip > 0.05 
+        ? `${advice.morningData.totalPrecip} mm` 
+        : (advice.morningData.maxPrecipProb > 50 ? `0.0 mm (${advice.morningData.maxPrecipProb}%)` : '0.0 mm (Droog)');
       document.getElementById('morning-gusts').textContent = `${advice.morningData.maxGusts} km/u`;
       document.getElementById('morning-status-badge').textContent = advice.morningScore.badgeText;
       document.getElementById('morning-note').innerHTML = `<span>👉</span> ${advice.morningScore.reasons.length ? advice.morningScore.reasons.join(". ") : "Ideale ochtendrit! Droog asfalt en kalme wind."}`;
 
       document.getElementById('evening-slot-time').textContent = `${AppState.commute.eveningTime} (Terug)`;
       document.getElementById('evening-temp').textContent = `${advice.eveningData.avgTemp}°C`;
-      document.getElementById('evening-rain').textContent = `${advice.eveningData.totalPrecip} mm`;
+      document.getElementById('evening-rain').textContent = advice.eveningData.totalPrecip > 0.05 
+        ? `${advice.eveningData.totalPrecip} mm` 
+        : (advice.eveningData.maxPrecipProb > 50 ? `0.0 mm (${advice.eveningData.maxPrecipProb}%)` : '0.0 mm (Droog)');
       document.getElementById('evening-gusts').textContent = `${advice.eveningData.maxGusts} km/u`;
       document.getElementById('evening-status-badge').textContent = advice.eveningScore.badgeText;
       document.getElementById('evening-note').innerHTML = `<span>👉</span> ${advice.eveningScore.reasons.length ? advice.eveningScore.reasons.join(". ") : "Prettige terugreis! Asfalt is droog en goed begaanbaar."}`;
@@ -3414,12 +3439,29 @@
       document.getElementById('meter-grip-tag').textContent = gripVal === 100 ? 'Optimaal' : gripVal > 70 ? 'Vochtig' : 'Glad/Nat';
 
       const maxProb = Math.max(advice.morningData.maxPrecipProb, advice.eveningData.maxPrecipProb);
-      document.getElementById('meter-rain-val').textContent = `${maxProb}%`;
-      document.getElementById('meter-rain-mm').textContent = `${maxRain} mm`;
       const rainFill = document.getElementById('meter-rain-bar');
-      rainFill.style.width = `${Math.max(5, maxProb)}%`;
-      rainFill.style.background = maxProb > 70 ? '#ef4444' : maxProb > 30 ? '#f59e0b' : '#10b981';
-      document.getElementById('meter-rain-tag').textContent = maxProb > 70 ? 'Hoge Kans' : maxProb > 30 ? 'Kans op bui' : 'Droog';
+
+      if (maxRain > 0.2) {
+        document.getElementById('meter-rain-val').textContent = `${maxRain.toFixed(1)} mm`;
+        document.getElementById('meter-rain-mm').textContent = `Kans: ${maxProb}%`;
+        const rainPercent = Math.min(100, Math.max(12, Math.round((maxRain / 4.0) * 100)));
+        rainFill.style.width = `${rainPercent}%`;
+        rainFill.style.background = maxRain > 2.0 ? '#ef4444' : '#f59e0b';
+        document.getElementById('meter-rain-tag').textContent = maxRain > 2.0 ? 'Plensbui' : 'Bui verwacht';
+      } else if (maxRain > 0.05) {
+        document.getElementById('meter-rain-val').textContent = `< 0.2 mm`;
+        document.getElementById('meter-rain-mm').textContent = `Kans: ${maxProb}%`;
+        rainFill.style.width = `15%`;
+        rainFill.style.background = '#10b981';
+        document.getElementById('meter-rain-tag').textContent = 'Spatje?';
+      } else {
+        // 0.0 mm verwacht (Droog!)
+        document.getElementById('meter-rain-val').textContent = `0.0 mm`;
+        document.getElementById('meter-rain-mm').textContent = maxProb > 40 ? `Regio: ${maxProb}%` : `Droog`;
+        rainFill.style.width = maxProb > 50 ? '12%' : '5%';
+        rainFill.style.background = '#10b981';
+        document.getElementById('meter-rain-tag').textContent = maxProb > 50 ? 'Droog (0 mm)' : 'Droog';
+      }
 
       const tempAvg = Math.round((advice.morningData.avgTemp + advice.eveningData.avgTemp) / 2);
       document.getElementById('meter-temp-val').textContent = `${tempAvg}°C`;
@@ -3539,14 +3581,17 @@
       const mornStatusEl = document.getElementById('simple-morning-status');
       if (mornTimeEl) mornTimeEl.textContent = `(${AppState.commute.morningTime})`;
       if (mornStatusEl && advice.morningData) {
-        mornStatusEl.textContent = `${advice.morningData.avgTemp}°C • ${advice.morningData.totalPrecip} mm • ${advice.morningScore.badgeText}`;
+        const rainStr = advice.morningData.totalPrecip > 0.05 
+          ? `${advice.morningData.totalPrecip} mm` 
+          : 'Droog (0 mm)';
+        mornStatusEl.textContent = `${advice.morningData.avgTemp}°C • ${rainStr} • ${advice.morningScore.badgeText}`;
       }
 
-      const eveTimeEl = document.getElementById('simple-evening-time');
-      const eveStatusEl = document.getElementById('simple-evening-status');
-      if (eveTimeEl) eveTimeEl.textContent = `(${AppState.commute.eveningTime})`;
       if (eveStatusEl && advice.eveningData) {
-        eveStatusEl.textContent = `${advice.eveningData.avgTemp}°C • ${advice.eveningData.totalPrecip} mm • ${advice.eveningScore.badgeText}`;
+        const rainStr = advice.eveningData.totalPrecip > 0.05 
+          ? `${advice.eveningData.totalPrecip} mm` 
+          : 'Droog (0 mm)';
+        eveStatusEl.textContent = `${advice.eveningData.avgTemp}°C • ${rainStr} • ${advice.eveningScore.badgeText}`;
       }
     }
 
@@ -3584,9 +3629,26 @@
         const hourStr = `${hourNum.toString().padStart(2, '0')}:00`;
         const temp = Math.round(hourly.temperature_2m[i]);
         const rainProb = hourly.precipitation_probability[i] || 0;
+        const precip = (hourly.precipitation && hourly.precipitation[i] !== undefined) ? hourly.precipitation[i] : 0;
         const code = hourly.weather_code[i] || 0;
         const iconType = (WMO_DICT[code] || {}).icon || 'sun';
         const isNight = hourNum < 6 || hourNum > 21;
+
+        let rainDisplay = '';
+        let rainTooltip = '';
+        if (precip >= 0.2) {
+          rainDisplay = `💧${precip.toFixed(1)}m`;
+          rainTooltip = `${precip.toFixed(1)} mm regen verwacht (kans: ${rainProb}%)`;
+        } else if (precip > 0.05) {
+          rainDisplay = `💧<0.2m`;
+          rainTooltip = `Mogelijk enkel spatje (<0.2 mm, kans: ${rainProb}%)`;
+        } else if (rainProb > 45) {
+          rainDisplay = `⛅0mm`;
+          rainTooltip = `Droog (0.0 mm), buienkans in regio: ${rainProb}%`;
+        } else {
+          rainDisplay = `☀️0%`;
+          rainTooltip = `Droog (0.0 mm, regenkans: ${rainProb}%)`;
+        }
 
         const isCurrent = (i === currentIdx);
         let commuteClass = '';
@@ -3600,11 +3662,11 @@
         }
 
         html += `
-          <div class="hour-chip ${commuteClass}" title="${isCurrent ? `Huidig uur (${hourStr})` : hourStr}">
+          <div class="hour-chip ${commuteClass}" title="${isCurrent ? `Huidig uur (${hourStr})` : hourStr}: ${temp}°C • ${rainTooltip}">
             <span class="hour-time">${hourStr}</span>
             <div class="hour-icon">${getWeatherSvg(iconType, isNight)}</div>
             <span class="hour-temp">${temp}°</span>
-            <span class="hour-rain">${rainProb > 10 ? `💧${rainProb}%` : '☀️0%'}</span>
+            <span class="hour-rain">${rainDisplay}</span>
           </div>
         `;
       }
@@ -3636,8 +3698,21 @@
         const barLeft = Math.max(5, Math.min(65, ((minTemp + 5) / 35) * 100));
         const barWidth = Math.max(15, Math.min(75, ((maxTemp - minTemp) / 20) * 80));
 
+        let rainDisplay = '';
+        let rainTooltip = '';
+        if (rainSum > 0.2) {
+          rainDisplay = `🌧️ ${rainSum.toFixed(1)}m`;
+          rainTooltip = `${rainSum.toFixed(1)} mm neerslagsom (max kans: ${rainProb}%)`;
+        } else if (rainProb > 45) {
+          rainDisplay = `⛅ 0mm`;
+          rainTooltip = `Droog (0.0 mm), lokale kans in regio: ${rainProb}%`;
+        } else {
+          rainDisplay = `☀️ 0%`;
+          rainTooltip = `Droog (0.0 mm, max kans: ${rainProb}%)`;
+        }
+
         html += `
-          <div class="daily-row">
+          <div class="daily-row" title="${name}: min ${minTemp}°, max ${maxTemp}°, ${rainTooltip}">
             <span class="daily-name">${name}</span>
             <div class="daily-icon">${getWeatherSvg(iconType, false)}</div>
             <div class="daily-temp-bar-container">
@@ -3647,7 +3722,7 @@
               </div>
               <span class="daily-max">${maxTemp}°</span>
             </div>
-            <span class="daily-rain-pill">${rainSum > 0.2 ? `🌧️ ${rainSum.toFixed(1)}m` : `${rainProb}%`}</span>
+            <span class="daily-rain-pill">${rainDisplay}</span>
           </div>
         `;
       }
