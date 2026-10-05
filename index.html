@@ -30,10 +30,77 @@
       --radius-xl: 28px;
       --radius-pill: 9999px;
 
-      /* Material 3 Expressive Motion Curves */
+      /* Material 3 Expressive Motion Curves & Durations */
       --transition-spring: all 0.28s cubic-bezier(0.2, 0.0, 0, 1.0);
       --transition-bounce: all 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
       --transition-smooth: all 0.2s ease;
+      --m3-easing-emphasized: cubic-bezier(0.2, 0.0, 0, 1.0);
+      --m3-easing-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1.0);
+      --m3-motion-duration-short: 180ms;
+      --m3-motion-duration-medium: 240ms;
+    }
+
+    /* ==========================================================================
+       MATERIAL YOU 3 EXPRESSIVE MOTION SYSTEM (View Transitions & Micro-Transitions)
+       ========================================================================== */
+    ::view-transition-old(root) {
+      animation: 140ms cubic-bezier(0.4, 0, 1, 1) both m3FadeOut;
+    }
+    ::view-transition-new(root) {
+      animation: 200ms cubic-bezier(0, 0, 0.2, 1) both m3FadeIn;
+    }
+
+    @keyframes m3FadeOut {
+      to { opacity: 0; }
+    }
+    @keyframes m3FadeIn {
+      from { opacity: 0; }
+    }
+
+    /* Fallback / Target Micro-Settle for Key Weather Components */
+    @keyframes m3ContentSettle {
+      0% {
+        opacity: 0.65;
+        transform: translateY(4px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .m3-motion-settle {
+      animation: m3ContentSettle 220ms var(--m3-easing-emphasized) forwards;
+    }
+
+    /* M3 Pill Pop Animation on Active Toggle Switch */
+    @keyframes m3PillPop {
+      0% {
+        transform: scale(0.92);
+      }
+      50% {
+        transform: scale(1.03);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* Accessibility: Respect Reduced Motion System Settings */
+    @media (prefers-reduced-motion: reduce) {
+      ::view-transition-group(*),
+      ::view-transition-old(*),
+      ::view-transition-new(*) {
+        animation: none !important;
+      }
+      .meter-bar-fill,
+      .master-verdict-card,
+      .simple-combined-card,
+      .day-toggle-btn,
+      .m3-motion-settle {
+        animation: none !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
     /* ☀️ MATERIAL YOU 3 EXPRESSIVE - LIGHT THEME (Fresh, Bright, Airy & High Clarity) */
@@ -479,6 +546,7 @@
       color: #ffffff;
       font-weight: 800;
       box-shadow: 0 2px 8px var(--sky-glow);
+      animation: m3PillPop 240ms var(--m3-easing-emphasized);
     }
 
     /* Simple View Day Toggle */
@@ -1166,7 +1234,7 @@
     .meter-bar-fill {
       height: 100%;
       border-radius: var(--radius-pill);
-      transition: width 0.8s ease;
+      transition: width 350ms var(--m3-easing-emphasized), background-color 300ms ease;
     }
 
     /* Gear Advisor Card */
@@ -4018,14 +4086,48 @@
       });
     }
 
+    function triggerContentSettleAnimation() {
+      const targets = [
+        document.getElementById('master-verdict-card'),
+        document.getElementById('slot-morning-card'),
+        document.getElementById('slot-evening-card'),
+        document.getElementById('simple-combined-card'),
+        document.querySelector('.hero-weather-card'),
+        document.getElementById('hourly-strip')
+      ].filter(Boolean);
+
+      targets.forEach(el => {
+        el.classList.remove('m3-motion-settle');
+        void el.offsetWidth;
+        el.classList.add('m3-motion-settle');
+      });
+    }
+
     function switchDayView(dayKey) {
       if (!['today', 'nextWorkday'].includes(dayKey)) return;
+      if (AppState.selectedDay === dayKey) return;
       AppState.selectedDay = dayKey;
       saveState();
       updateDayToggleUI();
       
-      if (AppState.weatherData) {
-        renderDashboard(AppState.weatherData);
+      if (!AppState.weatherData) return;
+
+      const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!prefersReducedMotion && typeof document.startViewTransition === 'function') {
+        try {
+          document.startViewTransition(() => {
+            renderDashboard(AppState.weatherData);
+          });
+          return;
+        } catch (e) {
+          console.warn("View transition fallback:", e);
+        }
+      }
+
+      renderDashboard(AppState.weatherData);
+      if (!prefersReducedMotion) {
+        triggerContentSettleAnimation();
       }
     }
 
