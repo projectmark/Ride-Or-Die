@@ -381,6 +381,7 @@
       flex: 1;
       margin: 0 10px;
       min-width: 0;
+      gap: 8px;
     }
 
     .nav-actions {
@@ -428,6 +429,66 @@
     .location-trigger:hover .loc-chevron {
       opacity: 1;
       transform: translateY(1px);
+    }
+
+    /* Day View Segmented Switch (Vandaag / Volgende werkdag) */
+    .day-toggle-group {
+      display: inline-flex;
+      align-items: center;
+      background: var(--glass-bg-subtle);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-pill);
+      padding: 3px;
+      gap: 2px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      flex-shrink: 0;
+      transition: var(--transition-fast);
+    }
+
+    .day-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 5px 12px;
+      border: none;
+      background: transparent;
+      border-radius: var(--radius-pill);
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition-spring);
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .day-toggle-btn:hover:not(.active) {
+      background: var(--glass-bg-elevated);
+      color: var(--text-main);
+      transform: translateY(-0.5px);
+    }
+
+    .day-toggle-btn:active {
+      transform: scale(0.96);
+    }
+
+    .day-toggle-btn.active {
+      background: var(--sky-accent);
+      color: #ffffff;
+      font-weight: 800;
+      box-shadow: 0 2px 8px var(--sky-glow);
+    }
+
+    /* Simple View Day Toggle */
+    .simple-day-toggle {
+      background: var(--glass-bg-subtle);
+      border-color: var(--glass-border);
+    }
+    .simple-day-toggle .day-toggle-btn {
+      padding: 4px 10px;
+      font-size: 0.74rem;
     }
 
     /* Theme Toggle Pill Button */
@@ -1767,6 +1828,8 @@
         width: 100%;
         margin: 2px 0;
         justify-content: center;
+        gap: 6px;
+        flex-wrap: wrap;
       }
       .location-trigger {
         width: auto;
@@ -2508,6 +2571,20 @@
       .simple-switch-btn {
         padding: 5px 9px !important;
       }
+      .simple-header-row {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+      }
+      .simple-day-toggle {
+        order: 3 !important;
+        width: 100% !important;
+        justify-content: center !important;
+      }
+      .simple-day-toggle .day-toggle-btn {
+        flex: 1 !important;
+        text-align: center !important;
+        justify-content: center !important;
+      }
     }
 
     /* 2. LANDSCAPE / COCKPIT MODE (Pixel 10: 924 x 412) */
@@ -2809,7 +2886,7 @@
         </div>
       </div>
 
-      <!-- Centered Location Pill Button in Navbar -->
+      <!-- Centered Location Pill Button & Day Toggle in Navbar -->
       <div class="nav-center">
         <button class="location-trigger" id="open-location-btn" title="Kies andere locatie">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -2821,6 +2898,16 @@
             <path d="m6 9 6 6 6-6"/>
           </svg>
         </button>
+
+        <!-- Segmented Day Toggle (Vandaag / Volgende werkdag) -->
+        <div class="day-toggle-group" id="nav-day-toggle" role="tablist" aria-label="Weergave dag kiezen">
+          <button class="day-toggle-btn active" id="nav-day-today" data-day="today" role="tab" aria-selected="true" title="Bekijk weer en ritadvies voor vandaag">
+            <span>Vandaag</span>
+          </button>
+          <button class="day-toggle-btn" id="nav-day-next" data-day="nextWorkday" role="tab" aria-selected="false" title="Bekijk ritadvies voor de volgende werkdag">
+            <span class="day-btn-label" id="nav-next-day-text">Volgende werkdag</span>
+          </button>
+        </div>
       </div>
 
       <div class="nav-actions">
@@ -3232,6 +3319,16 @@
             </div>
           </div>
 
+          <!-- Segmented Day Toggle in Simple Mode: Consistente positie naast locatie -->
+          <div class="day-toggle-group simple-day-toggle" id="simple-day-toggle" role="tablist" aria-label="Weergave dag kiezen">
+            <button class="day-toggle-btn active" id="simple-day-today" data-day="today" role="tab" aria-selected="true" title="Bekijk weer en ritadvies voor vandaag">
+              <span>Vandaag</span>
+            </button>
+            <button class="day-toggle-btn" id="simple-day-next" data-day="nextWorkday" role="tab" aria-selected="false" title="Bekijk ritadvies voor de volgende werkdag">
+              <span class="day-btn-label" id="simple-next-day-text">Volgende werkdag</span>
+            </button>
+          </div>
+
           <div class="simple-header-badges">
             <button class="simple-theme-btn" id="simple-theme-btn" title="Thema wisselen (Licht / Auto / Donker)" aria-label="Thema wisselen">☀️</button>
             <div class="simple-time-badge" id="simple-update-time">--:--</div>
@@ -3580,6 +3677,7 @@
         rainTolerance: 'normal'
       },
       isSimpleMode: false,
+      selectedDay: 'today', // 'today' | 'nextWorkday'
       weatherData: null
     };
 
@@ -3608,6 +3706,11 @@
         } else if (window.location.hash.includes('simple')) {
           AppState.isSimpleMode = true;
         }
+
+        const savedDay = localStorage.getItem('rideordie_selected_day');
+        if (savedDay && ['today', 'nextWorkday'].includes(savedDay)) {
+          AppState.selectedDay = savedDay;
+        }
       } catch (e) {
         console.error("Kon instellingen niet laden:", e);
       }
@@ -3621,6 +3724,7 @@
         localStorage.setItem('rideordie_loc', JSON.stringify(AppState.location));
         localStorage.setItem('rideordie_commute', JSON.stringify(AppState.commute));
         localStorage.setItem('rideordie_simple', AppState.isSimpleMode ? 'true' : 'false');
+        localStorage.setItem('rideordie_selected_day', AppState.selectedDay || 'today');
       } catch (e) {
         console.error("Kon instellingen niet opslaan:", e);
       }
@@ -3837,6 +3941,106 @@
       return `${slotData.avgTemp}°C • ${rainStr} • ${slotScore.badgeText}`;
     }
 
+    // Workday and Day-View Management
+    function getWorkdayConfig() {
+      const now = new Date();
+      
+      const formatYMD = (d) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      };
+      
+      const todayDateStr = formatYMD(now);
+      
+      // Calculate next workday:
+      // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
+      const currentDayOfWeek = now.getDay();
+      let daysOffset = 1;
+      if (currentDayOfWeek === 5) {
+        daysOffset = 3; // Friday -> Monday
+      } else if (currentDayOfWeek === 6) {
+        daysOffset = 2; // Saturday -> Monday
+      } else if (currentDayOfWeek === 0) {
+        daysOffset = 1; // Sunday -> Monday
+      } else {
+        daysOffset = 1; // Mon-Thu -> Tomorrow
+      }
+      
+      const nextWorkdayDate = new Date(now);
+      nextWorkdayDate.setDate(now.getDate() + daysOffset);
+      const nextWorkdayStr = formatYMD(nextWorkdayDate);
+      
+      const dayNamesNL = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
+      const dayNamesShortNL = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
+      const nextDayName = dayNamesNL[nextWorkdayDate.getDay()];
+      const nextDayShort = dayNamesShortNL[nextWorkdayDate.getDay()];
+      const isTomorrow = (daysOffset === 1);
+      
+      const buttonLabel = isTomorrow ? `Morgen (${nextDayShort})` : `Maandag (${nextDayShort})`;
+      const fullLabel = isTomorrow ? `Morgen (${nextDayName})` : `Volgende werkdag (${nextDayName})`;
+      
+      return {
+        today: {
+          date: now,
+          dateStr: todayDateStr,
+          label: 'Vandaag',
+          sublabel: 'Vandaag, live update'
+        },
+        nextWorkday: {
+          date: nextWorkdayDate,
+          dateStr: nextWorkdayStr,
+          dayName: nextDayName,
+          dayShort: nextDayShort,
+          isTomorrow,
+          buttonLabel,
+          fullLabel
+        }
+      };
+    }
+
+    function updateDayToggleUI() {
+      const config = getWorkdayConfig();
+      const currentMode = AppState.selectedDay || 'today';
+      
+      const navNextText = document.getElementById('nav-next-day-text');
+      const simpleNextText = document.getElementById('simple-next-day-text');
+      
+      if (navNextText) navNextText.textContent = config.nextWorkday.buttonLabel;
+      if (simpleNextText) simpleNextText.textContent = config.nextWorkday.buttonLabel;
+      
+      // Update active classes for all day-toggle buttons
+      document.querySelectorAll('.day-toggle-btn').forEach(btn => {
+        const isTarget = btn.getAttribute('data-day') === currentMode;
+        btn.classList.toggle('active', isTarget);
+        btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+      });
+    }
+
+    function switchDayView(dayKey) {
+      if (!['today', 'nextWorkday'].includes(dayKey)) return;
+      AppState.selectedDay = dayKey;
+      saveState();
+      updateDayToggleUI();
+      
+      if (AppState.weatherData) {
+        renderDashboard(AppState.weatherData);
+      }
+    }
+
+    function setupDayToggleEvents() {
+      document.querySelectorAll('.day-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const targetDay = btn.getAttribute('data-day');
+          if (targetDay) {
+            switchDayView(targetDay);
+          }
+        });
+      });
+    }
+
     // Preset Cities Source of Truth (Single Source, No Repetition)
     const PRESET_CITIES = [
       { name: 'Utrecht', lat: 52.0908, lon: 5.1222 },
@@ -3978,7 +4182,7 @@
         showToast("KNMI Harmonie model data ophalen...");
       }
 
-      const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,uv_index&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&models=knmi_seamless&timezone=auto`;
+      const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,uv_index&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&models=knmi_seamless&timezone=auto&forecast_days=7`;
 
       try {
         const response = await fetch(apiUrl, { signal });
@@ -4025,14 +4229,15 @@
       }, 10 * 60 * 1000); // Check every 10 minutes
     }
 
-    // Master Motorcycle Commute Algorithm
-    function computeCommuteAdvise(weatherData) {
+    // Master Motorcycle Commute Algorithm (Supports Active Day: Vandaag of Volgende werkdag)
+    function computeCommuteAdvise(weatherData, targetDateStr = null) {
       const current = weatherData.current;
       const hourly = weatherData.hourly;
       const times = hourly.time;
 
-      const now = new Date();
-      const todayDateStr = now.toISOString().slice(0, 10);
+      const workdayConfig = getWorkdayConfig();
+      const isNextWorkday = AppState.selectedDay === 'nextWorkday';
+      const activeDateStr = targetDateStr || (isNextWorkday ? workdayConfig.nextWorkday.dateStr : workdayConfig.today.dateStr);
 
       const morningHour = parseInt(AppState.commute.morningTime.split(':')[0], 10);
       const eveningHour = parseInt(AppState.commute.eveningTime.split(':')[0], 10);
@@ -4040,7 +4245,7 @@
       function getCommuteSlice(targetHour) {
         let indices = [];
         for (let i = 0; i < times.length; i++) {
-          if (times[i].startsWith(todayDateStr)) {
+          if (times[i].startsWith(activeDateStr)) {
             const h = new Date(times[i]).getHours();
             if (Math.abs(h - targetHour) <= 1) {
               indices.push(i);
@@ -4145,13 +4350,20 @@
 
       const minScore = Math.min(morningScore.score, eveningScore.score);
       let dayVerdict = "green";
-      let dayHeadline = "Groen licht: Heerlijk weer voor twee wielen!";
+      const dayNameNL = isNextWorkday ? workdayConfig.nextWorkday.dayName.toLowerCase() : '';
+      let dayHeadline = isNextWorkday
+        ? `Groen licht voor ${dayNameNL}: Heerlijk weer voor twee wielen!`
+        : "Groen licht: Heerlijk weer voor twee wielen!";
       let dayPill = "🏍️ RIDE ON!";
-      let dayExplanation = "Zowel de ochtendrit als de avondrit zijn droog en veilig. Ideale temperaturen en kalme wind.";
+      let dayExplanation = isNextWorkday
+        ? `Zowel de ochtendrit als de avondrit op ${dayNameNL} zijn droog en veilig. Ideale temperaturen en kalme wind.`
+        : "Zowel de ochtendrit als de avondrit zijn droog en veilig. Ideale temperaturen en kalme wind.";
 
       if (minScore < 50) {
         dayVerdict = "red";
-        dayHeadline = "Koekblik Dag: Pak liever de auto of OV!";
+        dayHeadline = isNextWorkday
+          ? `Koekblik Dag: Pak ${dayNameNL} liever de auto of OV!`
+          : "Koekblik Dag: Pak liever de auto of OV!";
         dayPill = "🚗 DIE HARD ONLY";
 
         const allReasons = [...morningScore.reasons, ...eveningScore.reasons];
@@ -4159,7 +4371,9 @@
         dayExplanation = `Onveilige condities: ${uniqueReasons || "slecht weer voorspeld"}. Te veel risico op nat pak, wind of gladheid.`;
       } else if (minScore < 80) {
         dayVerdict = "yellow";
-        dayHeadline = "Rijden kan, maar let goed op!";
+        dayHeadline = isNextWorkday
+          ? `Rijden kan op ${dayNameNL}, maar let goed op!`
+          : "Rijden kan, maar let goed op!";
         dayPill = "⚠️ OPLETTEN";
 
         const allReasons = [...morningScore.reasons, ...eveningScore.reasons];
@@ -4202,7 +4416,10 @@
         dayPill,
         dayExplanation,
         minScore,
-        gearPills
+        gearPills,
+        isNextWorkday,
+        activeDateStr,
+        workdayConfig
       };
     }
 
@@ -4212,61 +4429,109 @@
       const daily = data.daily;
       const hourly = data.hourly;
 
+      const advice = computeCommuteAdvise(data);
+      const isNextWorkday = AppState.selectedDay === 'nextWorkday';
+      const workdayConfig = advice.workdayConfig;
+
       document.getElementById('nav-location-label').textContent = `${AppState.location.name}, ${AppState.location.country || 'NL'}`;
       document.getElementById('hero-city-name').textContent = AppState.location.name;
 
       const now = new Date();
-      document.getElementById('hero-date-str').textContent = formatDisplayDate(now);
-      document.getElementById('hero-update-time').textContent = formatDisplayTime(now);
+      document.getElementById('hero-date-str').textContent = isNextWorkday
+        ? `${formatDisplayDate(workdayConfig.nextWorkday.date)} (Volgende werkdag)`
+        : formatDisplayDate(now);
+      document.getElementById('hero-update-time').textContent = isNextWorkday
+        ? 'Voorspelling'
+        : formatDisplayTime(now);
 
-      const code = current.weather_code || 0;
-      const wmoInfo = WMO_DICT[code] || { text: "Helder", icon: "sun", state: "sunny" };
-      const isNight = current.is_day === 0;
-      document.body.setAttribute('data-weather-state', wmoInfo.state);
+      // Hero Weather specs (Live current vs Target Workday Forecast)
+      if (isNextWorkday && daily && daily.time) {
+        const dayIdx = daily.time.findIndex(t => t.startsWith(workdayConfig.nextWorkday.dateStr));
+        if (dayIdx >= 0) {
+          const code = daily.weather_code[dayIdx] || 0;
+          const wmoInfo = WMO_DICT[code] || { text: "Helder", icon: "sun", state: "sunny" };
+          document.body.setAttribute('data-weather-state', wmoInfo.state);
 
-      document.getElementById('hero-temp').textContent = Math.round(current.temperature_2m);
-      document.getElementById('hero-condition').textContent = wmoInfo.text;
-      document.getElementById('hero-feels-like').textContent = `${Math.round(current.apparent_temperature)}°`;
-      document.getElementById('hero-weather-icon').innerHTML = getWeatherSvg(wmoInfo.icon, isNight);
+          const maxT = Math.round(daily.temperature_2m_max[dayIdx]);
+          const minT = Math.round(daily.temperature_2m_min[dayIdx]);
+          const dayAvgT = Math.round((maxT + minT) / 2);
 
-      if (daily && daily.temperature_2m_max) {
-        document.getElementById('hero-max-temp').textContent = `${Math.round(daily.temperature_2m_max[0])}°`;
-        document.getElementById('hero-min-temp').textContent = `${Math.round(daily.temperature_2m_min[0])}°`;
-      }
+          document.getElementById('hero-temp').textContent = dayAvgT;
+          document.getElementById('hero-condition').textContent = wmoInfo.text;
+          document.getElementById('hero-feels-like').textContent = `${dayAvgT}°`;
+          document.getElementById('hero-weather-icon').innerHTML = getWeatherSvg(wmoInfo.icon, false);
 
-      document.getElementById('spec-wind-speed').textContent = `${Math.round(current.wind_speed_10m)} km/u`;
-      document.getElementById('spec-wind-dir').textContent = `${getWindDirectionText(current.wind_direction_10m)} (${Math.round(current.wind_direction_10m)}°)`;
-      document.getElementById('spec-wind-gusts').textContent = `${Math.round(current.wind_gusts_10m)} km/u`;
+          document.getElementById('hero-max-temp').textContent = `${maxT}°`;
+          document.getElementById('hero-min-temp').textContent = `${minT}°`;
 
-      const gustKmh = Math.round(current.wind_gusts_10m);
-      let gustStatus = "Rustig";
-      if (gustKmh > 65) gustStatus = "⚠️ Zware stoten";
-      else if (gustKmh > 45) gustStatus = "Matig/vlagerig";
-      document.getElementById('spec-gust-status').textContent = gustStatus;
+          const maxWind = Math.round(daily.wind_speed_10m_max[dayIdx] || 0);
+          document.getElementById('spec-wind-speed').textContent = `${maxWind} km/u`;
+          document.getElementById('spec-wind-dir').textContent = `Regio`;
 
-      const currentPrecip = current.precipitation || 0;
-      document.getElementById('spec-precip').textContent = `${currentPrecip.toFixed(1)} mm`;
-      const specPrecipProb = document.getElementById('spec-precip-prob');
-      if (specPrecipProb) {
-        const curProb = (hourly && hourly.precipitation_probability && hourly.precipitation_probability.length > 0)
-          ? hourly.precipitation_probability[0]
-          : 0;
-        if (currentPrecip > 0.1) {
-          specPrecipProb.textContent = `Regen (${curProb}%)`;
-        } else if (curProb > 45) {
-          specPrecipProb.textContent = `Droog (regio ${curProb}%)`;
-        } else {
-          specPrecipProb.textContent = `Droog (0%)`;
+          const maxGusts = Math.round(daily.wind_gusts_10m_max[dayIdx] || 0);
+          document.getElementById('spec-wind-gusts').textContent = `${maxGusts} km/u`;
+          let gustStatus = "Rustig";
+          if (maxGusts > 65) gustStatus = "⚠️ Zware stoten";
+          else if (maxGusts > 45) gustStatus = "Matig/vlagerig";
+          document.getElementById('spec-gust-status').textContent = gustStatus;
+
+          const precipSum = daily.precipitation_sum[dayIdx] || 0;
+          document.getElementById('spec-precip').textContent = `${precipSum.toFixed(1)} mm`;
+          const probMax = daily.precipitation_probability_max[dayIdx] || 0;
+          const specPrecipProb = document.getElementById('spec-precip-prob');
+          if (specPrecipProb) {
+            specPrecipProb.textContent = precipSum > 0.1 ? `Regen (${probMax}%)` : (probMax > 45 ? `Droog (regio ${probMax}%)` : 'Droog (0%)');
+          }
+        }
+      } else {
+        const code = current.weather_code || 0;
+        const wmoInfo = WMO_DICT[code] || { text: "Helder", icon: "sun", state: "sunny" };
+        const isNight = current.is_day === 0;
+        document.body.setAttribute('data-weather-state', wmoInfo.state);
+
+        document.getElementById('hero-temp').textContent = Math.round(current.temperature_2m);
+        document.getElementById('hero-condition').textContent = wmoInfo.text;
+        document.getElementById('hero-feels-like').textContent = `${Math.round(current.apparent_temperature)}°`;
+        document.getElementById('hero-weather-icon').innerHTML = getWeatherSvg(wmoInfo.icon, isNight);
+
+        if (daily && daily.temperature_2m_max) {
+          document.getElementById('hero-max-temp').textContent = `${Math.round(daily.temperature_2m_max[0])}°`;
+          document.getElementById('hero-min-temp').textContent = `${Math.round(daily.temperature_2m_min[0])}°`;
+        }
+
+        document.getElementById('spec-wind-speed').textContent = `${Math.round(current.wind_speed_10m)} km/u`;
+        document.getElementById('spec-wind-dir').textContent = `${getWindDirectionText(current.wind_direction_10m)} (${Math.round(current.wind_direction_10m)}°)`;
+        document.getElementById('spec-wind-gusts').textContent = `${Math.round(current.wind_gusts_10m)} km/u`;
+
+        const gustKmh = Math.round(current.wind_gusts_10m);
+        let gustStatus = "Rustig";
+        if (gustKmh > 65) gustStatus = "⚠️ Zware stoten";
+        else if (gustKmh > 45) gustStatus = "Matig/vlagerig";
+        document.getElementById('spec-gust-status').textContent = gustStatus;
+
+        const currentPrecip = current.precipitation || 0;
+        document.getElementById('spec-precip').textContent = `${currentPrecip.toFixed(1)} mm`;
+        const specPrecipProb = document.getElementById('spec-precip-prob');
+        if (specPrecipProb) {
+          const curProb = (hourly && hourly.precipitation_probability && hourly.precipitation_probability.length > 0)
+            ? hourly.precipitation_probability[0]
+            : 0;
+          if (currentPrecip > 0.1) {
+            specPrecipProb.textContent = `Regen (${curProb}%)`;
+          } else if (curProb > 45) {
+            specPrecipProb.textContent = `Droog (regio ${curProb}%)`;
+          } else {
+            specPrecipProb.textContent = `Droog (0%)`;
+          }
         }
       }
+
       document.getElementById('spec-uv').textContent = (current.uv_index !== undefined && current.uv_index !== null) ? current.uv_index.toFixed(1) : '--';
       document.getElementById('spec-pressure').textContent = current.surface_pressure ? `${Math.round(current.surface_pressure)} hPa` : '1016 hPa';
 
       const visMeters = hourly && hourly.visibility ? hourly.visibility[0] : 25000;
       const visKm = Math.round(visMeters / 1000);
       document.getElementById('spec-visibility').textContent = visKm > 20 ? '> 20 km' : `${visKm} km`;
-
-      const advice = computeCommuteAdvise(data);
 
       const verdictCard = document.getElementById('master-verdict-card');
       const verdictPill = document.getElementById('master-verdict-pill');
@@ -4284,23 +4549,24 @@
       verdictPill.dataset.verdict = advice.dayVerdict;
       verdictScore.dataset.verdict = advice.dayVerdict;
 
-      document.getElementById('morning-slot-time').textContent = `${AppState.commute.morningTime} (Heen)`;
+      const prefixSlot = isNextWorkday ? `${workdayConfig.nextWorkday.dayShort.toUpperCase()} ` : '';
+      document.getElementById('morning-slot-time').textContent = `${prefixSlot}${AppState.commute.morningTime} (Heen)`;
       document.getElementById('morning-temp').textContent = `${advice.morningData.avgTemp}°C`;
       document.getElementById('morning-rain').textContent = advice.morningData.totalPrecip > 0.05 
         ? `${advice.morningData.totalPrecip} mm` 
         : (advice.morningData.maxPrecipProb > 50 ? `0.0 mm (${advice.morningData.maxPrecipProb}%)` : '0.0 mm (Droog)');
       document.getElementById('morning-gusts').textContent = `${advice.morningData.maxGusts} km/u`;
       document.getElementById('morning-status-badge').textContent = advice.morningScore.badgeText;
-      document.getElementById('morning-note').innerHTML = `<span>👉</span> ${advice.morningScore.reasons.length ? advice.morningScore.reasons.join(". ") : "Ideale ochtendrit! Droog asfalt en kalme wind."}`;
+      document.getElementById('morning-note').innerHTML = `<span>👉</span> ${advice.morningScore.reasons.length ? advice.morningScore.reasons.join(". ") : (isNextWorkday ? `Ideale rit op ${workdayConfig.nextWorkday.dayName.toLowerCase()}! Droog asfalt en kalme wind.` : "Ideale ochtendrit! Droog asfalt en kalme wind.")}`;
 
-      document.getElementById('evening-slot-time').textContent = `${AppState.commute.eveningTime} (Terug)`;
+      document.getElementById('evening-slot-time').textContent = `${prefixSlot}${AppState.commute.eveningTime} (Terug)`;
       document.getElementById('evening-temp').textContent = `${advice.eveningData.avgTemp}°C`;
       document.getElementById('evening-rain').textContent = advice.eveningData.totalPrecip > 0.05 
         ? `${advice.eveningData.totalPrecip} mm` 
         : (advice.eveningData.maxPrecipProb > 50 ? `0.0 mm (${advice.eveningData.maxPrecipProb}%)` : '0.0 mm (Droog)');
       document.getElementById('evening-gusts').textContent = `${advice.eveningData.maxGusts} km/u`;
       document.getElementById('evening-status-badge').textContent = advice.eveningScore.badgeText;
-      document.getElementById('evening-note').innerHTML = `<span>👉</span> ${advice.eveningScore.reasons.length ? advice.eveningScore.reasons.join(". ") : "Prettige terugreis! Asfalt is droog en goed begaanbaar."}`;
+      document.getElementById('evening-note').innerHTML = `<span>👉</span> ${advice.eveningScore.reasons.length ? advice.eveningScore.reasons.join(". ") : (isNextWorkday ? `Prettige terugrit op ${workdayConfig.nextWorkday.dayName.toLowerCase()}! Asfalt is droog.` : "Prettige terugreis! Asfalt is droog en goed begaanbaar.")}`;
 
       const maxGustOverall = Math.max(advice.morningData.maxGusts, advice.eveningData.maxGusts);
       document.getElementById('meter-wind-val').textContent = `${maxGustOverall} km/u`;
@@ -4358,6 +4624,7 @@
       renderHourlyStrip(hourly);
       renderDailyForecast(daily);
       renderSimpleModeCard(data, advice);
+      updateDayToggleUI();
     }
 
     // Render Simple Mode Card (Combines Current Weather & Motoradvies into 1 Screen-Filling Widget)
@@ -4367,6 +4634,8 @@
 
       const current = data.current;
       const daily = data.daily;
+      const isNextWorkday = advice.isNextWorkday || (AppState.selectedDay === 'nextWorkday');
+      const workdayConfig = advice.workdayConfig || getWorkdayConfig();
 
       // Location & Date & Time
       const cityNameEl = document.getElementById('simple-city-name');
@@ -4374,40 +4643,79 @@
 
       const now = new Date();
       const dateEl = document.getElementById('simple-date-str');
-      if (dateEl) dateEl.textContent = formatDisplayDate(now);
-
-      const timeEl = document.getElementById('simple-update-time');
-      if (timeEl) timeEl.textContent = formatDisplayTime(now);
-
-      // Weather condition
-      const code = current.weather_code || 0;
-      const wmoInfo = WMO_DICT[code] || { text: "Helder", icon: "sun", state: "sunny" };
-      const isNight = current.is_day === 0;
-
-      const tempEl = document.getElementById('simple-temp');
-      if (tempEl) tempEl.textContent = Math.round(current.temperature_2m);
-
-      const condEl = document.getElementById('simple-condition');
-      if (condEl) condEl.textContent = wmoInfo.text;
-
-      const iconEl = document.getElementById('simple-weather-icon');
-      if (iconEl) iconEl.innerHTML = getWeatherSvg(wmoInfo.icon, isNight);
-
-      const feelsEl = document.getElementById('simple-feels-like');
-      if (feelsEl) feelsEl.textContent = `${Math.round(current.apparent_temperature)}°`;
-
-      if (daily && daily.temperature_2m_max) {
-        const maxEl = document.getElementById('simple-max-temp');
-        const minEl = document.getElementById('simple-min-temp');
-        if (maxEl) maxEl.textContent = `${Math.round(daily.temperature_2m_max[0])}°`;
-        if (minEl) minEl.textContent = `${Math.round(daily.temperature_2m_min[0])}°`;
+      if (dateEl) {
+        dateEl.textContent = isNextWorkday
+          ? `${formatDisplayDate(workdayConfig.nextWorkday.date)} (Volgende werkdag)`
+          : formatDisplayDate(now);
       }
 
-      const windSpeed = Math.round(current.wind_speed_10m);
-      const windDir = getWindDirectionText(current.wind_direction_10m);
-      const windGusts = Math.round(current.wind_gusts_10m);
-      const windTextEl = document.getElementById('simple-wind-text');
-      if (windTextEl) windTextEl.textContent = `Wind: ${windSpeed} km/u (${windDir}) • Stoten: ${windGusts} km/u`;
+      const timeEl = document.getElementById('simple-update-time');
+      if (timeEl) {
+        timeEl.textContent = isNextWorkday ? 'Voorspelling' : formatDisplayTime(now);
+      }
+
+      // Weather condition (Live Current vs Next Workday Forecast)
+      if (isNextWorkday && daily && daily.time) {
+        const dayIdx = daily.time.findIndex(t => t.startsWith(workdayConfig.nextWorkday.dateStr));
+        if (dayIdx >= 0) {
+          const code = daily.weather_code[dayIdx] || 0;
+          const wmoInfo = WMO_DICT[code] || { text: "Helder", icon: "sun", state: "sunny" };
+          const maxT = Math.round(daily.temperature_2m_max[dayIdx]);
+          const minT = Math.round(daily.temperature_2m_min[dayIdx]);
+          const dayAvgT = Math.round((maxT + minT) / 2);
+
+          const tempEl = document.getElementById('simple-temp');
+          if (tempEl) tempEl.textContent = dayAvgT;
+
+          const condEl = document.getElementById('simple-condition');
+          if (condEl) condEl.textContent = wmoInfo.text;
+
+          const iconEl = document.getElementById('simple-weather-icon');
+          if (iconEl) iconEl.innerHTML = getWeatherSvg(wmoInfo.icon, false);
+
+          const feelsEl = document.getElementById('simple-feels-like');
+          if (feelsEl) feelsEl.textContent = `${dayAvgT}°`;
+
+          const maxEl = document.getElementById('simple-max-temp');
+          const minEl = document.getElementById('simple-min-temp');
+          if (maxEl) maxEl.textContent = `${maxT}°`;
+          if (minEl) minEl.textContent = `${minT}°`;
+
+          const maxWind = Math.round(daily.wind_speed_10m_max[dayIdx] || 0);
+          const maxGusts = Math.round(daily.wind_gusts_10m_max[dayIdx] || 0);
+          const windTextEl = document.getElementById('simple-wind-text');
+          if (windTextEl) windTextEl.textContent = `Wind: max ${maxWind} km/u • Stoten: ${maxGusts} km/u`;
+        }
+      } else {
+        const code = current.weather_code || 0;
+        const wmoInfo = WMO_DICT[code] || { text: "Helder", icon: "sun", state: "sunny" };
+        const isNight = current.is_day === 0;
+
+        const tempEl = document.getElementById('simple-temp');
+        if (tempEl) tempEl.textContent = Math.round(current.temperature_2m);
+
+        const condEl = document.getElementById('simple-condition');
+        if (condEl) condEl.textContent = wmoInfo.text;
+
+        const iconEl = document.getElementById('simple-weather-icon');
+        if (iconEl) iconEl.innerHTML = getWeatherSvg(wmoInfo.icon, isNight);
+
+        const feelsEl = document.getElementById('simple-feels-like');
+        if (feelsEl) feelsEl.textContent = `${Math.round(current.apparent_temperature)}°`;
+
+        if (daily && daily.temperature_2m_max) {
+          const maxEl = document.getElementById('simple-max-temp');
+          const minEl = document.getElementById('simple-min-temp');
+          if (maxEl) maxEl.textContent = `${Math.round(daily.temperature_2m_max[0])}°`;
+          if (minEl) minEl.textContent = `${Math.round(daily.temperature_2m_min[0])}°`;
+        }
+
+        const windSpeed = Math.round(current.wind_speed_10m);
+        const windDir = getWindDirectionText(current.wind_direction_10m);
+        const windGusts = Math.round(current.wind_gusts_10m);
+        const windTextEl = document.getElementById('simple-wind-text');
+        if (windTextEl) windTextEl.textContent = `Wind: ${windSpeed} km/u (${windDir}) • Stoten: ${windGusts} km/u`;
+      }
 
       // Master Verdict / Advice Banner (CSS-driven states)
       const verdictCard = document.getElementById('simple-combined-card');
@@ -4426,6 +4734,7 @@
       if (verdictScore) verdictScore.dataset.verdict = advice.dayVerdict;
 
       // Commute highlights (Morning & Evening) with separated Badge and Weather Stats
+      const prefixSlot = isNextWorkday ? `${workdayConfig.nextWorkday.dayShort.toUpperCase()} ` : '';
       const mornTimeEl = document.getElementById('simple-morning-time');
       const mornBadgeEl = document.getElementById('simple-morning-badge');
       const mornStatusEl = document.getElementById('simple-morning-status');
@@ -4434,8 +4743,8 @@
       const eveBadgeEl = document.getElementById('simple-evening-badge');
       const eveStatusEl = document.getElementById('simple-evening-status');
 
-      if (mornTimeEl) mornTimeEl.textContent = `(${AppState.commute.morningTime})`;
-      if (eveTimeEl) eveTimeEl.textContent = `(${AppState.commute.eveningTime})`;
+      if (mornTimeEl) mornTimeEl.textContent = `(${prefixSlot}${AppState.commute.morningTime})`;
+      if (eveTimeEl) eveTimeEl.textContent = `(${prefixSlot}${AppState.commute.eveningTime})`;
 
       if (advice.morningData && advice.morningScore) {
         if (mornBadgeEl) {
@@ -4521,28 +4830,45 @@
       }
     }
 
-    // Render Hourly Strip: Starts from past 1 hour and displays forecast ahead
+    // Render Hourly Strip: Starts from past 1 hour (or 06:00 for next workday) and displays forecast ahead
     function renderHourlyStrip(hourly) {
       const strip = document.getElementById('hourly-strip');
       if (!strip || !hourly || !hourly.time) return;
 
+      const isNextWorkday = AppState.selectedDay === 'nextWorkday';
+      const workdayConfig = getWorkdayConfig();
+      const activeDateStr = isNextWorkday ? workdayConfig.nextWorkday.dateStr : workdayConfig.today.dateStr;
+
       const now = new Date();
       const currentTimestamp = now.getTime();
 
-      // Find index in hourly data closest to current time
-      let currentIdx = 0;
-      let minDiff = Infinity;
-      for (let i = 0; i < hourly.time.length; i++) {
-        const t = new Date(hourly.time[i]).getTime();
-        const diff = Math.abs(t - currentTimestamp);
-        if (diff < minDiff) {
-          minDiff = diff;
-          currentIdx = i;
+      let startIdx = 0;
+      let currentIdx = -1;
+
+      if (isNextWorkday) {
+        // Find index of targetDateStr at 06:00 or first entry of that day
+        const dayStartIndex = hourly.time.findIndex(t => t.startsWith(`${activeDateStr}T06:00`));
+        if (dayStartIndex !== -1) {
+          startIdx = dayStartIndex;
+        } else {
+          const firstDayIndex = hourly.time.findIndex(t => t.startsWith(activeDateStr));
+          startIdx = firstDayIndex !== -1 ? firstDayIndex : 0;
         }
+      } else {
+        // Find index in hourly data closest to current time
+        let minDiff = Infinity;
+        for (let i = 0; i < hourly.time.length; i++) {
+          const t = new Date(hourly.time[i]).getTime();
+          const diff = Math.abs(t - currentTimestamp);
+          if (diff < minDiff) {
+            minDiff = diff;
+            currentIdx = i;
+          }
+        }
+        // Start 1 hour prior ("het afgelopen uur en dan wat er komt")
+        startIdx = Math.max(0, currentIdx - 1);
       }
 
-      // Start 1 hour prior ("het afgelopen uur en dan wat er komt")
-      const startIdx = Math.max(0, currentIdx - 1);
       const endIdx = Math.min(hourly.time.length, startIdx + 28);
 
       const morningHour = parseInt(AppState.commute.morningTime.split(':')[0], 10);
@@ -4576,15 +4902,17 @@
           rainTooltip = `Droog (0.0 mm, regenkans: ${rainProb}%)`;
         }
 
-        const isCurrent = (i === currentIdx);
+        const isCurrent = !isNextWorkday && (i === currentIdx);
         let commuteClass = '';
 
         if (isCurrent) {
           commuteClass = 'is-current-hour';
-        } else if (hourNum === morningHour) {
-          commuteClass = 'is-commute-morning';
-        } else if (hourNum === eveningHour) {
-          commuteClass = 'is-commute-evening';
+        } else if (hourly.time[i].startsWith(activeDateStr)) {
+          if (hourNum === morningHour) {
+            commuteClass = 'is-commute-morning';
+          } else if (hourNum === eveningHour) {
+            commuteClass = 'is-commute-evening';
+          }
         }
 
         html += `
@@ -5209,6 +5537,8 @@
       updateFullscreenScale();
       renderPresetCityChips();
       updateThemeButtonsUI();
+      setupDayToggleEvents();
+      updateDayToggleUI();
       setupModalEvents();
       fetchWeatherData(AppState.location.latitude, AppState.location.longitude, false);
       startWeatherPolling();
