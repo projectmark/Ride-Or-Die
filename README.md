@@ -22,8 +22,8 @@
   Begint exact bij het afgelopen uur en toont wat er aankomt (`het afgelopen uur + komende 24 uur`), met visuele highlights voor het actuele uur en jouw woon-werktijden.
 - **📱 100% Schaalbaar & Responsief**:
   Volledig geoptimaliseerd tegen tekstoverlap en afsnijden. Schaalt vloeiend van compacte 7-8 inch cockpit-schermen en desktop breedbeeld tot smartphones (met gecentreerde mobiele navigatie).
-- **🚀 100% Single-File & Standalone**:
-  Alle HTML, CSS en JavaScript bevindt zich in één enkel `index.html` bestand. Geen build tools, geen Node.js, geen externe server en **geen Python** vereist. Werkt direct in elke moderne webbrowser.
+- **🚀 100% Modulair, Standalone & Serverless**:
+  Overzichtelijk opgebouwd in gescheiden modules (`index.html`, `css/style.css`, `js/config.js`, `js/commute-engine.js`, `js/weather-service.js` en `js/app.js`). Geen build tools, geen Node.js, geen externe server en **geen Python** vereist. Werkt direct in elke moderne webbrowser via dubbelklik.
 
 ---
 
@@ -153,11 +153,17 @@ Je kunt de web app direct opstarten in een gewenste stand via de browser-URL:
 
 ---
 
-## 🚀 Direct Gebruiken
+## 🚀 Direct Gebruiken & Projectstructuur
+ 
+De app is 100% serverloos, opgedeeld in overzichtelijke bestanden en vereist geen build-proces:
+- `index.html`: Hoofd-HTML skelet met WAI-ARIA toegankelijkheid en dialoogvensters (~880 regels).
+- `css/style.css`: Material You 3 Expressive stijlen, animaties en responsive media queries.
+- `js/config.js`: Steden, WMO codes, weer-SVG's en centrale applicatiestatus.
+- `js/commute-engine.js`: Algoritme voor motorrit-geschiktheid, scoreberekening en uitrustingsadvies.
+- `js/weather-service.js`: Open-Meteo KNMI Harmonie model communicatie, caching en geolocatie.
+- `js/app.js`: UI controllers, touch/click events, dialoogvensters en bootstrap.
 
-De app is 100% self-contained in `index.html` en vereist geen installatie, server of build-proces:
-- Dubbelklik op `index.html` of open het bestand in een moderne browser (Chrome, Edge, Safari, Firefox).
-- Alle instellingen (locatie, reistijden, thema en eenvoudige weergave) worden automatisch lokaal in je browser opgeslagen via `localStorage`.
+Dubbelklik simpelweg op `index.html` om de app direct in elke browser (Chrome, Edge, Firefox, Safari) te openen.
 
 ---
 
