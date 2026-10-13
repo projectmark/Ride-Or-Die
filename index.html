@@ -6,7 +6,7 @@
   <title>☀️ Ride Or Die ⛈️</title>
   <meta name="description" content="Het ultieme motorweer dashboard voor Nederland, aangedreven door het open-source KNMI Harmonie-AROME weermodel. Volledig schaalbaar voor 1280x720/1280x800 displays met automatisch schakelend Licht/Donker thema." />
   <meta name="theme-color" content="#f5f8fc" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛅</text></svg>" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230f172a'/%3E%3Ccircle cx='49' cy='14' r='6' fill='%23f59e0b'/%3E%3Cpath d='M49 5v2.5m0 11v2.5M40 14h2.5m11 0h2.5M42.5 7.5l1.8 1.8m9 9l1.8 1.8m-12.6 0l1.8-1.8m9-9l1.8-1.8' stroke='%23f59e0b' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='15' cy='44' r='8.5' fill='none' stroke='%23f8fafc' stroke-width='3.2'/%3E%3Ccircle cx='15' cy='44' r='2.5' fill='%2338bdf8'/%3E%3Ccircle cx='49' cy='44' r='8.5' fill='none' stroke='%23f8fafc' stroke-width='3.2'/%3E%3Ccircle cx='49' cy='44' r='2.5' fill='%2338bdf8'/%3E%3Cpath d='M49 44L40 24' stroke='%23f8fafc' stroke-width='3.2' stroke-linecap='round'/%3E%3Cpath d='M41 24.5l4 2.5-1.5 3' stroke='%2338bdf8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M38.5 24.5l2-3 3 .8' stroke='%23f8fafc' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M39 25L26 37h-2M33 29l-6 8' stroke='%23f8fafc' stroke-width='2.6' stroke-linecap='round'/%3E%3Cpath d='M15 44l12-8' stroke='%23f8fafc' stroke-width='3.2' stroke-linecap='round'/%3E%3Cpath d='M22 39l2-5' stroke='%23f8fafc' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M27 37h8l2 4-9 2z' fill='%2338bdf8' opacity='.9'/%3E%3Cpath d='M29 42l-7 0-4-3' stroke='%23cbd5e1' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M39 25c-1-.8-3-4-7.5-3.5-4 .5-6.5 5-7.5 7l7 1.6 8-5.1z' fill='%230284c7'/%3E%3Cpath d='M25 29c-2.5 1-4.5 1.7-6.2 1.4l-7.8-6.4 6.4-.7 7.6 5.7z' fill='%2338bdf8'/%3E%3Cpath d='M24.5 29c-2 1-4.2 1.4-5.8 1.1' stroke='%230f172a' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M5 56h54' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' opacity='.35'/%3E%3C/svg%3E" />
 
   <!-- Google Fonts: Outfit, Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -29,63 +29,74 @@
     <!-- Top Navigation Bar (Clean & Calm) -->
     <header class="top-navbar">
       <div class="brand-group">
-        <div class="brand-icon-wrapper" title="Ride Or Die">
-          <svg class="brand-logo-svg" width="38" height="32" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="brand-icon-wrapper" title="Ride Or Die - Naked & Sport Motorweer Dashboard">
+          <svg class="brand-logo-svg" width="38" height="32" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Ride Or Die Naked Bike Logo">
             <defs>
               <linearGradient id="brandSunGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stop-color="#fbbf24"/>
                 <stop offset="100%" stop-color="#ea580c"/>
               </linearGradient>
               <linearGradient id="brandBikeBody" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#0284c7"/>
-                <stop offset="50%" stop-color="#2563eb"/>
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="50%" stop-color="#0284c7"/>
                 <stop offset="100%" stop-color="#1d4ed8"/>
               </linearGradient>
               <linearGradient id="brandWindGrad" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.1"/>
-                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.75"/>
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.8"/>
               </linearGradient>
             </defs>
 
             <!-- Weather Sun in Upper Horizon -->
-            <circle cx="37" cy="10" r="5.5" fill="url(#brandSunGrad)"/>
-            <path d="M37 2v2M37 16v2M29 10h2M43 10h2M31.3 4.3l1.4 1.4M41.3 14.3l1.4 1.4M31.3 15.7l1.4-1.4M41.3 5.7l1.4-1.4" stroke="#f59e0b" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="39" cy="9" r="5" fill="url(#brandSunGrad)"/>
+            <path d="M39 2v2M39 14v2M32 9h2M44 9h2M34 4l1.4 1.4M42.6 12.6l1.4 1.4M34 14l1.4-1.4M42.6 5.4l1.4-1.4" stroke="#f59e0b" stroke-width="1.3" stroke-linecap="round"/>
 
-            <!-- Open Road Breeze / Streamline -->
-            <path d="M5 13c6-3 14-3 21 1" stroke="url(#brandWindGrad)" stroke-width="1.6" stroke-linecap="round"/>
+            <!-- Dynamic Aero Wind Streamline -->
+            <path d="M4 11c6-3 15-2 22 2" stroke="url(#brandWindGrad)" stroke-width="1.6" stroke-linecap="round"/>
 
-            <!-- Cruiser Wheels -->
-            <!-- Fat Rear Wheel -->
-            <circle cx="10" cy="28" r="6.5" stroke="currentColor" stroke-width="2.6"/>
-            <circle cx="10" cy="28" r="2.2" fill="currentColor"/>
-            <!-- Big Front Wheel with Rake -->
-            <circle cx="35" cy="28" r="6.5" stroke="currentColor" stroke-width="2.6"/>
-            <circle cx="35" cy="28" r="2.2" fill="currentColor"/>
+            <!-- Wheels (Sport Low-Profile) -->
+            <!-- Rear Wheel -->
+            <circle cx="11" cy="27" r="6.2" stroke="currentColor" stroke-width="2.5"/>
+            <circle cx="11" cy="27" r="2" fill="currentColor"/>
+            <!-- Front Wheel -->
+            <circle cx="36" cy="27" r="6.2" stroke="currentColor" stroke-width="2.5"/>
+            <circle cx="36" cy="27" r="2" fill="currentColor"/>
 
-            <!-- Long Raked Chopper Fork -->
-            <path d="M35 28L25.5 13.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+            <!-- Swingarm & Monoshock -->
+            <path d="M11 27l8-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M16 23.5l1.5-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
 
-            <!-- High-Rise / Cruiser Handlebars -->
-            <path d="M25.5 13.5L24 7.5l-2.5 1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- USD Sport Front Fork (Steep 24° Rake) -->
+            <path d="M36 27L29.5 13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
 
-            <!-- Frame Lower Cradle & Forward Controls -->
-            <path d="M10 28l9 0 7-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M24 26l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <!-- Sharp Aggressive Headlight Mask / Flyscreen -->
+            <path d="M30 13l2.8 1.8-1 2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="31.5" cy="14.8" r="0.9" fill="#38bdf8"/>
 
-            <!-- Classic V-Twin Engine (45° cylinders) -->
-            <path d="M17 25l2.5-5M22 25l-1.5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+            <!-- Low Flat Handlebars / Clip-on with Bar-End Hint -->
+            <path d="M28.5 13.5l1.5-2.2 2 .5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 
-            <!-- Teardrop Cruiser Fuel Tank -->
-            <path d="M25.5 13.5c-1 0-3-.5-5.5 1.5-2.5 2-4 4.5-4 5.5l7-.5 2.5-6.5z" fill="url(#brandBikeBody)"/>
+            <!-- Trellis / Diamond Frame -->
+            <path d="M28.5 14L19 22h-1M24 16.5l-4 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 
-            <!-- Low Scooped Saddle & Bobbed Rear Fender -->
-            <path d="M16 20.5c-2 0-3.5 1-4.5 1.5-2 .5-4.5 1-6 3.5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <!-- Compact Muscular Engine Case -->
+            <path d="M19 22l6 0 1.5 3-7 1.5z" fill="currentColor" opacity="0.85"/>
 
-            <!-- Straight Drag Pipe Exhaust -->
-            <path d="M19 26.5h-13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+            <!-- Upswept Stubby Sport Silencer / Exhaust -->
+            <path d="M21 26l-5.5 0-3-2.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 
-            <!-- Highway Road Speedline -->
-            <path d="M3 37h42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+            <!-- Muscular Naked Fuel Tank & Air Shroud -->
+            <path d="M29 13.5c-.8-.5-2.2-2.8-5-2.5-3 .3-4.8 3.5-5.5 4.8l5 1.2 5.5-3.5z" fill="url(#brandBikeBody)"/>
+            <!-- Tank Air Scoop Accent -->
+            <path d="M26.5 14l-3 3.5" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+
+            <!-- High Sharp Stepped Sport Tail & Seat -->
+            <path d="M18.5 16c-1.8.8-3.2 1.2-4.5 1l-5.5-4.5 4.5-.5 5.5 4z" fill="url(#brandBikeBody)"/>
+            <!-- Seat Pad Cushion -->
+            <path d="M18 16.2c-1.5.8-3 1-4.2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+
+            <!-- Road Speedline -->
+            <path d="M3 35.5h42" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.25"/>
           </svg>
         </div>
         <div class="brand-title">
@@ -161,6 +172,14 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
           </svg>
+        </button>
+
+        <!-- Route Planner Button -->
+        <button class="m3-icon-btn nav-route-btn" id="open-route-planner-btn" title="Ritplanner: 3-stops regenradar & tijdschema" aria-label="Motorrit planner openen" aria-haspopup="dialog" aria-expanded="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+          </svg>
+          <span class="nav-route-btn-text">Ritplanner</span>
         </button>
 
         <!-- Settings Button -->
@@ -452,6 +471,53 @@
           </div>
         </div>
 
+        <!-- Live Dashboard Trajectweer & Ritplanner Widget -->
+        <div class="glass-card dashboard-route-widget" id="dashboard-route-widget">
+          <div class="dashboard-route-header">
+            <div class="dashboard-route-title-group">
+              <div class="section-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                </svg>
+                <span>Trajectweer</span>
+              </div>
+              <span class="dashboard-route-sub-tag" id="dashboard-route-summary-tag">Traject laden...</span>
+            </div>
+            <div class="dashboard-route-header-actions">
+              <div class="route-score-badge" id="dashboard-route-score-badge">
+                Ritveiligheid: --/100
+              </div>
+              <button type="button" class="dashboard-route-mini-btn" id="dashboard-route-swap-btn" title="Route omdraaien (heen/terug)" aria-label="Route omdraaien">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="17 1 21 5 17 9"></polyline>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <polyline points="7 23 3 19 7 15"></polyline>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                </svg>
+              </button>
+              <button type="button" class="dashboard-route-mini-btn" id="dashboard-route-edit-btn" title="Rit aanpassen in planner" aria-label="Rit aanpassen">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3-Waypoints Stages Timeline -->
+          <div class="route-stages-timeline dashboard-route-timeline" id="dashboard-route-stages-timeline" title="Klik om ritplanner te openen">
+            <div class="route-loading-state" style="padding: 16px; border-radius: 14px; width: 100%; box-sizing: border-box;">
+              <span>Routeweer laden...</span>
+            </div>
+          </div>
+
+          <!-- Quiet, elegant 1-line footer note (Rustig & overzichtelijk) -->
+          <div class="dashboard-route-footer-note" id="dashboard-route-footer-note" role="button" tabindex="0" title="Klik voor uitgebreide ritplanner en alternatieve tijdsloten">
+            <span id="dashboard-route-note-text">Droog traject • Totale reistijd berekenen...</span>
+            <span class="dashboard-route-footer-link">Details & alternatieven ➔</span>
+          </div>
+        </div>
+
       </section>
 
       <!-- ====================================================================
@@ -739,8 +805,10 @@
 
       <!-- Live Search Box -->
       <div class="search-box-container">
-        <svg class="search-icon-fixed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" class="location-search-input" id="location-search-input" placeholder="Zoek stad, dorp of postcode in Nederland..." autocomplete="off" aria-label="Plaatsnaam of postcode zoeken" />
+        <div class="search-input-wrap">
+          <svg class="search-icon-fixed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" class="location-search-input" id="location-search-input" placeholder="Zoek stad, dorp of postcode in Nederland..." autocomplete="off" aria-label="Plaatsnaam of postcode zoeken" />
+        </div>
         <div class="search-results-list" id="search-results-list"></div>
       </div>
 
@@ -874,6 +942,173 @@
     </div>
   </div>
 
+  <!-- ==========================================================================
+       ROUTE PLANNER MODAL (Start, Halverwege & Bestemming met 30m tijdvakken)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="route-planner-modal" role="dialog" aria-modal="true" aria-labelledby="route-modal-title">
+    <div class="settings-modal-card route-modal-card">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="route-header-icon-badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title" id="route-modal-title">Motorrit & Buienradar</h3>
+            <div class="modal-subtitle">Start ➔ Halverwege ➔ Bestemming (30-minuten tijdvakken)</div>
+          </div>
+        </div>
+        <button class="close-modal-btn" id="close-route-modal-btn" title="Sluiten" aria-label="Sluiten">&times;</button>
+      </div>
+
+      <!-- Route Form: 3 Waypoints -->
+      <div class="route-waypoints-section">
+        <!-- Start Waypoint -->
+        <div class="route-waypoint-row">
+          <div class="route-point-marker marker-start" title="Startpunt">A</div>
+          <div class="route-waypoint-field">
+            <div class="route-waypoint-label-row">
+              <label for="route-start-input" class="route-waypoint-label">Startpunt</label>
+              <button type="button" class="route-gps-pill" id="route-start-gps-btn" title="Gebruik huidige GPS locatie als startpunt">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                GPS
+              </button>
+            </div>
+            <div class="route-input-wrap">
+              <input type="text" id="route-start-input" class="route-waypoint-input" value="Utrecht" placeholder="Typ startplaats..." autocomplete="off" />
+              <div class="route-search-dropdown" id="route-start-results"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Swap Direction Button -->
+        <div class="route-swap-row">
+          <div class="route-connector-line"></div>
+          <button type="button" class="route-swap-btn" id="route-swap-btn" title="Draai startpunt en bestemming om" aria-label="Route omdraaien">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 16 5 5 5-5M12 21V3M17 8l-5-5-5 5"/></svg>
+            <span>Draai route om</span>
+          </button>
+          <div class="route-connector-line"></div>
+        </div>
+
+        <!-- Midway Waypoint -->
+        <div class="route-waypoint-row">
+          <div class="route-point-marker marker-mid" title="Halverwege punt">B</div>
+          <div class="route-waypoint-field">
+            <label for="route-mid-input" class="route-waypoint-label">Halverwege punt</label>
+            <div class="route-input-wrap">
+              <input type="text" id="route-mid-input" class="route-waypoint-input" value="Hilversum" placeholder="Typ tussenstop..." autocomplete="off" />
+              <div class="route-search-dropdown" id="route-mid-results"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Destination Waypoint -->
+        <div class="route-waypoint-row" style="margin-top: 10px;">
+          <div class="route-point-marker marker-dest" title="Bestemming">C</div>
+          <div class="route-waypoint-field">
+            <label for="route-dest-input" class="route-waypoint-label">Bestemming</label>
+            <div class="route-input-wrap">
+              <input type="text" id="route-dest-input" class="route-waypoint-input" value="Amsterdam" placeholder="Typ bestemming..." autocomplete="off" />
+              <div class="route-search-dropdown" id="route-dest-results"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick City Chips for Waypoints -->
+        <div class="route-chips-helper">
+          <span class="route-helper-label">Snelle steden:</span>
+          <div class="route-preset-chips" id="route-preset-chips">
+            <!-- Dynamisch via PRESET_CITIES -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls: Leg Duration & Departure Time -->
+      <div class="route-controls-grid">
+        <!-- Reistijd per etappe -->
+        <div class="route-control-card">
+          <div class="route-control-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Reistijd per etappe
+          </div>
+          <div class="route-duration-buttons" id="route-duration-buttons">
+            <button type="button" class="route-chip-btn" data-duration="15">15 min</button>
+            <button type="button" class="route-chip-btn is-active" data-duration="30">30 min (std)</button>
+            <button type="button" class="route-chip-btn" data-duration="45">45 min</button>
+            <button type="button" class="route-chip-btn" data-duration="60">60 min</button>
+          </div>
+        </div>
+
+        <!-- Vertrektijd -->
+        <div class="route-control-card">
+          <div class="route-control-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 10"/></svg>
+            Vertrektijd aanpassen
+          </div>
+          <div class="route-departure-row">
+            <input type="time" class="route-time-input" id="route-custom-time-input" aria-label="Aangepaste vertrektijd" />
+            <div class="route-offset-chips" id="route-offset-chips">
+              <button type="button" class="route-offset-btn is-active" data-offset="0">Nu</button>
+              <button type="button" class="route-offset-btn" data-offset="15">+15m</button>
+              <button type="button" class="route-offset-btn" data-offset="30">+30m</button>
+              <button type="button" class="route-offset-btn" data-offset="45">+45m</button>
+              <button type="button" class="route-offset-btn" data-offset="60">+60m</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis Results & Verdict Banner -->
+      <div class="route-analysis-container" id="route-analysis-container">
+        <!-- Loading Indicator -->
+        <div class="route-loading-state" id="route-loading-state" style="display: none;">
+          <div class="spin" style="display:inline-block; font-size: 1.4rem;">⚙️</div>
+          <span>KNMI Harmonie 15-minuten weerdata ophalen voor alle 3 waypoints...</span>
+        </div>
+
+        <!-- Verdict Banner -->
+        <div class="route-verdict-banner" id="route-verdict-banner">
+          <div class="route-verdict-badge" id="route-verdict-badge">🟢 100% DROOG</div>
+          <div class="route-verdict-headline" id="route-verdict-headline">Route analyseren...</div>
+          <div class="route-verdict-explanation" id="route-verdict-explanation">Weergegevens per tijdvak worden berekend</div>
+          <div class="route-verdict-tip" id="route-verdict-tip"></div>
+        </div>
+
+        <!-- 3-Waypoints Timeline Progression -->
+        <div class="route-stages-card">
+          <div class="route-stages-header">
+            <span>Tijdvakken & Trajectweer (15-min KNMI data)</span>
+            <span class="route-score-badge" id="route-score-badge">Score: --/100</span>
+          </div>
+
+          <div class="route-stages-timeline" id="route-stages-timeline">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Alternative Departure Slots Strip -->
+        <div class="route-alternatives-card">
+          <div class="route-alternatives-header">
+            <span>Slimme Vertrekopties (Bui ontwijken)</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Tik op een tijdstip om te wisselen</span>
+          </div>
+          <div class="route-alternatives-strip" id="route-alternatives-strip">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.74rem; color: var(--text-muted);">Open-Meteo & KNMI Harmonie Seamless</span>
+        <button type="button" class="city-chip" id="route-refresh-btn" style="background: var(--sky-accent); color: #fff; font-weight: 800; padding: 7px 18px;">
+          Ververs Weerdata
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Pill -->
   <div class="toast-pill" id="toast-pill">Locatie bijgewerkt!</div>
 
@@ -881,6 +1116,7 @@
   <!-- Modular Application Scripts (100% Standalone & Serverless) -->
   <script src="js/config.js"></script>
   <script src="js/commute-engine.js"></script>
+  <script src="js/route-engine.js"></script>
   <script src="js/weather-service.js"></script>
   <script src="js/app.js"></script>
 </body>

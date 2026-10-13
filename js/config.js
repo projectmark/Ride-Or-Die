@@ -39,7 +39,23 @@ const AppState = {
   },
   isSimpleMode: false,
   selectedDay: 'today', // 'today' | 'nextWorkday'
-  weatherData: null
+  weatherData: null,
+  route: {
+    start: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
+    mid: { name: 'Hilversum', lat: 52.2233, lon: 5.1764, country: 'NL' },
+    dest: { name: 'Amsterdam', lat: 52.3676, lon: 4.9041, country: 'NL' },
+    departureMode: 'now', // 'now' | 'custom'
+    customTime: '', // 'HH:mm' if manually set
+    timeOffsetMinutes: 0, // offset in minutes from departure base (e.g. +15, +30)
+    legDurationMinutes: 30, // default 30 minutes per time slot as requested
+    activePickerTarget: null, // 'start' | 'mid' | 'dest'
+    waypointsWeather: {
+      start: null,
+      mid: null,
+      dest: null
+    },
+    analysis: null
+  }
 };
 
 // Preset Cities Source of Truth (Single Source, No Repetition)

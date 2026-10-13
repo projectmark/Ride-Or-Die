@@ -9,7 +9,7 @@
 // ==========================================================================
 const WeatherCache = {
   TTL_MS: 10 * 60 * 1000, // 10 minutes cache TTL (aligned with model update frequencies)
-  MAX_ENTRIES: 6, // Keep at most 6 recent location caches in localStorage
+  MAX_ENTRIES: 20, // Keep up to 20 recent location caches in localStorage (covers main + waypoints)
 
   getCacheKey(lat, lon) {
     return `rideordie_weather_${Number(lat).toFixed(3)}_${Number(lon).toFixed(3)}`;
@@ -120,7 +120,7 @@ async function fetchWeatherData(lat, lon, force = false) {
     showToast("KNMI Harmonie model data ophalen...");
   }
 
-  const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,uv_index&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&models=knmi_seamless&timezone=auto&forecast_days=7`;
+  const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,uv_index&minutely_15=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&models=knmi_seamless&timezone=auto&forecast_days=7`;
 
   try {
     const response = await fetch(apiUrl, { signal });
@@ -139,7 +139,6 @@ async function fetchWeatherData(lat, lon, force = false) {
     showToast(force ? "KNMI data direct vernieuwd! 🔄" : "KNMI data actueel bijgewerkt!");
   } catch (err) {
     if (err.name === 'AbortError') {
-      // Normal abort when user switches location quickly
       return;
     }
     console.error("Fout bij ophalen weerdata:", err);
@@ -151,6 +150,34 @@ async function fetchWeatherData(lat, lon, force = false) {
   } finally {
     if (refreshIcon) refreshIcon.classList.remove('spin');
   }
+}
+
+// Fetch single point weather with 15-minute resolution & caching
+async function fetchPointWeatherData(lat, lon, force = false) {
+  const cached = WeatherCache.get(lat, lon);
+  if (!force && cached && cached.isFresh) {
+    return cached.data;
+  }
+  const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,uv_index&minutely_15=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&models=knmi_seamless&timezone=auto&forecast_days=7`;
+  const response = await fetch(apiUrl);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const data = await response.json();
+  WeatherCache.set(lat, lon, data);
+  return data;
+}
+
+// Fetch all 3 route waypoints concurrently
+async function fetchRouteWeather(startPoint, midPoint, destPoint, force = false) {
+  const [startData, midData, destData] = await Promise.all([
+    fetchPointWeatherData(startPoint.lat, startPoint.lon, force),
+    fetchPointWeatherData(midPoint.lat, midPoint.lon, force),
+    fetchPointWeatherData(destPoint.lat, destPoint.lon, force)
+  ]);
+  return {
+    start: startData,
+    mid: midData,
+    dest: destData
+  };
 }
 
 // Smart Background Polling (pauses when tab is hidden, resumes when visible if stale)

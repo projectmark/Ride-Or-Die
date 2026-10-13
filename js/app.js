@@ -33,6 +33,19 @@ function loadSavedState() {
     if (savedDay && ['today', 'nextWorkday'].includes(savedDay)) {
       AppState.selectedDay = savedDay;
     }
+
+    const savedRoute = localStorage.getItem('rideordie_route');
+    if (savedRoute) {
+      try {
+        const parsed = JSON.parse(savedRoute);
+        if (parsed.start) AppState.route.start = parsed.start;
+        if (parsed.mid) AppState.route.mid = parsed.mid;
+        if (parsed.dest) AppState.route.dest = parsed.dest;
+        if (parsed.legDurationMinutes) AppState.route.legDurationMinutes = parsed.legDurationMinutes;
+      } catch (err) {
+        console.warn("Kon route-instellingen niet laden:", err);
+      }
+    }
   } catch (e) {
     console.error("Kon instellingen niet laden:", e);
   }
@@ -47,6 +60,14 @@ function saveState() {
     localStorage.setItem('rideordie_commute', JSON.stringify(AppState.commute));
     localStorage.setItem('rideordie_simple', AppState.isSimpleMode ? 'true' : 'false');
     localStorage.setItem('rideordie_selected_day', AppState.selectedDay || 'today');
+    if (AppState.route) {
+      localStorage.setItem('rideordie_route', JSON.stringify({
+        start: AppState.route.start,
+        mid: AppState.route.mid,
+        dest: AppState.route.dest,
+        legDurationMinutes: AppState.route.legDurationMinutes
+      }));
+    }
   } catch (e) {
     console.error("Kon instellingen niet opslaan:", e);
   }
@@ -409,10 +430,17 @@ function checkInitialHashModes() {
   const hash = window.location.hash;
   const hasFs = hash.includes('fullscreen');
   const hasSimple = hash.includes('simple');
+  const hasRoute = hash.includes('route');
 
   if (hasSimple) {
     AppState.isSimpleMode = true;
     updateSimpleModeUI(true);
+  }
+
+  if (hasRoute) {
+    setTimeout(() => {
+      openRoutePlannerModal();
+    }, 100);
   }
 
   if (hasFs) {
@@ -670,6 +698,16 @@ function renderDashboard(data) {
 
   const gearContainer = document.getElementById('gear-chips-container');
   gearContainer.innerHTML = advice.gearPills.map(pill => `<span class="gear-pill">${pill}</span>`).join('');
+
+  // Update Route Planner Promo card summary on dashboard
+  const promoSummary = document.getElementById('route-promo-summary');
+  const promoHint = document.getElementById('route-promo-hint');
+  if (promoSummary && AppState.route) {
+    promoSummary.textContent = `${AppState.route.start.name} ➔ ${AppState.route.mid.name} ➔ ${AppState.route.dest.name}`;
+  }
+  if (promoHint && AppState.route && AppState.route.analysis) {
+    promoHint.textContent = `${AppState.route.analysis.badgeText} • Vertrek ${AppState.route.analysis.startWeather.timeStr} ➔`;
+  }
 
   renderHourlyStrip(hourly);
   renderDailyForecast(daily);
@@ -1376,6 +1414,7 @@ window.addEventListener('resize', () => {
 // Refresh, GPS, Theme, Simple Mode & Fullscreen Button Handlers
 document.getElementById('refresh-btn').addEventListener('click', () => {
   fetchWeatherData(AppState.location.latitude, AppState.location.longitude, true);
+  loadRouteAndAnalyze(true);
 });
 document.getElementById('gps-btn').addEventListener('click', requestGPSLocation);
 const simpleModeBtn = document.getElementById('simple-mode-btn');
@@ -1384,6 +1423,599 @@ if (simpleModeBtn) {
 }
 document.getElementById('fullscreen-btn').addEventListener('click', toggleFullScreen);
 document.getElementById('theme-toggle-btn').addEventListener('click', cycleTheme);
+
+// ============================================================================
+// ROUTE PLANNER CONTROLLER (Start ➔ Halverwege ➔ Bestemming met 30m tijdvakken)
+// ============================================================================
+
+let routeSearchDebounceTimer = null;
+let currentFocusedWaypoint = 'start'; // 'start' | 'mid' | 'dest'
+
+function openRoutePlannerModal() {
+  const modal = document.getElementById('route-planner-modal');
+  const openBtn = document.getElementById('open-route-planner-btn');
+  if (!modal) return;
+
+  lastFocusedElement = document.activeElement;
+  if (openBtn) openBtn.setAttribute('aria-expanded', 'true');
+
+  // Sync inputs with state
+  const startInput = document.getElementById('route-start-input');
+  const midInput = document.getElementById('route-mid-input');
+  const destInput = document.getElementById('route-dest-input');
+
+  if (startInput) startInput.value = AppState.route.start.name;
+  if (midInput) midInput.value = AppState.route.mid.name;
+  if (destInput) destInput.value = AppState.route.dest.name;
+
+  // Sync Duration Chips
+  updateRouteDurationChipsUI();
+
+  // Sync Departure Offset Chips & Time Input
+  updateRouteDepartureUI();
+
+  // Render Preset City Chips Helper
+  renderRoutePresetChips();
+
+  modal.classList.add('open');
+
+  // Trigger route analysis & weather fetch
+  loadRouteAndAnalyze(false);
+}
+
+function closeRoutePlannerModal() {
+  const modal = document.getElementById('route-planner-modal');
+  const openBtn = document.getElementById('open-route-planner-btn');
+  if (!modal) return;
+
+  modal.classList.remove('open');
+  if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
+
+  // Close all open search dropdowns
+  ['start', 'mid', 'dest'].forEach(key => {
+    const drop = document.getElementById(`route-${key}-results`);
+    if (drop) {
+      drop.classList.remove('show');
+      drop.innerHTML = '';
+    }
+  });
+
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    lastFocusedElement.focus();
+    lastFocusedElement = null;
+  }
+}
+
+function updateRouteDurationChipsUI() {
+  const container = document.getElementById('route-duration-buttons');
+  if (!container) return;
+  const currentDuration = AppState.route.legDurationMinutes || 30;
+  const buttons = container.querySelectorAll('.route-chip-btn');
+  buttons.forEach(btn => {
+    const d = parseInt(btn.dataset.duration, 10);
+    if (d === currentDuration) {
+      btn.classList.add('is-active');
+    } else {
+      btn.classList.remove('is-active');
+    }
+  });
+}
+
+function updateRouteDepartureUI() {
+  const chips = document.getElementById('route-offset-chips');
+  const timeInput = document.getElementById('route-custom-time-input');
+  const currentOffset = AppState.route.timeOffsetMinutes || 0;
+
+  if (chips) {
+    const buttons = chips.querySelectorAll('.route-offset-btn');
+    buttons.forEach(btn => {
+      const off = parseInt(btn.dataset.offset, 10);
+      if (off === currentOffset) {
+        btn.classList.add('is-active');
+      } else {
+        btn.classList.remove('is-active');
+      }
+    });
+  }
+
+  if (timeInput) {
+    if (AppState.route.customTime) {
+      timeInput.value = AppState.route.customTime;
+    } else {
+      const now = new Date();
+      timeInput.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    }
+  }
+}
+
+function renderRoutePresetChips() {
+  const container = document.getElementById('route-preset-chips');
+  if (!container) return;
+
+  container.innerHTML = PRESET_CITIES.slice(0, 8).map(city => {
+    const safeName = escapeHtml(city.name);
+    return `<button type="button" class="route-preset-chip" data-name="${safeName}" data-lat="${city.lat}" data-lon="${city.lon}">${safeName}</button>`;
+  }).join('');
+}
+
+function handleRouteWaypointSearch(query, targetKey) {
+  clearTimeout(routeSearchDebounceTimer);
+  const resultsContainer = document.getElementById(`route-${targetKey}-results`);
+  if (!resultsContainer) return;
+
+  const trimmed = (query || '').trim();
+  if (trimmed.length < 2) {
+    resultsContainer.classList.remove('show');
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  const cacheKey = trimmed.toLowerCase();
+  if (geocodingCache.has(cacheKey)) {
+    renderRouteSearchResults(geocodingCache.get(cacheKey), targetKey);
+    return;
+  }
+
+  routeSearchDebounceTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(trimmed)}&count=6&language=nl&format=json`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const results = (data && data.results) ? data.results : [];
+      geocodingCache.set(cacheKey, results);
+      renderRouteSearchResults(results, targetKey);
+    } catch (err) {
+      console.error("Fout bij route geocoding:", err);
+    }
+  }, 220);
+}
+
+function renderRouteSearchResults(results, targetKey) {
+  const resultsContainer = document.getElementById(`route-${targetKey}-results`);
+  if (!resultsContainer) return;
+
+  if (results && results.length > 0) {
+    const sorted = [...results].sort((a, b) => {
+      const aNL = (a.country_code || '').toUpperCase() === 'NL' ? 0 : 1;
+      const bNL = (b.country_code || '').toUpperCase() === 'NL' ? 0 : 1;
+      return aNL - bNL;
+    });
+
+    resultsContainer.innerHTML = sorted.map(item => {
+      const safeName = escapeHtml(item.name);
+      const safeCountry = escapeHtml(item.country_code || item.country || 'NL');
+      const safeRegion = escapeHtml(item.admin1 || item.country || '');
+      return `
+        <div class="route-search-item" data-key="${targetKey}" data-lat="${Number(item.latitude)}" data-lon="${Number(item.longitude)}" data-name="${safeName}" data-country="${safeCountry}">
+          <span><strong>${safeName}</strong> <small style="opacity:0.75;">(${safeCountry})</small></span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">${safeRegion}</span>
+        </div>
+      `;
+    }).join('');
+    resultsContainer.classList.add('show');
+  } else {
+    resultsContainer.innerHTML = `<div style="padding:8px;font-size:0.75rem;color:var(--text-muted);text-align:center;">Geen resultaten gevonden</div>`;
+    resultsContainer.classList.add('show');
+  }
+}
+
+function selectRouteWaypoint(targetKey, name, lat, lon, country = 'NL') {
+  AppState.route[targetKey] = {
+    name,
+    lat: Number(lat),
+    lon: Number(lon),
+    country
+  };
+
+  const input = document.getElementById(`route-${targetKey}-input`);
+  if (input) input.value = name;
+
+  const resultsContainer = document.getElementById(`route-${targetKey}-results`);
+  if (resultsContainer) {
+    resultsContainer.classList.remove('show');
+    resultsContainer.innerHTML = '';
+  }
+
+  saveState();
+  loadRouteAndAnalyze(false);
+  showToast(`${name} geselecteerd voor route!`);
+}
+
+function swapRouteEndpoints() {
+  const temp = AppState.route.start;
+  AppState.route.start = AppState.route.dest;
+  AppState.route.dest = temp;
+
+  const startInput = document.getElementById('route-start-input');
+  const destInput = document.getElementById('route-dest-input');
+  if (startInput) startInput.value = AppState.route.start.name;
+  if (destInput) destInput.value = AppState.route.dest.name;
+
+  saveState();
+  loadRouteAndAnalyze(false);
+  showToast("Route omgedraaid! 🔄");
+}
+
+async function setStartWaypointFromGPS() {
+  if (!navigator.geolocation) {
+    showToast("GPS wordt niet ondersteund door je browser");
+    return;
+  }
+
+  showToast("Huidige GPS positie bepalen...");
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      let placeName = 'Mijn Locatie';
+
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&addressdetails=1`, {
+          headers: { 'Accept-Language': 'nl' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.address) {
+            placeName = data.address.city || data.address.town || data.address.village || data.address.municipality || 'Mijn Locatie';
+          }
+        }
+      } catch (err) {
+        console.warn("Reverse geocode startlocatie:", err);
+      }
+
+      selectRouteWaypoint('start', placeName, lat, lon, 'NL');
+    },
+    (err) => {
+      console.warn("GPS fout startlocatie:", err);
+      showToast("GPS toegang geweigerd of mislukt");
+    },
+    { timeout: 10000, enableHighAccuracy: true }
+  );
+}
+
+// Fetch weather data for all 3 waypoints & analyze
+async function loadRouteAndAnalyze(force = false) {
+  const loadingState = document.getElementById('route-loading-state');
+  if (loadingState) loadingState.style.display = 'flex';
+
+  try {
+    const waypointsWeather = await fetchRouteWeather(
+      AppState.route.start,
+      AppState.route.mid,
+      AppState.route.dest,
+      force
+    );
+    AppState.route.waypointsWeather = waypointsWeather;
+    renderRouteAnalysis();
+  } catch (err) {
+    console.error("Fout bij ophalen route weerdata:", err);
+    showToast("Fout bij laden van routeweer via KNMI.");
+  } finally {
+    if (loadingState) loadingState.style.display = 'none';
+  }
+}
+
+function getEffectiveDepartureDate() {
+  const baseDate = new Date();
+
+  if (AppState.route.customTime) {
+    const parts = AppState.route.customTime.split(':');
+    if (parts.length === 2) {
+      baseDate.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
+    }
+  }
+
+  const offsetMs = (AppState.route.timeOffsetMinutes || 0) * 60 * 1000;
+  return new Date(baseDate.getTime() + offsetMs);
+}
+
+function renderRouteAnalysis() {
+  if (!AppState.route.waypointsWeather || !AppState.route.waypointsWeather.start) {
+    return;
+  }
+
+  const departureDate = getEffectiveDepartureDate();
+  const evaluation = RouteEngine.evaluateRoute(
+    AppState.route,
+    AppState.route.waypointsWeather,
+    departureDate
+  );
+
+  if (!evaluation) return;
+  AppState.route.analysis = evaluation;
+
+  // 1. Render Verdict Banner
+  const banner = document.getElementById('route-verdict-banner');
+  const badge = document.getElementById('route-verdict-badge');
+  const headline = document.getElementById('route-verdict-headline');
+  const explanation = document.getElementById('route-verdict-explanation');
+  const tip = document.getElementById('route-verdict-tip');
+
+  if (banner) {
+    banner.className = `route-verdict-banner verdict-${evaluation.verdict}`;
+  }
+  if (badge) badge.textContent = evaluation.badgeText;
+  if (headline) headline.textContent = evaluation.headline;
+  if (explanation) explanation.textContent = evaluation.explanation;
+  if (tip) tip.textContent = evaluation.adviceTip;
+
+  // 2. Render Score Badge
+  const scoreBadge = document.getElementById('route-score-badge');
+  if (scoreBadge) {
+    scoreBadge.textContent = `Ritveiligheid: ${evaluation.score}/100`;
+  }
+
+  // Helper: Generate HTML for 3-waypoint timeline stages
+  const generateStagesTimelineHtml = (evalData) => {
+    const sw = evalData.startWeather;
+    const mw = evalData.midWeather;
+    const dw = evalData.destWeather;
+
+    const renderStageBox = (markerClass, letter, name, weather) => {
+      const hasHeavy = weather.precip >= 1.0;
+      const hasRain = weather.precip >= 0.15;
+      const wetClass = hasHeavy ? 'has-heavy-rain' : hasRain ? 'has-rain' : '';
+      const rainLabel = weather.precip > 0 ? `${weather.precip} mm` : '0.0 mm';
+      const rainClass = hasRain ? 'is-wet' : '';
+      const svgIcon = getWeatherSvg(weather.iconType, weather.isNight);
+
+      return `
+        <div class="route-stage-step ${wetClass}">
+          <div class="route-stage-top">
+            <div class="route-stage-pin">
+              <span class="route-stage-marker-dot ${markerClass}">${letter}</span>
+              <span class="route-stage-city" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+            </div>
+            <span class="route-stage-time">${weather.timeStr}</span>
+          </div>
+          <div class="route-stage-metrics">
+            <div class="route-stage-temp">${weather.temp}°</div>
+            <div class="route-stage-icon">${svgIcon}</div>
+          </div>
+          <div class="route-stage-rain ${rainClass}">
+            <span>💧 ${rainLabel}</span>
+            <span style="font-size:0.7rem;opacity:0.8;">(${weather.precipProb}%)</span>
+          </div>
+          <div class="route-stage-wind">
+            💨 ${weather.windSpeed} km/u <span style="opacity:0.8;">(stoot ${weather.windGusts})</span>
+          </div>
+        </div>
+      `;
+    };
+
+    const renderConnector = (legNum, legData) => {
+      const isWet = legData.maxPrecip >= 0.15;
+      const badgeText = isWet ? `⚠️ ${legData.maxPrecip} mm` : 'Droog';
+      const badgeClass = isWet ? 'wet' : 'dry';
+      return `
+        <div class="route-leg-connector">
+          <div class="route-leg-arrow">➔</div>
+          <div class="route-leg-duration">${evalData.legMinutes}m</div>
+          <div class="route-leg-rain-badge ${badgeClass}" title="Tussenliggende regenscan">${badgeText}</div>
+        </div>
+      `;
+    };
+
+    return `
+      ${renderStageBox('marker-start', 'A', AppState.route.start.name, sw)}
+      ${renderConnector(1, evalData.leg1)}
+      ${renderStageBox('marker-mid', 'B', AppState.route.mid.name, mw)}
+      ${renderConnector(2, evalData.leg2)}
+      ${renderStageBox('marker-dest', 'C', AppState.route.dest.name, dw)}
+    `;
+  };
+
+  const stagesHtml = generateStagesTimelineHtml(evaluation);
+
+  // 3. Render 3-Waypoints Stages Timeline in Modal
+  const timeline = document.getElementById('route-stages-timeline');
+  if (timeline) {
+    timeline.innerHTML = stagesHtml;
+  }
+
+  // 3b. Render 3-Waypoints Stages Timeline in Dashboard Widget
+  const dashTimeline = document.getElementById('dashboard-route-stages-timeline');
+  if (dashTimeline) {
+    dashTimeline.innerHTML = stagesHtml;
+  }
+
+  // 4. Update Dashboard Widget Header & Footer Note (Rustig, clean & netjes)
+  const dashScore = document.getElementById('dashboard-route-score-badge');
+  if (dashScore) {
+    dashScore.textContent = `Ritveiligheid: ${evaluation.score}/100`;
+  }
+
+  const dashSummaryTag = document.getElementById('dashboard-route-summary-tag');
+  if (dashSummaryTag) {
+    dashSummaryTag.textContent = `${AppState.route.start.name} ➔ ${AppState.route.mid.name} ➔ ${AppState.route.dest.name}`;
+  }
+
+  const dashFooterNote = document.getElementById('dashboard-route-footer-note');
+  const dashNoteText = document.getElementById('dashboard-route-note-text');
+  if (dashFooterNote && dashNoteText) {
+    dashFooterNote.className = `dashboard-route-footer-note verdict-${evaluation.verdict}`;
+    const totalMins = evaluation.totalMinutes || (evaluation.legMinutes * 2);
+    // Strip leading emojis to keep it clean, quiet and calm
+    const cleanBadge = (evaluation.badgeText || '').replace(/^[🟢🟡🔴⚠️]\s*/, '');
+    dashNoteText.textContent = `${cleanBadge} • Totale reistijd ${totalMins}m (${evaluation.legMinutes}m per etappe)`;
+  }
+
+  // 5. Render Alternative Departure Slots Strip in Modal
+  const alternativesStrip = document.getElementById('route-alternatives-strip');
+  if (alternativesStrip) {
+    const baseDate = new Date();
+    if (AppState.route.customTime) {
+      const parts = AppState.route.customTime.split(':');
+      if (parts.length === 2) {
+        baseDate.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
+      }
+    }
+
+    const alts = RouteEngine.computeDepartureAlternatives(
+      AppState.route,
+      AppState.route.waypointsWeather,
+      baseDate
+    );
+
+    alternativesStrip.innerHTML = alts.slots.map(slot => {
+      const isCurrent = slot.offsetMinutes === (AppState.route.timeOffsetMinutes || 0);
+      const selectedClass = isCurrent ? 'is-selected' : '';
+      const rainText = slot.maxRain > 0 ? `💧 ${slot.maxRain.toFixed(1)} mm` : '🟢 Droog';
+      return `
+        <button type="button" class="route-alt-slot slot-${slot.verdict} ${selectedClass}" data-offset="${slot.offsetMinutes}">
+          <span class="route-alt-label">${slot.label}</span>
+          <span class="route-alt-time">${slot.departureTimeStr}</span>
+          <span class="route-alt-rain">${rainText}</span>
+        </button>
+      `;
+    }).join('');
+  }
+}
+
+function setupRoutePlannerEvents() {
+  const openBtn = document.getElementById('open-route-planner-btn');
+  const closeBtn = document.getElementById('close-route-modal-btn');
+  const modal = document.getElementById('route-planner-modal');
+  const swapBtn = document.getElementById('route-swap-btn');
+  const startGpsBtn = document.getElementById('route-start-gps-btn');
+  const refreshBtn = document.getElementById('route-refresh-btn');
+
+  // Dashboard Widget triggers
+  const dashEditBtn = document.getElementById('dashboard-route-edit-btn');
+  const dashSwapBtn = document.getElementById('dashboard-route-swap-btn');
+  const dashTimeline = document.getElementById('dashboard-route-stages-timeline');
+  const dashFooterNote = document.getElementById('dashboard-route-footer-note');
+
+  if (openBtn) openBtn.addEventListener('click', openRoutePlannerModal);
+  if (dashEditBtn) dashEditBtn.addEventListener('click', openRoutePlannerModal);
+  if (dashTimeline) dashTimeline.addEventListener('click', openRoutePlannerModal);
+  if (dashFooterNote) {
+    dashFooterNote.addEventListener('click', openRoutePlannerModal);
+    dashFooterNote.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openRoutePlannerModal();
+      }
+    });
+  }
+  if (dashSwapBtn) dashSwapBtn.addEventListener('click', swapRouteEndpoints);
+  if (closeBtn) closeBtn.addEventListener('click', closeRoutePlannerModal);
+
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeRoutePlannerModal();
+    });
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeRoutePlannerModal();
+      } else {
+        handleModalTrap(e, modal, closeRoutePlannerModal);
+      }
+    });
+  }
+
+  if (swapBtn) swapBtn.addEventListener('click', swapRouteEndpoints);
+  if (startGpsBtn) startGpsBtn.addEventListener('click', setStartWaypointFromGPS);
+  if (refreshBtn) refreshBtn.addEventListener('click', () => loadRouteAndAnalyze(true));
+
+  // Waypoint inputs & focus tracking
+  ['start', 'mid', 'dest'].forEach(key => {
+    const input = document.getElementById(`route-${key}-input`);
+    if (input) {
+      input.addEventListener('focus', () => {
+        currentFocusedWaypoint = key;
+      });
+      input.addEventListener('input', (e) => {
+        handleRouteWaypointSearch(e.target.value, key);
+      });
+    }
+
+    // Delegated click on search results
+    const resultsContainer = document.getElementById(`route-${key}-results`);
+    if (resultsContainer) {
+      resultsContainer.addEventListener('click', (e) => {
+        const item = e.target.closest('.route-search-item');
+        if (item) {
+          const targetKey = item.dataset.key;
+          const lat = parseFloat(item.dataset.lat);
+          const lon = parseFloat(item.dataset.lon);
+          const name = item.dataset.name;
+          const country = item.dataset.country || 'NL';
+          selectRouteWaypoint(targetKey, name, lat, lon, country);
+        }
+      });
+    }
+  });
+
+  // Preset chips helper for waypoints
+  const presetChipsContainer = document.getElementById('route-preset-chips');
+  if (presetChipsContainer) {
+    presetChipsContainer.addEventListener('click', (e) => {
+      const chip = e.target.closest('.route-preset-chip');
+      if (chip) {
+        const name = chip.dataset.name;
+        const lat = parseFloat(chip.dataset.lat);
+        const lon = parseFloat(chip.dataset.lon);
+        selectRouteWaypoint(currentFocusedWaypoint || 'mid', name, lat, lon, 'NL');
+      }
+    });
+  }
+
+  // Duration buttons (15m, 30m, 45m, 60m)
+  const durationButtons = document.getElementById('route-duration-buttons');
+  if (durationButtons) {
+    durationButtons.addEventListener('click', (e) => {
+      const btn = e.target.closest('.route-chip-btn');
+      if (btn) {
+        const duration = parseInt(btn.dataset.duration, 10);
+        AppState.route.legDurationMinutes = duration;
+        updateRouteDurationChipsUI();
+        saveState();
+        renderRouteAnalysis();
+      }
+    });
+  }
+
+  // Departure offset chips (Nu, +15m, +30m, +45m, +60m)
+  const offsetChips = document.getElementById('route-offset-chips');
+  if (offsetChips) {
+    offsetChips.addEventListener('click', (e) => {
+      const btn = e.target.closest('.route-offset-btn');
+      if (btn) {
+        const offset = parseInt(btn.dataset.offset, 10);
+        AppState.route.timeOffsetMinutes = offset;
+        updateRouteDepartureUI();
+        renderRouteAnalysis();
+      }
+    });
+  }
+
+  // Custom Time Input
+  const customTimeInput = document.getElementById('route-custom-time-input');
+  if (customTimeInput) {
+    customTimeInput.addEventListener('change', (e) => {
+      AppState.route.customTime = e.target.value;
+      AppState.route.timeOffsetMinutes = 0;
+      updateRouteDepartureUI();
+      renderRouteAnalysis();
+    });
+  }
+
+  // Alternatives strip click
+  const alternativesStrip = document.getElementById('route-alternatives-strip');
+  if (alternativesStrip) {
+    alternativesStrip.addEventListener('click', (e) => {
+      const slotBtn = e.target.closest('.route-alt-slot');
+      if (slotBtn) {
+        const offset = parseInt(slotBtn.dataset.offset, 10);
+        AppState.route.timeOffsetMinutes = offset;
+        updateRouteDepartureUI();
+        renderRouteAnalysis();
+      }
+    });
+  }
+}
 
 // Initial Start & Smart Lifecycle Management
 window.addEventListener('DOMContentLoaded', () => {
@@ -1395,7 +2027,9 @@ window.addEventListener('DOMContentLoaded', () => {
   setupDayToggleEvents();
   updateDayToggleUI();
   setupModalEvents();
+  setupRoutePlannerEvents();
   fetchWeatherData(AppState.location.latitude, AppState.location.longitude, false);
+  loadRouteAndAnalyze(false);
   startWeatherPolling();
 
   // Page Visibility Awareness: refresh if data is stale when switching back to tab
