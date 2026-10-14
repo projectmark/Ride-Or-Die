@@ -194,41 +194,125 @@ function computeCommuteAdvise(weatherData, targetDateStr = null) {
   const morningScore = scoreRide(morningData);
   const eveningScore = scoreRide(eveningData);
 
-  const minScore = Math.min(morningScore.score, eveningScore.score);
+  let morningAnalysis = null;
+  let eveningAnalysis = null;
+
+  // If Route and Waypoint weather are available, evaluate the true 30-50 km corridor!
+  if (typeof RouteEngine !== 'undefined' && AppState.route && AppState.route.waypointsWeather && AppState.route.waypointsWeather.start) {
+    try {
+      const morningDate = new Date(`${activeDateStr}T${AppState.commute.morningTime}:00`);
+      const eveningDate = new Date(`${activeDateStr}T${AppState.commute.eveningTime}:00`);
+
+      const forwardRouteState = {
+        start: AppState.route.start,
+        mid: AppState.route.mid,
+        dest: AppState.route.dest,
+        legDurationMinutes: AppState.route.legDurationMinutes || 20
+      };
+
+      const returnRouteState = {
+        start: AppState.route.dest,
+        mid: AppState.route.mid,
+        dest: AppState.route.start,
+        legDurationMinutes: AppState.route.legDurationMinutes || 20
+      };
+
+      const forwardWaypoints = {
+        start: AppState.route.waypointsWeather.start,
+        mid: AppState.route.waypointsWeather.mid,
+        dest: AppState.route.waypointsWeather.dest
+      };
+
+      const returnWaypoints = {
+        start: AppState.route.waypointsWeather.dest,
+        mid: AppState.route.waypointsWeather.mid,
+        dest: AppState.route.waypointsWeather.start
+      };
+
+      morningAnalysis = RouteEngine.evaluateRoute(forwardRouteState, forwardWaypoints, morningDate);
+      eveningAnalysis = RouteEngine.evaluateRoute(returnRouteState, returnWaypoints, eveningDate);
+    } catch (err) {
+      console.warn("Fout bij traject-evaluatie in commute engine:", err);
+    }
+  }
+
+  // Use route analysis if available, otherwise fallback to local slice
+  const mScore = morningAnalysis ? morningAnalysis.score : morningScore.score;
+  const eScore = eveningAnalysis ? eveningAnalysis.score : eveningScore.score;
+  const minScore = Math.min(mScore, eScore);
+
   let dayVerdict = "green";
   const dayNameNL = isNextWorkday ? workdayConfig.nextWorkday.dayName.toLowerCase() : '';
   let dayHeadline = isNextWorkday
-    ? `Groen licht voor ${dayNameNL}: Heerlijk weer voor twee wielen!`
-    : "Groen licht: Heerlijk weer voor twee wielen!";
+    ? `Groen licht voor ${dayNameNL}: Heerlijk weer over jouw hele traject!`
+    : "Groen licht: Heerlijk motorweer over jouw hele traject!";
   let dayPill = "🏍️ RIDE ON!";
   let dayExplanation = isNextWorkday
-    ? `Zowel de ochtendrit als de avondrit op ${dayNameNL} zijn droog en veilig. Ideale temperaturen en kalme wind.`
-    : "Zowel de ochtendrit als de avondrit zijn droog en veilig. Ideale temperaturen en kalme wind.";
+    ? `Zowel de ochtend- als de avondrit op ${dayNameNL} zijn droog en veilig over het traject ${AppState.route.start.name} ➔ ${AppState.route.dest.name}.`
+    : `Zowel de ochtend- als de avondrit zijn droog en veilig over het traject ${AppState.route.start.name} ➔ ${AppState.route.dest.name}.`;
 
-  if (minScore < 50) {
-    dayVerdict = "red";
-    dayHeadline = isNextWorkday
-      ? `Koekblik Dag: Pak ${dayNameNL} liever de auto of OV!`
-      : "Koekblik Dag: Pak liever de auto of OV!";
-    dayPill = "🚗 DIE HARD ONLY";
+  if (morningAnalysis && eveningAnalysis) {
+    const startName = AppState.route.start.name;
+    const midName = AppState.route.mid.name;
+    const destName = AppState.route.dest.name;
 
-    const allReasons = [...morningScore.reasons, ...eveningScore.reasons];
-    const uniqueReasons = [...new Set(allReasons)].join(". ");
-    dayExplanation = `Onveilige condities: ${uniqueReasons || "slecht weer voorspeld"}. Te veel risico op nat pak, wind of gladheid.`;
-  } else if (minScore < 80) {
-    dayVerdict = "yellow";
-    dayHeadline = isNextWorkday
-      ? `Rijden kan op ${dayNameNL}, maar let goed op!`
-      : "Rijden kan, maar let goed op!";
-    dayPill = "⚠️ OPLETTEN";
-
-    const allReasons = [...morningScore.reasons, ...eveningScore.reasons];
-    const uniqueReasons = [...new Set(allReasons)].join(", ");
-    dayExplanation = `Rijden kan, wees voorbereid: ${uniqueReasons || "wisselvallig"}. Pas snelheid aan op open stukken.`;
+    if (minScore < 50) {
+      dayVerdict = "red";
+      dayPill = "🚗 DIE HARD ONLY";
+      dayHeadline = isNextWorkday
+        ? `Koekblik Dag op ${dayNameNL}: Slecht weer op je route!`
+        : `Koekblik Dag: Stevige regen of harde wind op je route!`;
+      if (morningAnalysis.verdict === 'red' && eveningAnalysis.verdict === 'red') {
+        dayExplanation = `Zowel heen (${startName} ➔ ${destName}) als terug (${destName} ➔ ${startName}) valt regen of zijn er gevaarlijke windstoten.`;
+      } else if (morningAnalysis.verdict === 'red') {
+        dayExplanation = `Ochtendrit (${startName} ➔ ${destName}): ${morningAnalysis.headline}. Terugrit is rustiger.`;
+      } else {
+        dayExplanation = `Avondrit (${destName} ➔ ${startName}): ${eveningAnalysis.headline}. Heenrit is rustiger.`;
+      }
+    } else if (minScore < 80) {
+      dayVerdict = "yellow";
+      dayPill = "⚠️ OPLETTEN";
+      if (morningAnalysis.verdict === 'yellow' && eveningAnalysis.verdict === 'green') {
+        dayHeadline = `⚠️ Let op bij heenrit: bui halverwege rond ${morningAnalysis.midWeather.timeStr}!`;
+        dayExplanation = `Tussen ${startName} en ${destName} passeer je bij ${midName} een bui (${morningAnalysis.maxRainOverall} mm). De terugreis om ${AppState.commute.eveningTime} is 100% droog.`;
+      } else if (eveningAnalysis.verdict === 'yellow' && morningAnalysis.verdict === 'green') {
+        dayHeadline = `⚠️ Heenrit droog, maar let op bij de terugreis (${destName} ➔ ${startName})!`;
+        dayExplanation = `Ochtendrit is 100% droog. Bij de terugrit rond ${eveningAnalysis.midWeather.timeStr} trekt een bui over bij ${midName} (${eveningAnalysis.maxRainOverall} mm).`;
+      } else {
+        dayHeadline = `Rijden kan, maar wees voorbereid op wisselvallig trajectweer`;
+        dayExplanation = `Mogelijk spatje neerslag of merkbare zijwind op open stukken. Pas je snelheid aan.`;
+      }
+    } else {
+      dayVerdict = "green";
+      dayPill = "🟢 100% RIDE ON!";
+      dayHeadline = `🟢 100% Droog asfalt & kalme wind over het hele traject!`;
+      dayExplanation = `Zowel heen (${startName} ➔ ${destName}) als terug (${destName} ➔ ${startName}) blijven alle waypoints droog.`;
+    }
+  } else {
+    // Fallback based on single-location slice
+    if (minScore < 50) {
+      dayVerdict = "red";
+      dayHeadline = isNextWorkday ? `Koekblik Dag: Pak ${dayNameNL} liever de auto of OV!` : "Koekblik Dag: Pak liever de auto of OV!";
+      dayPill = "🚗 DIE HARD ONLY";
+      const allReasons = [...morningScore.reasons, ...eveningScore.reasons];
+      dayExplanation = `Onveilige condities: ${[...new Set(allReasons)].join(". ") || "slecht weer voorspeld"}.`;
+    } else if (minScore < 80) {
+      dayVerdict = "yellow";
+      dayHeadline = isNextWorkday ? `Rijden kan op ${dayNameNL}, maar let goed op!` : "Rijden kan, maar let goed op!";
+      dayPill = "⚠️ OPLETTEN";
+      const allReasons = [...morningScore.reasons, ...eveningScore.reasons];
+      dayExplanation = `Rijden kan, wees voorbereid: ${[...new Set(allReasons)].join(", ") || "wisselvallig"}.`;
+    }
   }
 
-  const maxDayTemp = Math.max(morningData.avgTemp, eveningData.avgTemp);
-  const minDayTemp = Math.min(morningData.avgTemp, eveningData.avgTemp);
+  const maxDayTemp = morningAnalysis && eveningAnalysis
+    ? Math.max(morningAnalysis.destWeather.temp, eveningAnalysis.destWeather.temp)
+    : Math.max(morningData.avgTemp, eveningData.avgTemp);
+
+  const minDayTemp = morningAnalysis && eveningAnalysis
+    ? Math.min(morningAnalysis.startWeather.temp, eveningAnalysis.startWeather.temp)
+    : Math.min(morningData.avgTemp, eveningData.avgTemp);
+
   let gearPills = [];
 
   if (minDayTemp < 7) {
@@ -246,17 +330,38 @@ function computeCommuteAdvise(weatherData, targetDateStr = null) {
     gearPills.push("🧤 All-season handschoenen");
   }
 
-  if (morningData.totalPrecip > 0.3 || eveningData.totalPrecip > 0.3) {
+  const maxRouteRain = morningAnalysis && eveningAnalysis
+    ? Math.max(morningAnalysis.maxRainOverall, eveningAnalysis.maxRainOverall)
+    : Math.max(morningData.totalPrecip, eveningData.totalPrecip);
+
+  if (maxRouteRain > 0.2) {
     gearPills.push("🌧️ Regenpak & Pinlock Vizier");
   } else {
-    gearPills.push("✨ Regenpak niet nodig");
+    gearPills.push("✨ Droog vizier / Geen regenpak");
   }
+
+  // Traject Telemetry consolidation
+  const maxRouteGusts = morningAnalysis && eveningAnalysis
+    ? Math.max(morningAnalysis.maxGustsOverall, eveningAnalysis.maxGustsOverall)
+    : Math.max(morningData.maxGusts, eveningData.maxGusts);
+
+  const gripPercent = maxRouteRain > 2.0 ? 55 : maxRouteRain > 0.3 ? 75 : 100;
+  const gripStatus = gripPercent === 100 ? "Optimaal droog" : gripPercent > 70 ? "Vochtig asfalt" : "Glad / Nat";
 
   return {
     morningData,
     eveningData,
     morningScore,
     eveningScore,
+    morningAnalysis,
+    eveningAnalysis,
+    telemetry: {
+      maxGusts: maxRouteGusts,
+      maxRain: maxRouteRain,
+      gripPercent,
+      gripStatus,
+      avgTemp: Math.round((minDayTemp + maxDayTemp) / 2)
+    },
     dayVerdict,
     dayHeadline,
     dayPill,

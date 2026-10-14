@@ -25,9 +25,9 @@ function setWeatherState(state) {
 const AppState = {
   theme: 'light', // Default to Light Mode as requested ("ik haat darkmode")
   location: {
-    name: 'Utrecht',
-    latitude: 52.0908,
-    longitude: 5.1222,
+    name: 'Ameide',
+    latitude: 51.9547,
+    longitude: 4.9622,
     country: 'NL'
   },
   commute: {
@@ -37,40 +37,88 @@ const AppState = {
     maxGusts: 55,
     rainTolerance: 'normal'
   },
-  isSimpleMode: false,
   selectedDay: 'today', // 'today' | 'nextWorkday'
   weatherData: null,
   route: {
-    start: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
-    mid: { name: 'Hilversum', lat: 52.2233, lon: 5.1764, country: 'NL' },
-    dest: { name: 'Amsterdam', lat: 52.3676, lon: 4.9041, country: 'NL' },
-    departureMode: 'now', // 'now' | 'custom'
-    customTime: '', // 'HH:mm' if manually set
-    timeOffsetMinutes: 0, // offset in minutes from departure base (e.g. +15, +30)
-    legDurationMinutes: 30, // default 30 minutes per time slot as requested
-    activePickerTarget: null, // 'start' | 'mid' | 'dest'
+    start: { name: 'Ameide', lat: 51.9547, lon: 4.9622, country: 'NL' },
+    mid: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
+    dest: { name: 'Bilthoven', lat: 52.1306, lon: 5.2036, country: 'NL' },
+    legDurationMinutes: 20, // 20m per etappe = ~40m totale reistijd (30-50 km corridor)
     waypointsWeather: {
       start: null,
       mid: null,
       dest: null
     },
-    analysis: null
+    morningAnalysis: null,
+    eveningAnalysis: null,
+    masterVerdict: null
   }
 };
 
-// Preset Cities Source of Truth (Single Source, No Repetition)
+// Preset Cities Source of Truth (Single Source for search & automated corridor lookup)
 const PRESET_CITIES = [
+  { name: 'Ameide', lat: 51.9547, lon: 4.9622 },
+  { name: 'Bilthoven', lat: 52.1306, lon: 5.2036 },
   { name: 'Utrecht', lat: 52.0908, lon: 5.1222 },
+  { name: 'Nieuwegein', lat: 52.0292, lon: 5.0817 },
+  { name: 'Vianen', lat: 51.9892, lon: 5.0931 },
+  { name: 'Hilversum', lat: 52.2233, lon: 5.1764 },
+  { name: 'Weesp', lat: 52.3072, lon: 5.0414 },
   { name: 'Amsterdam', lat: 52.3676, lon: 4.9041 },
+  { name: 'Amersfoort', lat: 52.1561, lon: 5.3878 },
+  { name: 'Zeist', lat: 52.0911, lon: 5.2333 },
+  { name: 'Woerden', lat: 52.0858, lon: 4.8833 },
+  { name: 'Gouda', lat: 52.0167, lon: 4.7083 },
+  { name: 'Gorinchem', lat: 51.8333, lon: 4.9667 },
+  { name: 'Dordrecht', lat: 51.8133, lon: 4.6736 },
+  { name: 'Almere', lat: 52.3702, lon: 5.2141 },
+  { name: 'Lelystad', lat: 52.5185, lon: 5.4714 },
   { name: 'Rotterdam', lat: 51.9244, lon: 4.4777 },
+  { name: 'Delft', lat: 52.0116, lon: 4.3571 },
   { name: 'Den Haag', lat: 52.0705, lon: 4.3007 },
+  { name: 'Leiden', lat: 52.1601, lon: 4.4970 },
   { name: 'Eindhoven', lat: 51.4416, lon: 5.4697 },
+  { name: 'Den Bosch', lat: 51.6978, lon: 5.3037 },
+  { name: 'Breda', lat: 51.5719, lon: 4.7683 },
+  { name: 'Tilburg', lat: 51.5555, lon: 5.0913 },
   { name: 'Groningen', lat: 53.2194, lon: 6.5665 },
+  { name: 'Heerenveen', lat: 52.9567, lon: 5.9250 },
   { name: 'Arnhem', lat: 51.9851, lon: 5.8987 },
-  { name: 'Zwolle', lat: 52.5168, lon: 6.0830 },
-  { name: 'Maastricht', lat: 50.8514, lon: 5.6910 },
-  { name: 'Middelburg', lat: 51.5000, lon: 3.6136 },
-  { name: 'Texel', lat: 53.0543, lon: 4.7975 }
+  { name: 'Nijmegen', lat: 51.8426, lon: 5.8637 },
+  { name: 'Apeldoorn', lat: 52.2112, lon: 5.9699 },
+  { name: 'Zwolle', lat: 52.5168, lon: 6.0830 }
+];
+
+// Preset Popular Commute Routes (30-50 km)
+const PRESET_ROUTES = [
+  {
+    name: 'Ameide ➔ Utrecht ➔ Bilthoven',
+    start: { name: 'Ameide', lat: 51.9547, lon: 4.9622, country: 'NL' },
+    mid: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
+    dest: { name: 'Bilthoven', lat: 52.1306, lon: 5.2036, country: 'NL' },
+    duration: 20
+  },
+  {
+    name: 'Hilversum ➔ Weesp ➔ Amsterdam',
+    start: { name: 'Hilversum', lat: 52.2233, lon: 5.1764, country: 'NL' },
+    mid: { name: 'Weesp', lat: 52.3072, lon: 5.0414, country: 'NL' },
+    dest: { name: 'Amsterdam', lat: 52.3676, lon: 4.9041, country: 'NL' },
+    duration: 18
+  },
+  {
+    name: 'Utrecht ➔ Zeist ➔ Amersfoort',
+    start: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
+    mid: { name: 'Zeist', lat: 52.0911, lon: 5.2333, country: 'NL' },
+    dest: { name: 'Amersfoort', lat: 52.1561, lon: 5.3878, country: 'NL' },
+    duration: 15
+  },
+  {
+    name: 'Rotterdam ➔ Delft ➔ Den Haag',
+    start: { name: 'Rotterdam', lat: 51.9244, lon: 4.4777, country: 'NL' },
+    mid: { name: 'Delft', lat: 52.0116, lon: 4.3571, country: 'NL' },
+    dest: { name: 'Den Haag', lat: 52.0705, lon: 4.3007, country: 'NL' },
+    duration: 15
+  }
 ];
 
 // Weather Code Dutch Dictionary

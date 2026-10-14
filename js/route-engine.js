@@ -7,6 +7,108 @@
 
 const RouteEngine = {
   /**
+   * Calculates Haversine distance in kilometers between two geo-coordinates
+   */
+  calculateDistanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  },
+
+  /**
+   * 100% Automated Route Corridor Engine
+   * User only gives Start and Dest; app automatically calculates midway checkpoint,
+   * highway road distance, and travel duration (~20m per leg).
+   */
+  calculateCorridor(start, dest, forcedDuration = null) {
+    if (!start || !dest) return null;
+
+    const straightKm = this.calculateDistanceKm(start.lat, start.lon, dest.lat, dest.lon);
+    // Real-world Dutch motorway/provincial winding factor ~1.25x
+    const roadKm = Math.max(6, Math.round(straightKm * 1.25));
+
+    // Midpoint coordinates
+    const midLat = (start.lat + dest.lat) / 2;
+    const midLon = (start.lon + dest.lon) / 2;
+
+    // Automatically find closest named Dutch town from PRESET_CITIES
+    let closestCity = null;
+    let minCityDist = Infinity;
+
+    const startNameLower = (start.name || '').toLowerCase();
+    const destNameLower = (dest.name || '').toLowerCase();
+
+    if (typeof PRESET_CITIES !== 'undefined' && Array.isArray(PRESET_CITIES)) {
+      PRESET_CITIES.forEach(city => {
+        const cNameLower = city.name.toLowerCase();
+        if (cNameLower === startNameLower || cNameLower === destNameLower) return;
+
+        const d = this.calculateDistanceKm(midLat, midLon, city.lat, city.lon);
+        if (d < minCityDist) {
+          minCityDist = d;
+          closestCity = city;
+        }
+      });
+    }
+
+    let mid = null;
+    if (closestCity && minCityDist <= 20) {
+      mid = {
+        name: closestCity.name,
+        lat: closestCity.lat,
+        lon: closestCity.lon,
+        country: 'NL'
+      };
+    } else {
+      mid = {
+        name: `Halverwege (${Math.round(roadKm / 2)} km)`,
+        lat: parseFloat(midLat.toFixed(4)),
+        lon: parseFloat(midLon.toFixed(4)),
+        country: 'NL'
+      };
+    }
+
+    // Estimate leg duration for 30-50 km motorcycle trip (~60-70 km/h average)
+    let legDurationMinutes = forcedDuration;
+    if (!legDurationMinutes) {
+      legDurationMinutes = Math.max(12, Math.min(45, Math.round((roadKm / 2) / 1.05)));
+    }
+
+    return {
+      start,
+      mid,
+      dest,
+      roadKm,
+      legDurationMinutes,
+      totalMinutes: legDurationMinutes * 2
+    };
+  },
+
+  /**
+   * Synchronizes AppState.route with the automated corridor
+   */
+  syncRouteState(start, dest, forcedDuration = null) {
+    const corridor = this.calculateCorridor(start, dest, forcedDuration);
+    if (!corridor) return null;
+
+    AppState.route.start = corridor.start;
+    AppState.route.mid = corridor.mid;
+    AppState.route.dest = corridor.dest;
+    AppState.route.legDurationMinutes = corridor.legDurationMinutes;
+    AppState.route.roadKm = corridor.roadKm;
+
+    if (typeof saveState === 'function') {
+      saveState();
+    }
+    return corridor;
+  },
+
+  /**
    * Formats a Date object to local HH:mm string
    */
   formatTime(date) {

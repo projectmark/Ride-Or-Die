@@ -3,16 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>☀️ Ride Or Die ⛈️</title>
-  <meta name="description" content="Het ultieme motorweer dashboard voor Nederland, aangedreven door het open-source KNMI Harmonie-AROME weermodel. Volledig schaalbaar voor 1280x720/1280x800 displays met automatisch schakelend Licht/Donker thema." />
+  <title>☀️ Ride Or Die 🏍️ Motorweer & Route Dashboard</title>
+  <meta name="description" content="Het ultieme motorweer dashboard voor Nederland, aangedreven door het KNMI Harmonie-AROME weermodel. Volledig schaalbaar, responsive Material Design 3 Expressive." />
   <meta name="theme-color" content="#f5f8fc" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⛅%3C/text%3E%3C/svg%3E" />
 
   <!-- Google Fonts: Outfit, Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
-  <!-- Application Stylesheet -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body data-weather-state="sunny">
@@ -23,10 +22,9 @@
     <div class="mesh-blob mesh-blob-2"></div>
   </div>
 
-  <!-- Main Dashboard Container -->
   <div class="dashboard-wrapper">
 
-    <!-- Top Navigation Bar (Clean & Calm) -->
+    <!-- Top Navigation Bar (M3 Expressive) -->
     <header class="top-navbar">
       <div class="brand-group">
         <div class="brand-icon-wrapper" title="Ride Or Die - Naked & Sport Motorweer Dashboard">
@@ -100,43 +98,66 @@
           </svg>
         </div>
         <div class="brand-title">
-          RIDE OR DIE
+          <span>RIDE OR DIE</span>
         </div>
       </div>
 
-      <!-- Centered Location Pill Button & Day Toggle in Navbar -->
+      <!-- Center Controls: Day Toggle, Route Pill, Location Pill (In Logical Centered Order) -->
       <div class="nav-center">
-        <button class="location-trigger" id="open-location-btn" title="Kies andere locatie" aria-label="Locatie kiezen" aria-haspopup="dialog" aria-expanded="false">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <!-- 1. Day Segmented Toggle (Vandaag / Morgen) - FIRST IN LOGICAL ORDER -->
+        <div class="day-toggle-group" id="nav-day-toggle" role="tablist">
+          <button class="day-toggle-btn active" id="nav-day-today" data-day="today" role="tab" aria-selected="true">
+            Vandaag
+          </button>
+          <button class="day-toggle-btn" id="nav-day-next" data-day="nextWorkday" role="tab" aria-selected="false">
+            <span id="nav-next-day-text">Volgende werkdag</span>
+          </button>
+        </div>
+
+        <!-- 2. Route Pill (Opens Ritplanner) - SECOND IN LOGICAL ORDER -->
+        <button class="nav-pill-btn nav-route-pill" id="nav-route-btn" title="Route aanpassen of omdraaien" aria-label="Route aanpassen" aria-haspopup="dialog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+          </svg>
+          <span class="nav-route-names" id="nav-route-names">Ameide ➔ Bilthoven</span>
+          <span class="nav-route-time" id="nav-route-time-chip">~40m</span>
+        </button>
+
+        <!-- 3. Location Pill (Opens Location Selector) - THIRD IN LOGICAL ORDER -->
+        <button class="nav-pill-btn nav-location-pill" id="open-location-btn" title="Kies andere basislocatie" aria-label="Locatie kiezen" aria-haspopup="dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
             <circle cx="12" cy="10" r="3"></circle>
           </svg>
-          <span id="nav-location-label">Utrecht, NL</span>
-          <svg class="loc-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m6 9 6 6 6-6"/>
+          <span id="nav-location-label">Ameide, NL</span>
+        </button>
+      </div>
+
+      <!-- Actions: View Switcher, Theme, Refresh, Settings, Desktop Extras -->
+      <div class="nav-actions">
+        <!-- View Switcher (Cockpit ⇄ Single Widget) -->
+        <button class="view-mode-toggle-btn" id="view-mode-toggle-btn" title="Schakel weergave tussen Uitgebreide Cockpit en Compacte Widget">
+          <span id="view-mode-btn-icon">📱</span>
+          <span id="view-mode-btn-text">Widget</span>
+        </button>
+
+        <!-- Theme Toggle (Light / Auto / Dark) -->
+        <button class="m3-icon-btn" id="theme-toggle-btn" title="Thema wisselen (Licht / Auto / Donker)" aria-label="Thema wisselen">
+          <span id="theme-btn-icon">☀️</span>
+        </button>
+
+        <!-- Refresh Data -->
+        <button class="m3-icon-btn" id="refresh-btn" title="Ververs KNMI weersgegevens" aria-label="Weerdata forceren">
+          <svg id="refresh-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+            <path d="M16 21h5v-5"></path>
           </svg>
         </button>
 
-        <!-- Segmented Day Toggle (Vandaag / Volgende werkdag) -->
-        <div class="day-toggle-group" id="nav-day-toggle" role="tablist" aria-label="Weergave dag kiezen">
-          <button class="day-toggle-btn active" id="nav-day-today" data-day="today" role="tab" aria-selected="true" title="Bekijk weer en ritadvies voor vandaag">
-            <span>Vandaag</span>
-          </button>
-          <button class="day-toggle-btn" id="nav-day-next" data-day="nextWorkday" role="tab" aria-selected="false" title="Bekijk ritadvies voor de volgende werkdag">
-            <span class="day-btn-label" id="nav-next-day-text">Volgende werkdag</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="nav-actions">
-        <!-- Theme Toggle Button (Light / Auto / Dark) -->
-        <button class="theme-toggle-btn" id="theme-toggle-btn" title="Wissel tussen Licht, Automatisch of Donker thema" aria-label="Thema wisselen">
-          <span id="theme-btn-icon">☀️</span>
-          <span id="theme-btn-text">Licht</span>
-        </button>
-
-        <!-- GPS Quick Locate -->
-        <button class="m3-icon-btn" id="gps-btn" title="Gebruik huidige GPS locatie" aria-label="Huidige GPS locatie bepalen">
+        <!-- Secondary Desktop-Only Icons (GPS & Fullscreen) -->
+        <button class="m3-icon-btn nav-desktop-only" id="gps-btn" title="Gebruik huidige GPS locatie" aria-label="Huidige GPS positie bepalen">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <circle cx="12" cy="12" r="3"></circle>
@@ -147,407 +168,311 @@
           </svg>
         </button>
 
-        <!-- Refresh Button -->
-        <button class="m3-icon-btn" id="refresh-btn" title="Ververs weerdata" aria-label="Weerdata geforceerd vernieuwen">
-          <svg id="refresh-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-            <path d="M3 3v5h5"></path>
-            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
-            <path d="M16 21h5v-5"></path>
-          </svg>
-        </button>
-
-        <!-- Simple Mode Toggle (Combineert Weer & Motoradvies tot 1 schermvullend widget) -->
-        <button class="m3-icon-btn" id="simple-mode-btn" title="Simple mode: combineer tot 1 schermvullend widget" aria-label="Simple mode in- of uitschakelen">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="16" rx="3"></rect>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-            <circle cx="8" cy="15" r="1.5"></circle>
-            <line x1="13" y1="15" x2="17" y2="15"></line>
-          </svg>
-        </button>
-
-        <!-- Fullscreen Toggle for 7-8 inch display cockpit -->
-        <button class="m3-icon-btn" id="fullscreen-btn" title="Volledig scherm / Kiosk mode" aria-label="Volledig scherm of kiosk modus">
+        <button class="m3-icon-btn nav-desktop-only" id="fullscreen-btn" title="Volledig scherm (F11 / ESC)" aria-label="Volledig scherm">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
           </svg>
         </button>
 
-        <!-- Route Planner Button -->
-        <button class="m3-icon-btn nav-route-btn" id="open-route-planner-btn" title="Ritplanner: 3-stops regenradar & tijdschema" aria-label="Motorrit planner openen" aria-haspopup="dialog" aria-expanded="false">
+        <!-- Settings -->
+        <button class="m3-icon-btn" id="open-settings-btn" title="Instellingen en toleranties" aria-label="Instellingen">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-          </svg>
-          <span class="nav-route-btn-text">Ritplanner</span>
-        </button>
-
-        <!-- Settings Button -->
-        <button class="m3-icon-btn" id="open-settings-btn" title="Instellingen" aria-label="Instellingen en reistijden configureren" aria-haspopup="dialog" aria-expanded="false">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
             <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
         </button>
       </div>
     </header>
 
-    <!-- Main Dashboard Grid -->
-    <main class="dashboard-grid">
+    <!-- ====================================================================
+         VIEW 1: FULL COCKPIT DASHBOARD (Default)
+         ==================================================================== -->
+    <main class="cockpit-view" id="cockpit-view">
 
-      <!-- ====================================================================
-           COLUMN 1: CURRENT WEATHER HERO & SPECS (Left, 255px)
-           ==================================================================== -->
-      <section class="col-hero">
-
-        <!-- Hero Weather Card -->
-        <div class="glass-card hero-weather-card">
-          <div class="hero-location-header">
-            <div style="min-width: 0;">
-              <h1 class="hero-city-name" id="hero-city-name">Utrecht</h1>
-              <div class="hero-sub-location" id="hero-date-str">Vandaag, live update</div>
+      <!-- TOP HERO: MASTER JOURNEY VERDICT -->
+      <section class="m3-card hero-master-card" id="master-verdict-card" data-verdict="green">
+        <div class="master-top-row">
+          <div class="master-route-badge-wrap">
+            <span class="master-verdict-pill" id="master-verdict-pill">
+              <span>🏍️</span> 100% RIDE ON!
+            </span>
+            <div class="master-route-text" id="master-route-text">
+              <span id="master-start-name">Ameide</span> ➔ <span id="master-dest-name">Bilthoven</span>
             </div>
-            <div class="hero-time-badge" id="hero-update-time">--:--</div>
+            <button type="button" class="master-swap-btn" id="master-swap-btn" title="Draai heen- en terugrit om">
+              ⇄ Wissel
+            </button>
+          </div>
+          <div class="master-score-pill" id="master-verdict-score">
+            Index: 95/100
+          </div>
+        </div>
+
+        <h1 class="master-headline" id="master-verdict-headline">
+          100% Droog asfalt & kalme wind over het hele traject!
+        </h1>
+
+        <p class="master-explanation" id="master-verdict-explanation">
+          Zowel de ochtend- als de avondrit zijn droog en veilig. Ideale condities voor woon-werkverkeer op twee wielen.
+        </p>
+
+        <div class="master-corridor-hint" id="master-corridor-hint">
+          <span>🛣️</span>
+          <span id="master-corridor-subtext">Routecorridor gecontroleerd (via Utrecht • ~36 km • ~40m reistijd)</span>
+        </div>
+      </section>
+
+      <!-- PRIMARY FOCUS: DE TWEE RITTEN (Ochtend & Middag/Avond) -->
+      <section class="commute-grid-2col">
+
+        <!-- Ochtendrit Card -->
+        <div class="m3-card commute-slot-card" id="slot-morning-card">
+          <div class="slot-header-row">
+            <div class="slot-title-group">
+              <div class="slot-icon-circle">🌅</div>
+              <div class="slot-title-text">
+                <div class="slot-name">Ochtendrit</div>
+                <div class="slot-time" id="morning-slot-time">08:00 (Heen)</div>
+              </div>
+            </div>
+            <span class="slot-status-pill" id="morning-status-badge" data-verdict="green">
+              🟢 DROOG & VEILIG
+            </span>
           </div>
 
-          <div class="hero-main-temp-row">
-            <div class="hero-temp-block">
-              <span class="hero-temp-number" id="hero-temp">--</span>
-              <span class="hero-temp-unit">°C</span>
+          <!-- Tonal Metrics Box (Temp, Regen, Stoten) -->
+          <div class="slot-metrics-tonal-box">
+            <div class="metric-cell">
+              <span class="metric-label">Temp</span>
+              <span class="metric-value" id="morning-temp">6°C</span>
             </div>
-            <div class="hero-icon-container" id="hero-weather-icon">
+            <div class="metric-cell">
+              <span class="metric-label">Regen</span>
+              <span class="metric-value" id="morning-rain">0.0 mm</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-label">Stoten</span>
+              <span class="metric-value" id="morning-gusts">12 km/u</span>
+            </div>
+          </div>
+
+          <div class="slot-advice-note" id="morning-note">
+            👉 Groen licht: Volledig droog vertrek in Ameide en droge aankomst in Bilthoven.
+          </div>
+        </div>
+
+        <!-- Avondrit Card -->
+        <div class="m3-card commute-slot-card" id="slot-evening-card">
+          <div class="slot-header-row">
+            <div class="slot-title-group">
+              <div class="slot-icon-circle">🌇</div>
+              <div class="slot-title-text">
+                <div class="slot-name">Avondrit</div>
+                <div class="slot-time" id="evening-slot-time">17:00 (Terug)</div>
+              </div>
+            </div>
+            <span class="slot-status-pill" id="evening-status-badge" data-verdict="green">
+              🟢 DROOG & VEILIG
+            </span>
+          </div>
+
+          <!-- Tonal Metrics Box (Temp, Regen, Stoten) -->
+          <div class="slot-metrics-tonal-box">
+            <div class="metric-cell">
+              <span class="metric-label">Temp</span>
+              <span class="metric-value" id="evening-temp">17°C</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-label">Regen</span>
+              <span class="metric-value" id="evening-rain">0.0 mm</span>
+            </div>
+            <div class="metric-cell">
+              <span class="metric-label">Stoten</span>
+              <span class="metric-value" id="evening-gusts">25 km/u</span>
+            </div>
+          </div>
+
+          <div class="slot-advice-note" id="evening-note">
+            👉 Prettige terugreis! Asfalt is droog en goed begaanbaar.
+          </div>
+        </div>
+
+      </section>
+
+      <!-- PRIMARY FOCUS: UITRUSTING & KLEDINGADVIES -->
+      <section class="m3-card gear-advisor-expressive" id="gear-advisor-card">
+        <div class="gear-header-row">
+          <div class="gear-title-wrap">
+            <span class="gear-icon">🦺</span>
+            <h3>Aanbevolen Uitrusting & Kledingadvies</h3>
+          </div>
+        </div>
+
+        <div class="gear-chips-flex" id="gear-chips-container">
+          <span class="gear-chip-pill">🧥 Textiel all-weather motorjas</span>
+          <span class="gear-chip-pill">👖 Textiel motorbroek</span>
+          <span class="gear-chip-pill">🧤 Mid-season handschoenen</span>
+          <span class="gear-chip-pill">✨ Droog vizier / Geen regenpak</span>
+        </div>
+
+        <div class="gear-subtext" id="gear-subtext">
+          Berekend op basis van de minimumtemperatuur en actuele neerslagverwachting over jouw traject.
+        </div>
+      </section>
+
+      <!-- 4 ESSENTIAL SAFETY TELEMETRY METERS -->
+      <section class="safety-telemetry-grid">
+
+        <!-- Zijwind -->
+        <div class="telemetry-gauge-card">
+          <div class="gauge-top-row">
+            <span>Zijwind</span>
+            <span id="meter-wind-bft">4 BFT</span>
+          </div>
+          <div class="gauge-primary-row">
+            <span class="gauge-main-val" id="meter-wind-val">25 km/u</span>
+            <span class="gauge-status-tag" id="meter-wind-tag">Veilig</span>
+          </div>
+          <div class="gauge-bar-track">
+            <div class="gauge-bar-fill" id="meter-wind-bar" style="width: 32%; background: #10b981;"></div>
+          </div>
+        </div>
+
+        <!-- Wegdek Grip -->
+        <div class="telemetry-gauge-card">
+          <div class="gauge-top-row">
+            <span>Wegdek Grip</span>
+            <span id="meter-grip-status">Optimaal droog</span>
+          </div>
+          <div class="gauge-primary-row">
+            <span class="gauge-main-val" id="meter-grip-val">100%</span>
+            <span class="gauge-status-tag" id="meter-grip-tag">Optimaal</span>
+          </div>
+          <div class="gauge-bar-track">
+            <div class="gauge-bar-fill" id="meter-grip-bar" style="width: 100%; background: #10b981;"></div>
+          </div>
+        </div>
+
+        <!-- Regenkans -->
+        <div class="telemetry-gauge-card">
+          <div class="gauge-top-row">
+            <span>Regenkans</span>
+            <span id="meter-rain-mm">0.0 mm</span>
+          </div>
+          <div class="gauge-primary-row">
+            <span class="gauge-main-val" id="meter-rain-val">Droog</span>
+            <span class="gauge-status-tag" id="meter-rain-tag">0%</span>
+          </div>
+          <div class="gauge-bar-track">
+            <div class="gauge-bar-fill" id="meter-rain-bar" style="width: 6%; background: #10b981;"></div>
+          </div>
+        </div>
+
+        <!-- Comfort / Temperatuur -->
+        <div class="telemetry-gauge-card">
+          <div class="gauge-top-row">
+            <span>Comfort</span>
+            <span id="meter-temp-status">Fris</span>
+          </div>
+          <div class="gauge-primary-row">
+            <span class="gauge-main-val" id="meter-temp-val">12°C</span>
+            <span class="gauge-status-tag" id="meter-temp-tag">Behaaglijk</span>
+          </div>
+          <div class="gauge-bar-track">
+            <div class="gauge-bar-fill" id="meter-temp-bar" style="width: 45%; background: #10b981;"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- LOWER COCKPIT: Full-Width Hourly Trend Strip (Zero Wasted Space) -->
+      <section class="m3-card hourly-forecast-card">
+        <div class="card-title-row">
+          <div class="card-title-text">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Uurlijkse Trend (Komende 24 Uur)</span>
+          </div>
+          <div class="commute-legend" style="display:flex;gap:8px;font-size:0.72rem;color:var(--text-muted);font-weight:700;">
+            <span>• Nu</span>
+            <span style="color:#f59e0b;">• Heen</span>
+            <span style="color:#0284c7;">• Terug</span>
+          </div>
+        </div>
+
+        <div class="hourly-scroll-container" id="hourly-strip">
+          <!-- Populated via JS -->
+        </div>
+      </section>
+
+      <!-- BOTTOM ROW: Two Balanced Columns (Live Weer & 6 Specs + 7-Daagse Verwachting) -->
+      <section class="cockpit-bottom-2col">
+
+        <!-- Column 1: Live Weer & 6 Specs Grid -->
+        <div class="m3-card weather-hero-mini">
+          <div class="card-title-row">
+            <div class="card-title-text">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              <span id="hero-city-name">Ameide</span>
+            </div>
+            <span class="hero-time-badge" id="hero-update-time">Live</span>
+          </div>
+
+          <div class="hero-temp-row-large">
+            <div class="hero-large-temp">
+              <span id="hero-temp">13</span>°C
+            </div>
+            <div class="hero-icon-wrap" id="hero-weather-icon">
               <!-- Rendered via JS -->
             </div>
           </div>
 
-          <div class="hero-condition-text" id="hero-condition">Gegevens laden...</div>
+          <div class="hero-cond-text" id="hero-condition">Vrijwel helder</div>
 
-          <div class="hero-highlow-row">
-            <div class="hero-highlow-item">
-              <span>Gevoel:</span>
-              <span class="val" id="hero-feels-like">--°</span>
+          <div class="hero-minmax-row">
+            <span>Gevoel: <strong id="hero-feels-like">13°</strong></span>
+            <span>Max: <strong id="hero-max-temp">15°</strong></span>
+            <span>Min: <strong id="hero-min-temp">6°</strong></span>
+          </div>
+
+          <!-- 6 Specs Grid -->
+          <div class="specs-tiles-grid">
+            <div class="spec-tile">
+              <span class="spec-tile-lbl">Wind</span>
+              <span class="spec-tile-val" id="spec-wind-speed">17 km/u</span>
+              <span class="spec-tile-sub" id="spec-wind-dir">3 Bft</span>
             </div>
-            <div class="hero-highlow-item">
-              <span>Max:</span>
-              <span class="val" id="hero-max-temp">--°</span>
+            <div class="spec-tile">
+              <span class="spec-tile-lbl">Stoten</span>
+              <span class="spec-tile-val" id="spec-wind-gusts">28 km/u</span>
+              <span class="spec-tile-sub" id="spec-gust-status">Rustig</span>
             </div>
-            <div class="hero-highlow-item">
-              <span>Min:</span>
-              <span class="val" id="hero-min-temp">--°</span>
+            <div class="spec-tile">
+              <span class="spec-tile-lbl">Neerslag</span>
+              <span class="spec-tile-val" id="spec-precip">0.0 mm</span>
+              <span class="spec-tile-sub" id="spec-precip-prob">Kans: 0%</span>
+            </div>
+            <div class="spec-tile">
+              <span class="spec-tile-lbl">UV Index</span>
+              <span class="spec-tile-val" id="spec-uv">2</span>
+              <span class="spec-tile-sub" id="spec-uv-status">Laag</span>
+            </div>
+            <div class="spec-tile">
+              <span class="spec-tile-lbl">Luchtdruk</span>
+              <span class="spec-tile-val" id="spec-pressure">1024 hPa</span>
+              <span class="spec-tile-sub" id="spec-pressure-status">Stabiel</span>
+            </div>
+            <div class="spec-tile">
+              <span class="spec-tile-lbl">Zicht</span>
+              <span class="spec-tile-val" id="spec-visibility">10 km</span>
+              <span class="spec-tile-sub" id="spec-visibility-status">Uitstekend</span>
             </div>
           </div>
         </div>
 
-        <!-- Compact Specs Grid (2x3) -->
-        <div class="specs-grid">
-          <div class="spec-card">
-            <div class="spec-label-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
-              <span>Wind</span>
-            </div>
-            <div class="spec-value" id="spec-wind-speed">-- km/u</div>
-            <div class="spec-extra" id="spec-wind-dir">--</div>
-          </div>
-
-          <div class="spec-card">
-            <div class="spec-label-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20m10-10H2m17.07-7.07L4.93 19.07m0-14.14L19.07 19.07"/></svg>
-              <span>Stoten</span>
-            </div>
-            <div class="spec-value" id="spec-wind-gusts">-- km/u</div>
-            <div class="spec-extra" id="spec-gust-status">Rustig</div>
-          </div>
-
-          <div class="spec-card">
-            <div class="spec-label-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-              <span>Neerslag</span>
-            </div>
-            <div class="spec-value" id="spec-precip">0.0 mm</div>
-            <div class="spec-extra" id="spec-precip-prob">Kans: 0%</div>
-          </div>
-
-          <div class="spec-card">
-            <div class="spec-label-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-              <span>UV Index</span>
-            </div>
-            <div class="spec-value" id="spec-uv">--</div>
-            <div class="spec-extra" id="spec-uv-status">--</div>
-          </div>
-
-          <div class="spec-card">
-            <div class="spec-label-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M2 12a10 10 0 0 1 20 0M12 2v20"/></svg>
-              <span>Luchtdruk</span>
-            </div>
-            <div class="spec-value" id="spec-pressure">-- hPa</div>
-            <div class="spec-extra" id="spec-pressure-status">--</div>
-          </div>
-
-          <div class="spec-card">
-            <div class="spec-label-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span>Zicht</span>
-            </div>
-            <div class="spec-value" id="spec-visibility">-- km</div>
-            <div class="spec-extra" id="spec-visibility-status">--</div>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ====================================================================
-           COLUMN 2: RIDE OR DIE COMMUTE COMMAND CENTER (Center, 1fr)
-           ==================================================================== -->
-      <section class="col-commute">
-
-        <!-- Master Motorcycle Verdict Banner -->
-        <div class="glass-card master-verdict-card" id="master-verdict-card">
-          <div class="verdict-header-row">
-            <div class="verdict-tag-wrapper">
-              <div class="verdict-pill-badge" id="master-verdict-pill">
-                <span>🏍️</span> ADVIES LADEN...
-              </div>
-              <div class="verdict-score-pill" id="master-verdict-score">
-                Index: --/100
-              </div>
-            </div>
-          </div>
-
-          <h2 class="verdict-headline" id="master-verdict-headline">
-            Weersgegevens ophalen...
-          </h2>
-
-          <p class="verdict-explanation" id="master-verdict-explanation">
-            Berekening van het veiligheidsadvies voor woon-werkverkeer op twee wielen...
-          </p>
-        </div>
-
-        <!-- Commute Slots (Morning vs Evening) -->
-        <div class="commute-slots-container">
-
-          <!-- Morning Commute -->
-          <div class="commute-slot-card" id="slot-morning-card">
-            <div class="slot-top-row">
-              <div class="slot-label-group">
-                <div class="slot-icon-badge">🌅</div>
-                <div class="slot-text-wrap">
-                  <div class="slot-name">Ochtendrit</div>
-                  <div class="slot-time" id="morning-slot-time">08:00 (Heen)</div>
-                </div>
-              </div>
-              <span class="slot-status-badge" id="morning-status-badge">⏳ LADEN</span>
-            </div>
-
-            <div class="slot-metrics-grid">
-              <div class="slot-metric-item">
-                <span class="slot-metric-label">Temp</span>
-                <span class="slot-metric-val" id="morning-temp">--°C</span>
-              </div>
-              <div class="slot-metric-item">
-                <span class="slot-metric-label">Regen</span>
-                <span class="slot-metric-val" id="morning-rain">-- mm</span>
-              </div>
-              <div class="slot-metric-item">
-                <span class="slot-metric-label">Stoten</span>
-                <span class="slot-metric-val" id="morning-gusts">-- km/u</span>
-              </div>
-            </div>
-
-            <div class="slot-note-text" id="morning-note">
-              <span>👉</span> Weersverwachting voor ochtendrit wordt berekend...
-            </div>
-          </div>
-
-          <!-- Evening Commute -->
-          <div class="commute-slot-card" id="slot-evening-card">
-            <div class="slot-top-row">
-              <div class="slot-label-group">
-                <div class="slot-icon-badge">🌇</div>
-                <div class="slot-text-wrap">
-                  <div class="slot-name">Avondrit</div>
-                  <div class="slot-time" id="evening-slot-time">17:00 (Terug)</div>
-                </div>
-              </div>
-              <span class="slot-status-badge" id="evening-status-badge">⏳ LADEN</span>
-            </div>
-
-            <div class="slot-metrics-grid">
-              <div class="slot-metric-item">
-                <span class="slot-metric-label">Temp</span>
-                <span class="slot-metric-val" id="evening-temp">--°C</span>
-              </div>
-              <div class="slot-metric-item">
-                <span class="slot-metric-label">Regen</span>
-                <span class="slot-metric-val" id="evening-rain">-- mm</span>
-              </div>
-              <div class="slot-metric-item">
-                <span class="slot-metric-label">Stoten</span>
-                <span class="slot-metric-val" id="evening-gusts">-- km/u</span>
-              </div>
-            </div>
-
-            <div class="slot-note-text" id="evening-note">
-              <span>👉</span> Weersverwachting voor avondrit wordt berekend...
-            </div>
-          </div>
-
-        </div>
-
-        <!-- 4 Safety Gauges (Carefully Balanced) -->
-        <div class="safety-matrix-grid">
-
-          <!-- Wind / Zijwind -->
-          <div class="safety-meter-card">
-            <div class="meter-header">
-              <span>Zijwind</span>
-              <span id="meter-wind-bft">-- Bft</span>
-            </div>
-            <div class="meter-val-row">
-              <span class="meter-primary-val" id="meter-wind-val">-- km/u</span>
-              <span class="meter-status-tag" id="meter-wind-tag">--</span>
-            </div>
-            <div class="meter-bar-track">
-              <div class="meter-bar-fill" id="meter-wind-bar" style="width: 0%; background: #10b981;"></div>
-            </div>
-          </div>
-
-          <!-- Wegdek & Grip -->
-          <div class="safety-meter-card">
-            <div class="meter-header">
-              <span>Grip</span>
-              <span id="meter-grip-status">--</span>
-            </div>
-            <div class="meter-val-row">
-              <span class="meter-primary-val" id="meter-grip-val">--%</span>
-              <span class="meter-status-tag" id="meter-grip-tag">--</span>
-            </div>
-            <div class="meter-bar-track">
-              <div class="meter-bar-fill" id="meter-grip-bar" style="width: 0%; background: #10b981;"></div>
-            </div>
-          </div>
-
-          <!-- Neerslagrisico -->
-          <div class="safety-meter-card">
-            <div class="meter-header">
-              <span>Regenkans</span>
-              <span id="meter-rain-mm">-- mm</span>
-            </div>
-            <div class="meter-val-row">
-              <span class="meter-primary-val" id="meter-rain-val">--%</span>
-              <span class="meter-status-tag" id="meter-rain-tag">--</span>
-            </div>
-            <div class="meter-bar-track">
-              <div class="meter-bar-fill" id="meter-rain-bar" style="width: 0%; background: #10b981;"></div>
-            </div>
-          </div>
-
-          <!-- Comfort / Kleding -->
-          <div class="safety-meter-card">
-            <div class="meter-header">
-              <span>Comfort</span>
-              <span id="meter-temp-status">--</span>
-            </div>
-            <div class="meter-val-row">
-              <span class="meter-primary-val" id="meter-temp-val">--°C</span>
-              <span class="meter-status-tag" id="meter-temp-tag">--</span>
-            </div>
-            <div class="meter-bar-track">
-              <div class="meter-bar-fill" id="meter-temp-bar" style="width: 0%; background: #10b981;"></div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Gear Advisor -->
-        <div class="gear-advisor-card">
-          <div class="gear-icon-box">🦺</div>
-          <div class="gear-info-content">
-            <div class="gear-title">Uitrusting & Kledingadvies</div>
-            <div class="gear-chips-row" id="gear-chips-container">
-              <span class="gear-pill">Kledingadvies berekenen...</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Live Dashboard Trajectweer & Ritplanner Widget -->
-        <div class="glass-card dashboard-route-widget" id="dashboard-route-widget">
-          <div class="dashboard-route-header">
-            <div class="dashboard-route-title-group">
-              <div class="section-title">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-                </svg>
-                <span>Trajectweer</span>
-              </div>
-              <span class="dashboard-route-sub-tag" id="dashboard-route-summary-tag">Traject laden...</span>
-            </div>
-            <div class="dashboard-route-header-actions">
-              <div class="route-score-badge" id="dashboard-route-score-badge">
-                Ritveiligheid: --/100
-              </div>
-              <button type="button" class="dashboard-route-mini-btn" id="dashboard-route-swap-btn" title="Route omdraaien (heen/terug)" aria-label="Route omdraaien">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="17 1 21 5 17 9"></polyline>
-                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
-                  <polyline points="7 23 3 19 7 15"></polyline>
-                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
-                </svg>
-              </button>
-              <button type="button" class="dashboard-route-mini-btn" id="dashboard-route-edit-btn" title="Rit aanpassen in planner" aria-label="Rit aanpassen">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- 3-Waypoints Stages Timeline -->
-          <div class="route-stages-timeline dashboard-route-timeline" id="dashboard-route-stages-timeline" title="Klik om ritplanner te openen">
-            <div class="route-loading-state" style="padding: 16px; border-radius: 14px; width: 100%; box-sizing: border-box;">
-              <span>Routeweer laden...</span>
-            </div>
-          </div>
-
-          <!-- Quiet, elegant 1-line footer note (Rustig & overzichtelijk) -->
-          <div class="dashboard-route-footer-note" id="dashboard-route-footer-note" role="button" tabindex="0" title="Klik voor uitgebreide ritplanner en alternatieve tijdsloten">
-            <span id="dashboard-route-note-text">Droog traject • Totale reistijd berekenen...</span>
-            <span class="dashboard-route-footer-link">Details & alternatieven ➔</span>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ====================================================================
-           COLUMN 3: HOURLY ROUTE TIMELINE & 7-DAY FORECAST (Right, 275px)
-           ==================================================================== -->
-      <section class="col-forecast">
-
-        <!-- Hourly Commute Timeline -->
-        <div class="glass-card hourly-forecast-card">
+        <!-- Column 2: 7-Daagse Verwachting -->
+        <div class="m3-card daily-forecast-card">
           <div class="card-title-row">
-            <div class="section-title">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span>Uurlijkse Trend</span>
-            </div>
-            <div class="commute-legend">
-              <span><span class="legend-dot-now"></span> Nu</span>
-              <span><span class="legend-dot-morning"></span> Heen</span>
-              <span><span class="legend-dot-evening"></span> Terug</span>
-            </div>
-          </div>
-
-          <div class="hourly-scroll-strip" id="hourly-strip">
-            <!-- Populated via JS -->
-          </div>
-        </div>
-
-        <!-- 7-Day Forecast Card (Strictly Scaled - No Clipping) -->
-        <div class="glass-card daily-forecast-card">
-          <div class="card-title-row">
-            <div class="section-title">
+            <div class="card-title-text">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <span>7-Daagse Verwachting</span>
             </div>
@@ -563,560 +488,334 @@
     </main>
 
     <!-- ====================================================================
-         SIMPLE MODE CONTAINER: 1 SCHERMVULLEND GECOMBINEERD WIDGET
-         Combineert Actueel Weer & Woon-werk Motoradvies
+         VIEW 2: SINGLE WIDGET VIEW (Compact Mode voor telefoon/stuurbevestiging)
          ==================================================================== -->
-    <section class="simple-mode-container" id="simple-mode-container" aria-label="Eenvoudige Weergave">
-      <div class="glass-card simple-combined-card" id="simple-combined-card">
-        
-        <!-- Header: Locatie, Live Tijd & Wisselknop naar Volledig Dashboard -->
-        <div class="simple-header-row">
-          <div class="simple-location-group" id="simple-loc-trigger" role="button" tabindex="0" title="Locatie wijzigen">
-            <div class="simple-location-pin">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-            </div>
-            <div class="simple-loc-text">
-              <div class="simple-city-wrap">
-                <h1 class="simple-city-name" id="simple-city-name">Utrecht</h1>
-                <svg class="simple-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m6 9 6 6 6-6"/>
-                </svg>
-              </div>
-              <div class="simple-date-str" id="simple-date-str">Vandaag, live update</div>
-            </div>
+    <main class="widget-view" id="widget-view" style="display: none;">
+      <div class="single-widget-card" id="single-widget-card" data-verdict="green">
+        <!-- Widget Header -->
+        <div class="widget-hero-header">
+          <div>
+            <div class="widget-route-text" id="widget-route-text">Ameide ➔ Bilthoven</div>
+            <div style="font-size: 0.76rem; color: var(--text-muted);" id="widget-date-time">Vandaag • KNMI Harmonie</div>
           </div>
-
-          <!-- Segmented Day Toggle in Simple Mode: Consistente positie naast locatie -->
-          <div class="day-toggle-group simple-day-toggle" id="simple-day-toggle" role="tablist" aria-label="Weergave dag kiezen">
-            <button class="day-toggle-btn active" id="simple-day-today" data-day="today" role="tab" aria-selected="true" title="Bekijk weer en ritadvies voor vandaag">
-              <span>Vandaag</span>
-            </button>
-            <button class="day-toggle-btn" id="simple-day-next" data-day="nextWorkday" role="tab" aria-selected="false" title="Bekijk ritadvies voor de volgende werkdag">
-              <span class="day-btn-label" id="simple-next-day-text">Volgende werkdag</span>
-            </button>
-          </div>
-
-          <div class="simple-header-badges">
-            <button class="simple-theme-btn" id="simple-theme-btn" title="Thema wisselen (Licht / Auto / Donker)" aria-label="Thema wisselen">☀️</button>
-            <div class="simple-time-badge" id="simple-update-time">--:--</div>
-            <button class="simple-switch-btn" id="simple-exit-btn" title="Schakel naar volledig dashboard" aria-label="Volledig dashboard bekijken">
-              <span>📊</span>
-              <span class="simple-switch-text">Volledig Dashboard</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Main Content: Links Weer, Rechts Motoradvies -->
-        <div class="simple-main-grid">
-
-          <!-- Links: Actueel Weer -->
-          <div class="simple-weather-section">
-            <div class="simple-temp-row">
-              <div class="simple-temp-wrap">
-                <span class="simple-temp-val" id="simple-temp">--</span>
-                <span class="simple-temp-unit">°C</span>
-              </div>
-              <div class="simple-icon-wrap" id="simple-weather-icon">
-                <!-- SVG Icon via JS -->
-              </div>
-            </div>
-
-            <div class="simple-condition-text" id="simple-condition">Gegevens laden...</div>
-
-            <div class="simple-stats-pills">
-              <div class="simple-stat-pill">
-                <span class="simple-stat-lbl">Gevoel:</span>
-                <span class="simple-stat-val" id="simple-feels-like">--°</span>
-              </div>
-              <div class="simple-stat-pill">
-                <span class="simple-stat-lbl">Max:</span>
-                <span class="simple-stat-val" id="simple-max-temp">--°</span>
-              </div>
-              <div class="simple-stat-pill">
-                <span class="simple-stat-lbl">Min:</span>
-                <span class="simple-stat-val" id="simple-min-temp">--°</span>
-              </div>
-            </div>
-
-            <div class="simple-wind-bar" id="simple-wind-bar">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
-              <span id="simple-wind-text">Wind: -- km/u • Stoten: -- km/u</span>
-            </div>
-          </div>
-
-          <!-- Rechts: Motoradvies Banner -->
-          <div class="simple-verdict-section">
-            <div class="simple-verdict-top-tags">
-              <div class="verdict-pill-badge" id="simple-verdict-pill">
-                <span>🏍️</span> ADVIES LADEN...
-              </div>
-              <div class="verdict-score-pill" id="simple-verdict-score">
-                Index: --/100
-              </div>
-            </div>
-
-            <h2 class="simple-verdict-headline" id="simple-verdict-headline">
-              Weersgegevens ophalen...
-            </h2>
-
-            <p class="simple-verdict-explanation" id="simple-verdict-explanation">
-              Berekening van het veiligheidsadvies voor woon-werkverkeer op twee wielen...
-            </p>
-
-            <!-- Woon-werk Snelle Blik (Ochtend & Avond) met 2-regelige weergave -->
-            <div class="simple-commute-preview">
-              <div class="simple-commute-chip" id="simple-morning-chip">
-                <span class="simple-commute-icon">🌅</span>
-                <div class="simple-commute-info">
-                  <div class="simple-commute-row-top">
-                    <span class="simple-commute-name">Ochtendrit <small id="simple-morning-time">(08:00)</small></span>
-                    <span class="simple-commute-badge" id="simple-morning-badge">⏳ LADEN</span>
-                  </div>
-                  <div class="simple-commute-row-bottom">
-                    <span class="simple-commute-status" id="simple-morning-status">--°C • Laden... • -- km/u</span>
-                  </div>
-                </div>
-              </div>
-              <div class="simple-commute-chip" id="simple-evening-chip">
-                <span class="simple-commute-icon">🌇</span>
-                <div class="simple-commute-info">
-                  <div class="simple-commute-row-top">
-                    <span class="simple-commute-name">Avondrit <small id="simple-evening-time">(17:00)</small></span>
-                    <span class="simple-commute-badge" id="simple-evening-badge">⏳ LADEN</span>
-                  </div>
-                  <div class="simple-commute-row-bottom">
-                    <span class="simple-commute-status" id="simple-evening-status">--°C • Laden... • -- km/u</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Extra Section: 4 Safety Gauges & Gear Advisor (Portrait & Desktop Widget) -->
-        <div class="simple-extra-section" id="simple-extra-section">
-          <!-- 4 Mini Safety Gauges -->
-          <div class="simple-safety-grid">
-            <div class="simple-safety-mini-card">
-              <div class="simple-safety-mini-header">
-                <span class="simple-safety-label">💨 Zijwind</span>
-                <span class="simple-safety-tag" id="simple-wind-tag">--</span>
-              </div>
-              <div class="simple-safety-val" id="simple-wind-val">-- km/u</div>
-              <div class="meter-bar-track">
-                <div class="meter-bar-fill" id="simple-wind-bar-fill" style="width: 0%; background: #10b981;"></div>
-              </div>
-            </div>
-
-            <div class="simple-safety-mini-card">
-              <div class="simple-safety-mini-header">
-                <span class="simple-safety-label">🛣️ Grip</span>
-                <span class="simple-safety-tag" id="simple-grip-tag">--</span>
-              </div>
-              <div class="simple-safety-val" id="simple-grip-val">--%</div>
-              <div class="meter-bar-track">
-                <div class="meter-bar-fill" id="simple-grip-bar-fill" style="width: 0%; background: #10b981;"></div>
-              </div>
-            </div>
-
-            <div class="simple-safety-mini-card">
-              <div class="simple-safety-mini-header">
-                <span class="simple-safety-label">🌧️ Regenkans</span>
-                <span class="simple-safety-tag" id="simple-rain-tag">--</span>
-              </div>
-              <div class="simple-safety-val" id="simple-rain-val">-- mm</div>
-              <div class="meter-bar-track">
-                <div class="meter-bar-fill" id="simple-rain-bar-fill" style="width: 0%; background: #10b981;"></div>
-              </div>
-            </div>
-
-            <div class="simple-safety-mini-card">
-              <div class="simple-safety-mini-header">
-                <span class="simple-safety-label">🌡️ Comfort</span>
-                <span class="simple-safety-tag" id="simple-temp-tag">--</span>
-              </div>
-              <div class="simple-safety-val" id="simple-temp-val">--°C</div>
-              <div class="meter-bar-track">
-                <div class="meter-bar-fill" id="simple-temp-bar-fill" style="width: 0%; background: #10b981;"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Gear Pills in Simple View -->
-          <div class="simple-gear-box">
-            <span class="simple-gear-icon">🦺</span>
-            <span class="simple-gear-label">Uitrusting:</span>
-            <div class="simple-gear-chips" id="simple-gear-chips">
-              <span class="gear-pill">Uitrusting laden...</span>
+          <div class="widget-temp-wrap">
+            <div class="widget-large-temp" id="widget-hero-temp">13°</div>
+            <div class="widget-icon-wrap" id="widget-hero-icon">
+              <!-- Rendered via JS -->
             </div>
           </div>
         </div>
 
+        <!-- Widget Verdict Banner -->
+        <div class="widget-verdict-banner" id="widget-verdict-banner" data-verdict="green">
+          <span id="widget-verdict-pill">🟢 100% RIDE ON!</span>
+          <span id="widget-verdict-score">Score: 95/100</span>
+        </div>
+
+        <div style="font-size: 0.84rem; line-height: 1.35; color: var(--text-muted); font-weight: 600;" id="widget-verdict-summary">
+          100% Droog asfalt & kalme wind over het hele traject!
+        </div>
+
+        <!-- 2 Commute Blocks -->
+        <div class="widget-commute-preview-grid">
+          <div class="widget-commute-box">
+            <div class="widget-box-title">
+              <span>🌅 Ochtendrit (08:00)</span>
+              <span id="widget-morning-badge" style="color: #10b981; font-weight: 800;">DROOG</span>
+            </div>
+            <div class="widget-box-metrics">
+              <span id="widget-morning-temp">6°C</span>
+              <span id="widget-morning-rain">0.0 mm</span>
+              <span id="widget-morning-gusts">12 km/u</span>
+            </div>
+          </div>
+
+          <div class="widget-commute-box">
+            <div class="widget-box-title">
+              <span>🌇 Avondrit (17:00)</span>
+              <span id="widget-evening-badge" style="color: #10b981; font-weight: 800;">DROOG</span>
+            </div>
+            <div class="widget-box-metrics">
+              <span id="widget-evening-temp">17°C</span>
+              <span id="widget-evening-rain">0.0 mm</span>
+              <span id="widget-evening-gusts">25 km/u</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gear Chips in Widget -->
+        <div class="gear-chips-flex" id="widget-gear-chips">
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- Telemetry Summary Row -->
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:700; color:var(--text-muted); padding-top:4px; border-top:1px solid var(--border-subtle);">
+          <span id="widget-wind-text">💨 Wind: 25 km/u (Veilig)</span>
+          <span id="widget-grip-text">🛣️ Grip: 100% Droog</span>
+          <span id="widget-rain-text">💧 Regen: 0%</span>
+        </div>
+
+        <button type="button" class="widget-expand-btn" id="widget-switch-to-cockpit-btn">
+          📊 Schakel naar Uitgebreide Cockpit
+        </button>
       </div>
-    </section>
+    </main>
+
+    <!-- Minimalist Fixed Footer -->
+    <footer class="app-footer">
+      <span>KNMI Harmonie-AROME 2km</span>
+      <span>•</span>
+      <span>Data via Open-Meteo</span>
+      <span>•</span>
+      <span>MIT License &copy; 2026 Mark Tapking</span>
+    </footer>
+
   </div>
 
-  <!-- Minimalist Fixed Footer (Borderless & Muted) -->
-  <footer class="app-footer">
-    <div class="footer-model-badge">
-      <span class="pulse-dot"></span>
-      <span>KNMI Harmonie-AROME 2km</span>
-    </div>
-    <span class="footer-divider">•</span>
-    <span class="footer-desc">Rechtstreeks numeriek weermodel KNMI</span>
-    <span class="footer-divider">•</span>
-    <span class="footer-source">Data via Open-Meteo</span>
-    <span class="footer-divider">•</span>
-    <span class="footer-license">MIT License (Open Source) &copy; 2026 Mark Tapking</span>
-  </footer>
-
   <!-- ==========================================================================
-       DEDICATED LOCATION MODAL / SCREEN (Directly from Centered Navbar Pill)
+       MODAL 1: LOCATION PICKER
        ========================================================================== -->
   <div class="modal-backdrop" id="location-modal" role="dialog" aria-modal="true" aria-labelledby="location-modal-title">
-    <div class="settings-modal-card location-modal-card">
-      <div class="modal-header">
-        <div class="location-modal-title-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sky-accent);">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          <h3 class="modal-title" id="location-modal-title">Locatie Kiezen</h3>
+    <div class="m3-modal-sheet">
+      <div class="modal-header-row">
+        <div class="modal-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <h2 id="location-modal-title">Locatie Kiezen</h2>
         </div>
-        <button class="close-modal-btn" id="close-location-modal-btn" title="Sluiten" aria-label="Sluiten">&times;</button>
+        <button type="button" class="modal-close-btn" id="close-location-modal-btn" aria-label="Sluiten">&times;</button>
       </div>
 
-      <!-- Quick GPS Locate Button in Location Modal -->
-      <button class="location-gps-bar" id="modal-gps-btn" title="Gebruik GPS" aria-label="Gebruik mijn huidige GPS-locatie">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <circle cx="12" cy="12" r="3"></circle>
-          <line x1="12" y1="2" x2="12" y2="5"></line>
-          <line x1="12" y1="19" x2="12" y2="22"></line>
-          <line x1="2" y1="12" x2="5" y2="12"></line>
-          <line x1="19" y1="12" x2="22" y2="12"></line>
-        </svg>
+      <button type="button" class="modal-primary-btn" id="modal-gps-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
         <span>Gebruik mijn huidige GPS-locatie</span>
       </button>
 
-      <!-- Live Search Box -->
-      <div class="search-box-container">
-        <div class="search-input-wrap">
-          <svg class="search-icon-fixed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" class="location-search-input" id="location-search-input" placeholder="Zoek stad, dorp of postcode in Nederland..." autocomplete="off" aria-label="Plaatsnaam of postcode zoeken" />
-        </div>
-        <div class="search-results-list" id="search-results-list"></div>
+      <div class="route-input-wrap">
+        <input type="text" class="route-waypoint-input" id="location-search-input" placeholder="Zoek Nederlandse stad of dorp..." autocomplete="off" />
+        <div class="route-search-dropdown" id="search-results-list"></div>
       </div>
 
-      <!-- Quick Preset City Chips -->
       <div>
-        <div class="chips-label">Populaire Plaatsen in Nederland</div>
-        <div class="city-chips-wrapper" id="preset-cities-container">
-          <!-- Dynamisch gegenereerd via PRESET_CITIES -->
+        <div style="font-size:0.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">
+          Populaire Steden
         </div>
+        <div class="preset-chips-flex" id="preset-cities-container"></div>
       </div>
     </div>
   </div>
 
   <!-- ==========================================================================
-       SETTINGS MODAL (Thema, Reistijden & Motorrijder Toleranties)
+       MODAL 2: SETTINGS (Thema, Reistijden, Toleranties)
        ========================================================================== -->
   <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
-    <div class="settings-modal-card">
-      <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          <h3 class="modal-title" id="settings-modal-title">Instellingen & Reistijden</h3>
+    <div class="m3-modal-sheet">
+      <div class="modal-header-row">
+        <div class="modal-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <h2 id="settings-modal-title">Instellingen & Toleranties</h2>
         </div>
-        <button class="close-modal-btn" id="close-modal-btn" title="Sluiten" aria-label="Sluiten">&times;</button>
+        <button type="button" class="modal-close-btn" id="close-modal-btn" aria-label="Sluiten">&times;</button>
       </div>
 
-      <!-- Theme Switcher Group inside Modal -->
+      <!-- Thema -->
       <div>
-        <div class="settings-section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <div style="font-size:0.8rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">
           Thema Keuze
         </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="city-chip" id="theme-btn-light" style="flex: 1; padding: 8px; text-align: center;">☀️ Licht (Standaard)</button>
-          <button class="city-chip" id="theme-btn-auto" style="flex: 1; padding: 8px; text-align: center;">🔄 Automatisch</button>
-          <button class="city-chip" id="theme-btn-dark" style="flex: 1; padding: 8px; text-align: center;">🌙 Donker</button>
+        <div style="display:flex;gap:8px;">
+          <button class="city-chip" id="theme-btn-light" style="flex:1;text-align:center;">☀️ Licht (Standaard)</button>
+          <button class="city-chip" id="theme-btn-auto" style="flex:1;text-align:center;">🔄 Auto</button>
+          <button class="city-chip" id="theme-btn-dark" style="flex:1;text-align:center;">🌙 Donker</button>
         </div>
       </div>
 
-      <!-- Commute Timing -->
-      <div>
-        <div class="settings-section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Jouw Woon-Werk Reistijden
+      <!-- Reistijden -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="route-waypoint-field">
+          <label for="setting-morning-time" style="font-size:0.82rem;font-weight:700;">Ochtendvertrek (Heen)</label>
+          <select class="route-waypoint-input" id="setting-morning-time">
+            <option value="06:00">06:00</option>
+            <option value="06:30">06:30</option>
+            <option value="07:00">07:00</option>
+            <option value="07:30">07:30</option>
+            <option value="08:00" selected>08:00 (Standaard)</option>
+            <option value="08:30">08:30</option>
+            <option value="09:00">09:00</option>
+            <option value="09:30">09:30</option>
+            <option value="10:00">10:00</option>
+          </select>
         </div>
-        <div class="settings-grid">
-          <div class="setting-group">
-            <label class="setting-label" for="setting-morning-time">
-              <span>Ochtend Vertrek (Heen)</span>
-              <strong id="val-morning-time">08:00</strong>
-            </label>
-            <select class="setting-select" id="setting-morning-time">
-              <option value="05:00">05:00 - Vroeg</option>
-              <option value="05:30">05:30</option>
-              <option value="06:00">06:00</option>
-              <option value="06:30">06:30</option>
-              <option value="07:00">07:00</option>
-              <option value="07:30">07:30</option>
-              <option value="08:00" selected>08:00 (Standaard)</option>
-              <option value="08:30">08:30</option>
-              <option value="09:00">09:00</option>
-              <option value="09:30">09:30</option>
-              <option value="10:00">10:00</option>
-              <option value="10:30">10:30</option>
-              <option value="11:00">11:00</option>
-              <option value="11:30">11:30</option>
-              <option value="12:00">12:00</option>
-            </select>
-          </div>
-
-          <div class="setting-group">
-            <label class="setting-label" for="setting-evening-time">
-              <span>Avond Vertrek (Terug)</span>
-              <strong id="val-evening-time">17:00</strong>
-            </label>
-            <select class="setting-select" id="setting-evening-time">
-              <option value="13:00">13:00</option>
-              <option value="14:00">14:00</option>
-              <option value="15:00">15:00</option>
-              <option value="15:30">15:30</option>
-              <option value="16:00">16:00</option>
-              <option value="16:30">16:30</option>
-              <option value="17:00" selected>17:00 (Standaard)</option>
-              <option value="17:30">17:30</option>
-              <option value="18:00">18:00</option>
-              <option value="18:30">18:30</option>
-              <option value="19:00">19:00</option>
-              <option value="19:30">19:30</option>
-              <option value="20:00">20:00</option>
-              <option value="21:00">21:00</option>
-              <option value="22:00">22:00</option>
-              <option value="23:00">23:00</option>
-            </select>
-          </div>
+        <div class="route-waypoint-field">
+          <label for="setting-evening-time" style="font-size:0.82rem;font-weight:700;">Avondvertrek (Terug)</label>
+          <select class="route-waypoint-input" id="setting-evening-time">
+            <option value="15:00">15:00</option>
+            <option value="15:30">15:30</option>
+            <option value="16:00">16:00</option>
+            <option value="16:30">16:30</option>
+            <option value="17:00" selected>17:00 (Standaard)</option>
+            <option value="17:30">17:30</option>
+            <option value="18:00">18:00</option>
+            <option value="18:30">18:30</option>
+            <option value="19:00">19:00</option>
+          </select>
         </div>
       </div>
 
-      <!-- Biker Tolerances -->
-      <div>
-        <div class="settings-section-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Motorrijder Comfort & Toleranties
+      <!-- Toleranties -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;">
+            <span>Minimale Temperatuur</span>
+            <span id="val-min-temp">8°C</span>
+          </div>
+          <input type="range" min="0" max="15" value="8" class="route-waypoint-input" style="height:auto;padding:6px 0;" id="setting-min-temp" />
         </div>
-        <div class="settings-grid">
-          <div class="setting-group">
-            <label class="setting-label" for="setting-min-temp">
-              <span>Minimale Temperatuur</span>
-              <strong id="val-min-temp">8°C</strong>
-            </label>
-            <input type="range" min="0" max="15" value="8" class="setting-range" id="setting-min-temp" />
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;">
+            <span>Max Windstoot Limiet</span>
+            <span id="val-max-gusts">55 km/u</span>
           </div>
-
-          <div class="setting-group">
-            <label class="setting-label" for="setting-max-gusts">
-              <span>Max Windstoot Limiet</span>
-              <strong id="val-max-gusts">55 km/u</strong>
-            </label>
-            <input type="range" min="35" max="80" step="5" value="55" class="setting-range" id="setting-max-gusts" />
-          </div>
+          <input type="range" min="35" max="80" step="5" value="55" class="route-waypoint-input" style="height:auto;padding:6px 0;" id="setting-max-gusts" />
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button class="city-chip" id="save-settings-btn" style="background: var(--sky-accent); color: #fff; font-weight: 800; padding: 7px 16px;">
-          Instellingen Opslaan
-        </button>
-      </div>
+      <button type="button" class="modal-primary-btn" id="save-settings-btn">
+        Instellingen Opslaan
+      </button>
     </div>
   </div>
 
   <!-- ==========================================================================
-       ROUTE PLANNER MODAL (Start, Halverwege & Bestemming met 30m tijdvakken)
+       MODAL 3: RITPLANNER (Start + Bestemming & Automatische Corridor)
        ========================================================================== -->
   <div class="modal-backdrop" id="route-planner-modal" role="dialog" aria-modal="true" aria-labelledby="route-modal-title">
-    <div class="settings-modal-card route-modal-card">
-      <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div class="route-header-icon-badge">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-            </svg>
-          </div>
+    <div class="m3-modal-sheet">
+      <div class="modal-header-row">
+        <div class="modal-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
           <div>
-            <h3 class="modal-title" id="route-modal-title">Motorrit & Buienradar</h3>
-            <div class="modal-subtitle">Start ➔ Halverwege ➔ Bestemming (30-minuten tijdvakken)</div>
+            <h2 id="route-modal-title">Motorrit & Routecorridor</h2>
+            <div style="font-size:0.74rem;color:var(--text-muted);">Automatisch gecontroleerd via KNMI Harmonie weermodel</div>
           </div>
         </div>
-        <button class="close-modal-btn" id="close-route-modal-btn" title="Sluiten" aria-label="Sluiten">&times;</button>
+        <button type="button" class="modal-close-btn" id="close-route-modal-btn" aria-label="Sluiten">&times;</button>
       </div>
 
-      <!-- Route Form: 3 Waypoints -->
-      <div class="route-waypoints-section">
-        <!-- Start Waypoint -->
-        <div class="route-waypoint-row">
-          <div class="route-point-marker marker-start" title="Startpunt">A</div>
-          <div class="route-waypoint-field">
-            <div class="route-waypoint-label-row">
-              <label for="route-start-input" class="route-waypoint-label">Startpunt</label>
-              <button type="button" class="route-gps-pill" id="route-start-gps-btn" title="Gebruik huidige GPS locatie als startpunt">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                GPS
-              </button>
-            </div>
-            <div class="route-input-wrap">
-              <input type="text" id="route-start-input" class="route-waypoint-input" value="Utrecht" placeholder="Typ startplaats..." autocomplete="off" />
-              <div class="route-search-dropdown" id="route-start-results"></div>
-            </div>
-          </div>
-        </div>
+      <!-- Quick Preset Routes -->
+      <div class="preset-chips-flex" id="route-quick-presets">
+        <button type="button" class="city-chip" data-idx="0">Ameide ➔ Bilthoven</button>
+        <button type="button" class="city-chip" data-idx="1">Hilversum ➔ Amsterdam</button>
+        <button type="button" class="city-chip" data-idx="2">Utrecht ➔ Amersfoort</button>
+        <button type="button" class="city-chip" data-idx="3">Rotterdam ➔ Den Haag</button>
+      </div>
 
-        <!-- Swap Direction Button -->
-        <div class="route-swap-row">
-          <div class="route-connector-line"></div>
-          <button type="button" class="route-swap-btn" id="route-swap-btn" title="Draai startpunt en bestemming om" aria-label="Route omdraaien">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 16 5 5 5-5M12 21V3M17 8l-5-5-5 5"/></svg>
-            <span>Draai route om</span>
-          </button>
-          <div class="route-connector-line"></div>
+      <!-- Startpunt Input -->
+      <div class="route-waypoint-field">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <label for="route-start-input" style="font-size:0.84rem;font-weight:800;">Startpunt (Vertrek)</label>
+          <button type="button" class="city-chip" id="route-start-gps-btn" style="padding:2px 8px;font-size:0.72rem;">GPS</button>
         </div>
-
-        <!-- Midway Waypoint -->
-        <div class="route-waypoint-row">
-          <div class="route-point-marker marker-mid" title="Halverwege punt">B</div>
-          <div class="route-waypoint-field">
-            <label for="route-mid-input" class="route-waypoint-label">Halverwege punt</label>
-            <div class="route-input-wrap">
-              <input type="text" id="route-mid-input" class="route-waypoint-input" value="Hilversum" placeholder="Typ tussenstop..." autocomplete="off" />
-              <div class="route-search-dropdown" id="route-mid-results"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Destination Waypoint -->
-        <div class="route-waypoint-row" style="margin-top: 10px;">
-          <div class="route-point-marker marker-dest" title="Bestemming">C</div>
-          <div class="route-waypoint-field">
-            <label for="route-dest-input" class="route-waypoint-label">Bestemming</label>
-            <div class="route-input-wrap">
-              <input type="text" id="route-dest-input" class="route-waypoint-input" value="Amsterdam" placeholder="Typ bestemming..." autocomplete="off" />
-              <div class="route-search-dropdown" id="route-dest-results"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick City Chips for Waypoints -->
-        <div class="route-chips-helper">
-          <span class="route-helper-label">Snelle steden:</span>
-          <div class="route-preset-chips" id="route-preset-chips">
-            <!-- Dynamisch via PRESET_CITIES -->
-          </div>
+        <div class="route-input-wrap">
+          <input type="text" id="route-start-input" class="route-waypoint-input" value="Ameide" placeholder="Typ startplaats..." autocomplete="off" />
+          <div class="route-search-dropdown" id="route-start-results"></div>
         </div>
       </div>
 
-      <!-- Controls: Leg Duration & Departure Time -->
-      <div class="route-controls-grid">
-        <!-- Reistijd per etappe -->
-        <div class="route-control-card">
-          <div class="route-control-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Reistijd per etappe
-          </div>
-          <div class="route-duration-buttons" id="route-duration-buttons">
-            <button type="button" class="route-chip-btn" data-duration="15">15 min</button>
-            <button type="button" class="route-chip-btn is-active" data-duration="30">30 min (std)</button>
-            <button type="button" class="route-chip-btn" data-duration="45">45 min</button>
-            <button type="button" class="route-chip-btn" data-duration="60">60 min</button>
-          </div>
-        </div>
-
-        <!-- Vertrektijd -->
-        <div class="route-control-card">
-          <div class="route-control-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 10"/></svg>
-            Vertrektijd aanpassen
-          </div>
-          <div class="route-departure-row">
-            <input type="time" class="route-time-input" id="route-custom-time-input" aria-label="Aangepaste vertrektijd" />
-            <div class="route-offset-chips" id="route-offset-chips">
-              <button type="button" class="route-offset-btn is-active" data-offset="0">Nu</button>
-              <button type="button" class="route-offset-btn" data-offset="15">+15m</button>
-              <button type="button" class="route-offset-btn" data-offset="30">+30m</button>
-              <button type="button" class="route-offset-btn" data-offset="45">+45m</button>
-              <button type="button" class="route-offset-btn" data-offset="60">+60m</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Analysis Results & Verdict Banner -->
-      <div class="route-analysis-container" id="route-analysis-container">
-        <!-- Loading Indicator -->
-        <div class="route-loading-state" id="route-loading-state" style="display: none;">
-          <div class="spin" style="display:inline-block; font-size: 1.4rem;">⚙️</div>
-          <span>KNMI Harmonie 15-minuten weerdata ophalen voor alle 3 waypoints...</span>
-        </div>
-
-        <!-- Verdict Banner -->
-        <div class="route-verdict-banner" id="route-verdict-banner">
-          <div class="route-verdict-badge" id="route-verdict-badge">🟢 100% DROOG</div>
-          <div class="route-verdict-headline" id="route-verdict-headline">Route analyseren...</div>
-          <div class="route-verdict-explanation" id="route-verdict-explanation">Weergegevens per tijdvak worden berekend</div>
-          <div class="route-verdict-tip" id="route-verdict-tip"></div>
-        </div>
-
-        <!-- 3-Waypoints Timeline Progression -->
-        <div class="route-stages-card">
-          <div class="route-stages-header">
-            <span>Tijdvakken & Trajectweer (15-min KNMI data)</span>
-            <span class="route-score-badge" id="route-score-badge">Score: --/100</span>
-          </div>
-
-          <div class="route-stages-timeline" id="route-stages-timeline">
-            <!-- Populated via JS -->
-          </div>
-        </div>
-
-        <!-- Alternative Departure Slots Strip -->
-        <div class="route-alternatives-card">
-          <div class="route-alternatives-header">
-            <span>Slimme Vertrekopties (Bui ontwijken)</span>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">Tik op een tijdstip om te wisselen</span>
-          </div>
-          <div class="route-alternatives-strip" id="route-alternatives-strip">
-            <!-- Populated via JS -->
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 0.74rem; color: var(--text-muted);">Open-Meteo & KNMI Harmonie Seamless</span>
-        <button type="button" class="city-chip" id="route-refresh-btn" style="background: var(--sky-accent); color: #fff; font-weight: 800; padding: 7px 18px;">
-          Ververs Weerdata
+      <!-- Swap Button -->
+      <div style="display:flex;align-items:center;justify-content:center;">
+        <button type="button" class="city-chip" id="route-swap-btn" style="font-weight:800;display:flex;align-items:center;gap:6px;">
+          ⇄ Draai start en bestemming om
         </button>
+      </div>
+
+      <!-- Bestemming Input -->
+      <div class="route-waypoint-field">
+        <label for="route-dest-input" style="font-size:0.84rem;font-weight:800;">Bestemming (Aankomst)</label>
+        <div class="route-input-wrap">
+          <input type="text" id="route-dest-input" class="route-waypoint-input" value="Bilthoven" placeholder="Typ bestemming..." autocomplete="off" />
+          <div class="route-search-dropdown" id="route-dest-results"></div>
+        </div>
+      </div>
+
+      <!-- Subtle Automated Corridor Preview -->
+      <div class="subtle-corridor-box">
+        <div>
+          <span>🛣️ Geautomatiseerde corridor: </span>
+          <strong id="corridor-preview-start">Ameide</strong> ➔
+          <span id="corridor-preview-mid" style="opacity:0.85;">Utrecht</span> ➔
+          <strong id="corridor-preview-dest">Bilthoven</strong>
+        </div>
+        <span class="brand-badge" id="route-auto-km-chip">~36 km</span>
+      </div>
+
+      <!-- Hidden midpoint input for engine state binding -->
+      <input type="hidden" id="route-mid-input" value="Utrecht" />
+
+      <!-- Quick City Chips Helper -->
+      <div class="preset-chips-flex" id="route-preset-chips"></div>
+
+      <!-- Reistijd & Vertrektijd -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="route-waypoint-field">
+          <label style="font-size:0.8rem;font-weight:700;">Reistijd per etappe</label>
+          <div style="display:flex;gap:4px;" id="route-duration-buttons">
+            <button type="button" class="city-chip" data-duration="15">15m</button>
+            <button type="button" class="city-chip" data-duration="20" style="background:var(--md-sys-color-primary);color:#fff;">20m</button>
+            <button type="button" class="city-chip" data-duration="30">30m</button>
+            <button type="button" class="city-chip" data-duration="45">45m</button>
+          </div>
+        </div>
+
+        <div class="route-waypoint-field">
+          <label for="route-custom-time-input" style="font-size:0.8rem;font-weight:700;">Vertrektijd (Onderweg)</label>
+          <input type="time" class="route-waypoint-input" id="route-custom-time-input" />
+        </div>
+      </div>
+
+      <!-- Analysis Verdict Banner in Modal -->
+      <div class="m3-card hero-master-card" id="route-verdict-banner" data-verdict="green" style="padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span class="master-verdict-pill" id="route-verdict-badge">🟢 100% DROOG</span>
+          <span class="master-score-pill" id="route-score-badge">Score: 95/100</span>
+        </div>
+        <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;" id="route-verdict-headline">
+          Volledig droog traject
+        </div>
+        <div style="font-size:0.8rem;color:var(--text-muted);" id="route-verdict-explanation">
+          Geen regen verwacht bij vertrek of onderweg.
+        </div>
+        <div style="font-size:0.75rem;font-weight:700;color:var(--md-sys-color-primary);margin-top:4px;" id="route-verdict-tip"></div>
+      </div>
+
+      <!-- Departure Alternatives -->
+      <div>
+        <div style="font-size:0.78rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">
+          Slimme Vertrekopties (Bui Ontwijken)
+        </div>
+        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;" id="route-alternatives-strip"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+        <button type="button" class="modal-primary-btn" id="close-route-save-btn">
+          Route Toepassen &amp; Sluiten
+        </button>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.74rem;color:var(--text-muted);">KNMI Harmonie 15-minuten data</span>
+          <button type="button" class="city-chip" id="route-refresh-btn" style="font-weight:700;padding:4px 10px;font-size:0.75rem;">
+            🔄 Herbereken
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification Pill -->
+  <!-- Toast Notification -->
   <div class="toast-pill" id="toast-pill">Locatie bijgewerkt!</div>
 
-
-  <!-- Modular Application Scripts (100% Standalone & Serverless) -->
+  <!-- Modular Scripts -->
   <script src="js/config.js"></script>
-  <script src="js/commute-engine.js"></script>
   <script src="js/route-engine.js"></script>
+  <script src="js/commute-engine.js"></script>
   <script src="js/weather-service.js"></script>
   <script src="js/app.js"></script>
 </body>
