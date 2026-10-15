@@ -1,268 +1,154 @@
 /**
- * Ride Or Die - Config, State, Dictionaries & Formatting Helpers
- * Self-contained, zero-dependency motorcycle cockpit configuration
+ * Ride Or Die - Centrale Configuratie & Omgevingsinstellingen
+ * Bevat alle API-eindpunten, drempelwaarden, presets en modelinstellingen.
+ * Vrij van DOM-logica, toestand of taalteksten (Single Responsibility).
  */
 
-// HTML Sanitization Helper (XSS / Injection prevention)
-function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-// Set Dynamic Atmospheric Weather State across root and body
-function setWeatherState(state) {
-  if (!state) return;
-  document.documentElement.setAttribute('data-weather-state', state);
-  if (document.body) document.body.setAttribute('data-weather-state', state);
-}
-
-// Central Application State
-const AppState = {
-  theme: 'light', // Default to Light Mode as requested ("ik haat darkmode")
-  location: {
-    name: 'Ameide',
-    latitude: 51.9547,
-    longitude: 4.9622,
-    country: 'NL'
+const Config = {
+  // 1. API-eindpunten & netwerkparameters
+  API: {
+    WEATHER_BASE_URL: 'https://api.open-meteo.com/v1/forecast',
+    GEOCODING_BASE_URL: 'https://geocoding-api.open-meteo.com/v1/search',
+    REVERSE_GEOCODE_URL: 'https://api.bigdatacloud.net/data/reverse-geocode-client',
+    MODEL: 'knmi_seamless',
+    CACHE_TTL_MS: 10 * 60 * 1000, // 10 minuten cache (afgestemd op modelverversingen)
+    MAX_CACHE_ENTRIES: 20,
+    GEOCODING_MAX_RESULTS: 8,
+    SEARCH_DEBOUNCE_MS: 250,
+    GPS_TIMEOUT_MS: 10000,
+    GPS_REVERSE_TIMEOUT_MS: 3500
   },
-  commute: {
-    morningTime: '08:00',
-    eveningTime: '17:00',
-    minTemp: 8,
-    maxGusts: 55,
-    rainTolerance: 'normal'
-  },
-  selectedDay: 'today', // 'today' | 'nextWorkday'
-  weatherData: null,
-  route: {
-    start: { name: 'Ameide', lat: 51.9547, lon: 4.9622, country: 'NL' },
-    mid: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
-    dest: { name: 'Bilthoven', lat: 52.1306, lon: 5.2036, country: 'NL' },
-    legDurationMinutes: 20, // 20m per etappe = ~40m totale reistijd (30-50 km corridor)
-    waypointsWeather: {
-      start: null,
-      mid: null,
-      dest: null
+
+  // 2. Weerdrempels & veiligheidslimieten voor motorrijders
+  THRESHOLDS: {
+    RAIN: {
+      TRACE_MM: 0.05,
+      LIGHT_MM: 0.2,
+      MODERATE_MM: 0.8,
+      HEAVY_MM: 1.5,
+      SEVERE_MM: 3.0,
+      HIGH_PROB_PERCENT: 60
     },
-    morningAnalysis: null,
-    eveningAnalysis: null,
-    masterVerdict: null
-  }
+    WIND: {
+      DEFAULT_MAX_GUSTS: 55, // km/u
+      STRONG_GUSTS: 50,
+      DANGEROUS_GUSTS: 75,
+      STORM_GUSTS: 90
+    },
+    TEMPERATURE: {
+      DEFAULT_MIN: 8, // °C
+      ICE_RISK: 2,
+      COLD_RISK: 4,
+      WARM_WARNING: 25,
+      EXTREME_HEAT: 31
+    },
+    SURFACE_PRESSURE: {
+      HIGH_STABLE: 1020,
+      LOW_UNSTABLE: 1005
+    },
+    VISIBILITY_KM: {
+      EXCELLENT: 10,
+      GOOD: 5,
+      MODERATE: 2
+    },
+    UV_INDEX: {
+      VERY_HIGH: 8,
+      HIGH: 6,
+      MODERATE: 3
+    }
+  },
+
+  // 3. Standaardwaarden voor gebruikersvoorkeuren
+  DEFAULTS: {
+    THEME: 'light',
+    VIEW_MODE: 'cockpit', // 'cockpit' | 'widget'
+    SELECTED_DAY: 'today', // 'today' | 'nextWorkday'
+    COMMUTE: {
+      MORNING_TIME: '08:00',
+      EVENING_TIME: '17:00',
+      MIN_TEMP: 8,
+      MAX_GUSTS: 55
+    },
+    LOCATION: {
+      name: 'Ameide',
+      latitude: 51.9547,
+      longitude: 4.9622,
+      country: 'NL'
+    },
+    ROUTE: {
+      start: { name: 'Ameide', lat: 51.9547, lon: 4.9622, country: 'NL' },
+      mid: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
+      dest: { name: 'Bilthoven', lat: 52.1306, lon: 5.2036, country: 'NL' },
+      legDurationMinutes: 20
+    }
+  },
+
+  // 4. Voorgedefinieerde Nederlandse steden voor snelle selectie & corridor-herkenning
+  PRESET_CITIES: [
+    { name: 'Ameide', lat: 51.9547, lon: 4.9622 },
+    { name: 'Bilthoven', lat: 52.1306, lon: 5.2036 },
+    { name: 'Utrecht', lat: 52.0908, lon: 5.1222 },
+    { name: 'Nieuwegein', lat: 52.0292, lon: 5.0817 },
+    { name: 'Vianen', lat: 51.9892, lon: 5.0931 },
+    { name: 'Hilversum', lat: 52.2233, lon: 5.1764 },
+    { name: 'Weesp', lat: 52.3072, lon: 5.0414 },
+    { name: 'Amsterdam', lat: 52.3676, lon: 4.9041 },
+    { name: 'Amersfoort', lat: 52.1561, lon: 5.3878 },
+    { name: 'Zeist', lat: 52.0911, lon: 5.2333 },
+    { name: 'Woerden', lat: 52.0858, lon: 4.8833 },
+    { name: 'Gouda', lat: 52.0167, lon: 4.7083 },
+    { name: 'Gorinchem', lat: 51.8333, lon: 4.9667 },
+    { name: 'Dordrecht', lat: 51.8133, lon: 4.6736 },
+    { name: 'Almere', lat: 52.3702, lon: 5.2141 },
+    { name: 'Lelystad', lat: 52.5185, lon: 5.4714 },
+    { name: 'Rotterdam', lat: 51.9244, lon: 4.4777 },
+    { name: 'Delft', lat: 52.0116, lon: 4.3571 },
+    { name: 'Den Haag', lat: 52.0705, lon: 4.3007 },
+    { name: 'Leiden', lat: 52.1601, lon: 4.4970 },
+    { name: 'Eindhoven', lat: 51.4416, lon: 5.4697 },
+    { name: 'Den Bosch', lat: 51.6978, lon: 5.3037 },
+    { name: 'Breda', lat: 51.5719, lon: 4.7683 },
+    { name: 'Tilburg', lat: 51.5555, lon: 5.0913 },
+    { name: 'Groningen', lat: 53.2194, lon: 6.5665 },
+    { name: 'Heerenveen', lat: 52.9567, lon: 5.9250 },
+    { name: 'Arnhem', lat: 51.9851, lon: 5.8987 },
+    { name: 'Nijmegen', lat: 51.8426, lon: 5.8637 },
+    { name: 'Apeldoorn', lat: 52.2112, lon: 5.9699 },
+    { name: 'Zwolle', lat: 52.5168, lon: 6.0830 }
+  ],
+
+  // 5. Veelgebruikte trajecten (30-50 km woon-werk corridors)
+  PRESET_ROUTES: [
+    {
+      name: 'Ameide ➔ Utrecht ➔ Bilthoven',
+      start: { name: 'Ameide', lat: 51.9547, lon: 4.9622, country: 'NL' },
+      mid: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
+      dest: { name: 'Bilthoven', lat: 52.1306, lon: 5.2036, country: 'NL' },
+      duration: 20
+    },
+    {
+      name: 'Hilversum ➔ Weesp ➔ Amsterdam',
+      start: { name: 'Hilversum', lat: 52.2233, lon: 5.1764, country: 'NL' },
+      mid: { name: 'Weesp', lat: 52.3072, lon: 5.0414, country: 'NL' },
+      dest: { name: 'Amsterdam', lat: 52.3676, lon: 4.9041, country: 'NL' },
+      duration: 18
+    },
+    {
+      name: 'Utrecht ➔ Zeist ➔ Amersfoort',
+      start: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
+      mid: { name: 'Zeist', lat: 52.0911, lon: 5.2333, country: 'NL' },
+      dest: { name: 'Amersfoort', lat: 52.1561, lon: 5.3878, country: 'NL' },
+      duration: 15
+    },
+    {
+      name: 'Rotterdam ➔ Delft ➔ Den Haag',
+      start: { name: 'Rotterdam', lat: 51.9244, lon: 4.4777, country: 'NL' },
+      mid: { name: 'Delft', lat: 52.0116, lon: 4.3571, country: 'NL' },
+      dest: { name: 'Den Haag', lat: 52.0705, lon: 4.3007, country: 'NL' },
+      duration: 15
+    }
+  ]
 };
 
-// Preset Cities Source of Truth (Single Source for search & automated corridor lookup)
-const PRESET_CITIES = [
-  { name: 'Ameide', lat: 51.9547, lon: 4.9622 },
-  { name: 'Bilthoven', lat: 52.1306, lon: 5.2036 },
-  { name: 'Utrecht', lat: 52.0908, lon: 5.1222 },
-  { name: 'Nieuwegein', lat: 52.0292, lon: 5.0817 },
-  { name: 'Vianen', lat: 51.9892, lon: 5.0931 },
-  { name: 'Hilversum', lat: 52.2233, lon: 5.1764 },
-  { name: 'Weesp', lat: 52.3072, lon: 5.0414 },
-  { name: 'Amsterdam', lat: 52.3676, lon: 4.9041 },
-  { name: 'Amersfoort', lat: 52.1561, lon: 5.3878 },
-  { name: 'Zeist', lat: 52.0911, lon: 5.2333 },
-  { name: 'Woerden', lat: 52.0858, lon: 4.8833 },
-  { name: 'Gouda', lat: 52.0167, lon: 4.7083 },
-  { name: 'Gorinchem', lat: 51.8333, lon: 4.9667 },
-  { name: 'Dordrecht', lat: 51.8133, lon: 4.6736 },
-  { name: 'Almere', lat: 52.3702, lon: 5.2141 },
-  { name: 'Lelystad', lat: 52.5185, lon: 5.4714 },
-  { name: 'Rotterdam', lat: 51.9244, lon: 4.4777 },
-  { name: 'Delft', lat: 52.0116, lon: 4.3571 },
-  { name: 'Den Haag', lat: 52.0705, lon: 4.3007 },
-  { name: 'Leiden', lat: 52.1601, lon: 4.4970 },
-  { name: 'Eindhoven', lat: 51.4416, lon: 5.4697 },
-  { name: 'Den Bosch', lat: 51.6978, lon: 5.3037 },
-  { name: 'Breda', lat: 51.5719, lon: 4.7683 },
-  { name: 'Tilburg', lat: 51.5555, lon: 5.0913 },
-  { name: 'Groningen', lat: 53.2194, lon: 6.5665 },
-  { name: 'Heerenveen', lat: 52.9567, lon: 5.9250 },
-  { name: 'Arnhem', lat: 51.9851, lon: 5.8987 },
-  { name: 'Nijmegen', lat: 51.8426, lon: 5.8637 },
-  { name: 'Apeldoorn', lat: 52.2112, lon: 5.9699 },
-  { name: 'Zwolle', lat: 52.5168, lon: 6.0830 }
-];
-
-// Preset Popular Commute Routes (30-50 km)
-const PRESET_ROUTES = [
-  {
-    name: 'Ameide ➔ Utrecht ➔ Bilthoven',
-    start: { name: 'Ameide', lat: 51.9547, lon: 4.9622, country: 'NL' },
-    mid: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
-    dest: { name: 'Bilthoven', lat: 52.1306, lon: 5.2036, country: 'NL' },
-    duration: 20
-  },
-  {
-    name: 'Hilversum ➔ Weesp ➔ Amsterdam',
-    start: { name: 'Hilversum', lat: 52.2233, lon: 5.1764, country: 'NL' },
-    mid: { name: 'Weesp', lat: 52.3072, lon: 5.0414, country: 'NL' },
-    dest: { name: 'Amsterdam', lat: 52.3676, lon: 4.9041, country: 'NL' },
-    duration: 18
-  },
-  {
-    name: 'Utrecht ➔ Zeist ➔ Amersfoort',
-    start: { name: 'Utrecht', lat: 52.0908, lon: 5.1222, country: 'NL' },
-    mid: { name: 'Zeist', lat: 52.0911, lon: 5.2333, country: 'NL' },
-    dest: { name: 'Amersfoort', lat: 52.1561, lon: 5.3878, country: 'NL' },
-    duration: 15
-  },
-  {
-    name: 'Rotterdam ➔ Delft ➔ Den Haag',
-    start: { name: 'Rotterdam', lat: 51.9244, lon: 4.4777, country: 'NL' },
-    mid: { name: 'Delft', lat: 52.0116, lon: 4.3571, country: 'NL' },
-    dest: { name: 'Den Haag', lat: 52.0705, lon: 4.3007, country: 'NL' },
-    duration: 15
-  }
-];
-
-// Weather Code Dutch Dictionary
-const WMO_DICT = {
-  0: { text: "Strakblauw / Zonnig", icon: "sun", state: "sunny" },
-  1: { text: "Vrijwel helder", icon: "sun", state: "sunny" },
-  2: { text: "Licht bewolkt", icon: "partly-cloudy", state: "sunny" },
-  3: { text: "Zwaar bewolkt", icon: "cloudy", state: "cloudy" },
-  45: { text: "Mistig", icon: "fog", state: "cloudy" },
-  48: { text: "Aanvriezende mist", icon: "fog", state: "cloudy" },
-  51: { text: "Lichte motregen", icon: "drizzle", state: "rain" },
-  53: { text: "Matige motregen", icon: "drizzle", state: "rain" },
-  55: { text: "Dichte motregen", icon: "drizzle", state: "rain" },
-  56: { text: "Aanvriezende motregen", icon: "drizzle", state: "storm" },
-  57: { text: "Dichte aanvriezende motregen", icon: "drizzle", state: "storm" },
-  61: { text: "Lichte regen", icon: "rain", state: "rain" },
-  63: { text: "Matige regen", icon: "rain", state: "rain" },
-  65: { text: "Zware regen", icon: "heavy-rain", state: "rain" },
-  66: { text: "Aanvriezende regen", icon: "heavy-rain", state: "storm" },
-  67: { text: "Zware aanvriezende regen", icon: "heavy-rain", state: "storm" },
-  71: { text: "Lichte sneeuwval", icon: "snow", state: "cloudy" },
-  73: { text: "Matige sneeuwval", icon: "snow", state: "cloudy" },
-  75: { text: "Hevige sneeuwval", icon: "snow", state: "storm" },
-  77: { text: "Sneeuwkorrels", icon: "snow", state: "storm" },
-  80: { text: "Lichte buien", icon: "rain", state: "rain" },
-  81: { text: "Matige buien", icon: "rain", state: "rain" },
-  82: { text: "Zware stortbuien", icon: "heavy-rain", state: "storm" },
-  85: { text: "Lichte sneeuwbuien", icon: "snow", state: "cloudy" },
-  86: { text: "Zware sneeuwbuien", icon: "snow", state: "storm" },
-  95: { text: "Onweersbui", icon: "thunder", state: "storm" },
-  96: { text: "Onweersbui met hagel", icon: "thunder", state: "storm" },
-  97: { text: "Zware onweersbui met hagel", icon: "thunder", state: "storm" },
-  99: { text: "Zware onweersbui met hagel", icon: "thunder", state: "storm" }
-};
-
-// Weather SVG Icons Generator
-function getWeatherSvg(iconType, isNight = false) {
-  if (isNight && (iconType === 'sun' || iconType === 'partly-cloudy')) {
-    return `
-      <svg viewBox="0 0 64 64" fill="none">
-        <path d="M44 38A18 18 0 1 1 26 20a14 14 0 0 0 18 18z" fill="#facc15" stroke="#ca8a04" stroke-width="2"/>
-        <circle cx="48" cy="18" r="1.5" fill="#f59e0b"/>
-        <circle cx="54" cy="28" r="1" fill="#f59e0b"/>
-      </svg>`;
-  }
-  switch (iconType) {
-    case 'sun':
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <circle cx="32" cy="32" r="14" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
-          <path d="M32 6v6M32 52v6M6 32h6M52 32h6M13.6 13.6l4.2 4.2M46.2 46.2l4.2 4.2M13.6 50.4l4.2-4.2M46.2 17.8l4.2-4.2" stroke="#d97706" stroke-width="3" stroke-linecap="round"/>
-        </svg>`;
-    case 'partly-cloudy':
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <circle cx="26" cy="24" r="10" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
-          <path d="M22 48h22a10 10 0 0 0 2-19.8 14 14 0 0 0-26.4 4.8A8 8 0 0 0 22 48z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/>
-        </svg>`;
-    case 'cloudy':
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <path d="M20 46h24a10 10 0 0 0 1-19.9 14 14 0 0 0-26 3.9A8 8 0 0 0 20 46z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
-        </svg>`;
-    case 'drizzle':
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <path d="M20 40h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 40z" fill="#94a3b8"/>
-          <path d="M24 46l-2 6M34 46l-2 6M44 46l-2 6" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round"/>
-        </svg>`;
-    case 'rain':
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <path d="M20 38h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 38z" fill="#64748b"/>
-          <path d="M22 44l-4 12M32 44l-4 12M42 44l-4 12" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
-        </svg>`;
-    case 'heavy-rain':
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <path d="M20 36h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 36z" fill="#475569"/>
-          <path d="M20 42l-5 14M30 42l-5 14M40 42l-5 14M50 42l-5 14" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
-        </svg>`;
-    case 'thunder':
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <path d="M19 36h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 19 36z" fill="#334155"/>
-          <path d="M32 38l-6 10h8l-4 10 12-14h-8l4-6h-6z" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
-        </svg>`;
-    case 'snow':
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <path d="M20 40h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 40z" fill="#94a3b8"/>
-          <circle cx="22" cy="48" r="2" fill="#38bdf8"/>
-          <circle cx="32" cy="52" r="2" fill="#38bdf8"/>
-          <circle cx="42" cy="48" r="2" fill="#38bdf8"/>
-        </svg>`;
-    case 'fog':
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <path d="M16 26h32M12 34h40M18 42h28" stroke="#64748b" stroke-width="3.5" stroke-linecap="round"/>
-        </svg>`;
-    default:
-      return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <circle cx="32" cy="32" r="14" fill="#fbbf24"/>
-        </svg>`;
-  }
-}
-
-// Wind & Compass Conversions
-function getWindDirectionText(degrees) {
-  const dirs = ['Noord', 'NNO', 'NO', 'ONO', 'Oost', 'OZO', 'ZO', 'ZZO', 'Zuid', 'ZZW', 'ZW', 'WZW', 'West', 'WNW', 'NW', 'NNW'];
-  const index = Math.round((degrees % 360) / 22.5) % 16;
-  return dirs[index];
-}
-
-function kmhToBeaufort(kmh) {
-  if (kmh < 1) return '0 Bft';
-  if (kmh <= 5) return '1 Bft';
-  if (kmh <= 11) return '2 Bft';
-  if (kmh <= 19) return '3 Bft';
-  if (kmh <= 28) return '4 Bft';
-  if (kmh <= 38) return '5 Bft';
-  if (kmh <= 49) return '6 Bft';
-  if (kmh <= 61) return '7 Bft';
-  if (kmh <= 74) return '8 Bft';
-  if (kmh <= 88) return '9 Bft';
-  return '10+ Bft';
-}
-
-// Shared Formatters (DRY)
-function formatDisplayDate(date = new Date()) {
-  const options = { weekday: 'long', day: 'numeric', month: 'long' };
-  const str = date.toLocaleDateString('nl-NL', options);
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function formatDisplayTime(date = new Date()) {
-  return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-}
-
-function formatCommuteSlotStatus(slotData, slotScore) {
-  if (!slotData || !slotScore) return '--';
-  const rainStr = slotData.totalPrecip > 0.05 
-    ? `${slotData.totalPrecip} mm` 
-    : (slotData.maxPrecipProb > 50 ? `0.0 mm (${slotData.maxPrecipProb}%)` : 'Droog (0 mm)');
-  return `${slotData.avgTemp}°C • ${rainStr} • ${slotScore.badgeText}`;
-}
+if (typeof window !== 'undefined') window.Config = Config;
+if (typeof module !== 'undefined') module.exports = Config;

@@ -148,7 +148,7 @@ body {
   flex-direction: column;
 }
 
-/* 2. DYNAMIC ATMOSPHERIC BACKGROUND MESH
+/* 2. DYNAMIC ATMOSPHERIC BACKGROUND (High-Performance Ambient)
    ========================================================================== */
 .dynamic-bg-container {
   position: fixed;
@@ -156,39 +156,42 @@ body {
   pointer-events: none;
   z-index: -1;
   overflow: hidden;
+  background: 
+    radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.12), transparent 55%),
+    radial-gradient(circle at 15% 85%, rgba(251, 191, 36, 0.09), transparent 50%);
+  transition: background 0.8s ease;
 }
 
-.mesh-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.45;
-  transition: all 1.2s ease;
+
+/* Weather-responsive atmospheric tints */
+[data-weather-state="rain"] .dynamic-bg-container {
+  background: 
+    radial-gradient(circle at 85% 15%, rgba(59, 130, 246, 0.16), transparent 55%),
+    radial-gradient(circle at 15% 85%, rgba(14, 165, 233, 0.12), transparent 50%);
 }
 
-.mesh-blob-1 {
-  width: 480px;
-  height: 480px;
-  top: -120px;
-  right: -80px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.45), transparent 70%);
+[data-weather-state="storm"] .dynamic-bg-container {
+  background: 
+    radial-gradient(circle at 85% 15%, rgba(239, 68, 68, 0.15), transparent 55%),
+    radial-gradient(circle at 15% 85%, rgba(168, 85, 247, 0.12), transparent 50%);
 }
 
-.mesh-blob-2 {
-  width: 440px;
-  height: 440px;
-  bottom: -100px;
-  left: -80px;
-  background: radial-gradient(circle, rgba(251, 191, 36, 0.3), transparent 70%);
+[data-theme="dark"] .dynamic-bg-container {
+  background: 
+    radial-gradient(circle at 85% 15%, rgba(2, 132, 199, 0.18), transparent 55%),
+    radial-gradient(circle at 15% 85%, rgba(56, 189, 248, 0.10), transparent 50%);
 }
 
-[data-theme="dark"] .mesh-blob-1 {
-  opacity: 0.25;
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.4), transparent 70%);
+[data-theme="dark"][data-weather-state="rain"] .dynamic-bg-container {
+  background: 
+    radial-gradient(circle at 85% 15%, rgba(37, 99, 235, 0.2), transparent 55%),
+    radial-gradient(circle at 15% 85%, rgba(2, 132, 199, 0.15), transparent 50%);
 }
-[data-theme="dark"] .mesh-blob-2 {
-  opacity: 0.18;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.25), transparent 70%);
+
+[data-theme="dark"][data-weather-state="storm"] .dynamic-bg-container {
+  background: 
+    radial-gradient(circle at 85% 15%, rgba(220, 38, 38, 0.22), transparent 55%),
+    radial-gradient(circle at 15% 85%, rgba(147, 51, 234, 0.16), transparent 50%);
 }
 
 /* 3. APPLICATION CONTAINER
@@ -396,15 +399,10 @@ body {
   box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
 }
 
-/* Nav Actions (Icons & Mode Switcher) */
-.nav-actions {
-  grid-column: 3;
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
+.day-toggle-btn:active {
+  transform: scale(0.95);
 }
+
 
 /* View Mode Switcher Button (Cockpit ⇄ Widget) */
 .view-mode-toggle-btn {
@@ -486,12 +484,41 @@ body {
   width: 100%;
 }
 
+/* Expressive Card Transition on Switch (Day toggle, Route change, Refresh) */
+.m3-day-switch {
+  animation: m3DaySwitch 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+@keyframes m3DaySwitch {
+  0% {
+    opacity: 0.2;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#master-verdict-card.m3-day-switch { animation-delay: 0.02s; }
+#slot-morning-card.m3-day-switch { animation-delay: 0.08s; }
+#slot-evening-card.m3-day-switch { animation-delay: 0.14s; }
+#gear-advisor-card.m3-day-switch { animation-delay: 0.20s; }
+.safety-telemetry-grid.m3-day-switch { animation-delay: 0.26s; }
+#single-widget-card.m3-day-switch { animation-delay: 0.04s; }
+
 /* Hero Master Verdict Card (Top Focus) */
 .hero-master-card {
   border-radius: var(--radius-xl);
-  padding: 18px 22px;
+  padding: 20px 24px;
   border: 1.5px solid transparent;
-  transition: var(--transition-smooth);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  will-change: transform, box-shadow;
+}
+
+.hero-master-card:hover {
+  transform: translateY(-1.5px);
 }
 
 .hero-master-card[data-verdict="green"] {
@@ -576,6 +603,10 @@ body {
   border-color: var(--md-sys-color-primary);
 }
 
+.master-swap-btn:active {
+  transform: scale(0.94);
+}
+
 .master-score-pill {
   font-family: var(--font-mono);
   font-size: 0.84rem;
@@ -634,10 +665,19 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 16px;
+  padding: 18px;
   background: var(--glass-bg);
   border-radius: var(--radius-xl);
   border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
+  will-change: transform;
+}
+
+.commute-slot-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.12);
+  border-color: rgba(2, 132, 199, 0.35);
 }
 
 .slot-header-row {
@@ -900,17 +940,19 @@ body {
 
 .gauge-bar-track {
   width: 100%;
-  height: 6px;
-  background: rgba(148, 163, 184, 0.25);
+  height: 7px;
+  background: rgba(148, 163, 184, 0.2);
   border-radius: var(--radius-pill);
   overflow: hidden;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .gauge-bar-fill {
   height: 100%;
   border-radius: var(--radius-pill);
-  transition: width 0.4s ease, background 0.4s ease;
+  width: 0%;
+  transition: width 0.75s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease;
+  will-change: width;
 }
 
 /* 10. LOWER COCKPIT ROW (Full-Width Hourly Trend + Balanced 2-Col Weer/Specs & 7-Day)
@@ -994,6 +1036,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease, border-color 0.18s ease;
+}
+
+.spec-tile:hover {
+  transform: translateY(-1.5px);
+  background: var(--md-sys-color-surface);
+  border-color: rgba(2, 132, 199, 0.35);
 }
 
 .spec-tile-lbl {
@@ -1045,6 +1094,8 @@ body {
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 6px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
 
@@ -1059,6 +1110,14 @@ body {
   border: 1px solid var(--border-subtle);
   gap: 4px;
   text-align: center;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease, border-color 0.18s ease;
+  cursor: default;
+}
+
+.hour-chip:hover {
+  transform: translateY(-2px);
+  background: var(--md-sys-color-surface);
+  border-color: var(--md-sys-color-primary);
 }
 
 .hour-chip.is-current-hour {
@@ -1111,9 +1170,15 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 4px 6px;
+  padding: 6px 8px;
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
+  transition: background 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.daily-row:hover {
+  background: var(--md-sys-color-surface-container-low);
+  transform: translateX(3px);
 }
 
 .daily-name {
@@ -1147,10 +1212,11 @@ body {
 
 .temp-bar-track {
   flex: 1;
-  height: 5px;
-  background: rgba(148, 163, 184, 0.25);
+  height: 6px;
+  background: rgba(148, 163, 184, 0.2);
   border-radius: var(--radius-pill);
   position: relative;
+  overflow: hidden;
 }
 
 .temp-bar-fill {
@@ -1159,6 +1225,9 @@ body {
   bottom: 0;
   background: linear-gradient(90deg, #38bdf8, #f59e0b);
   border-radius: var(--radius-pill);
+  width: 0%;
+  transition: width 0.75s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s ease;
+  will-change: width;
 }
 
 .daily-rain-pill {
@@ -1289,6 +1358,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease, border-color 0.18s ease;
+}
+
+.widget-commute-box:hover {
+  background: var(--md-sys-color-surface);
+  border-color: rgba(2, 132, 199, 0.35);
+  transform: translateY(-1.5px);
 }
 
 .widget-box-title {
@@ -1310,22 +1386,29 @@ body {
 
 .widget-expand-btn {
   width: 100%;
-  padding: 10px;
+  padding: 11px 16px;
   border-radius: var(--radius-pill);
-  background: var(--md-sys-color-surface-container);
-  border: 1px solid var(--card-border);
+  background: var(--md-sys-color-primary-container);
+  border: 1.5px solid var(--md-sys-color-primary);
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   font-weight: 800;
-  color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary-container);
   cursor: pointer;
   text-align: center;
-  transition: var(--transition-fast);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, background 0.18s ease;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
 }
 
 .widget-expand-btn:hover {
   background: var(--md-sys-color-primary);
   color: #fff;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+}
+
+.widget-expand-btn:active {
+  transform: scale(0.97);
 }
 
 /* 12. MODAL DIALOGS (Location, Settings, Route Planner)
@@ -1334,21 +1417,24 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 1000;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
   box-sizing: border-box;
   opacity: 0;
-  transition: opacity var(--transition-fast);
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
 }
 
 .modal-backdrop.open {
-  display: flex;
   opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
 }
 
 .m3-modal-sheet {
@@ -1365,6 +1451,33 @@ body {
   flex-direction: column;
   gap: 16px;
   box-sizing: border-box;
+  transform: translateY(22px) scale(0.96);
+  opacity: 0;
+  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out;
+  will-change: transform, opacity;
+}
+
+.modal-backdrop.open .m3-modal-sheet {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-backdrop .m3-modal-sheet {
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    max-height: 86vh;
+    transform: translateY(100%);
+    border-bottom: none;
+  }
+
+  .modal-backdrop.open .m3-modal-sheet {
+    transform: translateY(0);
+  }
 }
 
 .m3-modal-sheet > * {
@@ -1453,7 +1566,7 @@ body {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   z-index: 1100;
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
   display: none;
   margin-top: 4px;
@@ -1461,6 +1574,18 @@ body {
 
 .route-search-dropdown.show {
   display: block;
+  animation: m3DropdownIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes m3DropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .route-search-item,
@@ -1472,13 +1597,14 @@ body {
   align-items: center;
   border-bottom: 1px solid var(--border-subtle);
   font-size: 0.85rem;
-  transition: var(--transition-fast);
+  transition: background 0.14s ease, color 0.14s ease, padding-left 0.14s ease;
 }
 
 .route-search-item:hover,
 .search-result-item:hover {
-  background: var(--md-sys-color-surface-container-low);
+  background: var(--md-sys-color-surface-container);
   color: var(--md-sys-color-primary);
+  padding-left: 18px;
 }
 
 .search-result-name {
@@ -1534,6 +1660,10 @@ body {
   border-color: var(--md-sys-color-primary);
 }
 
+.city-chip:active {
+  transform: scale(0.95);
+}
+
 .city-chip.active {
   background: var(--md-sys-color-primary) !important;
   color: #ffffff !important;
@@ -1586,30 +1716,51 @@ body {
   box-sizing: border-box;
 }
 
-/* 13. TOAST & FOOTER
+/* 13. TOAST, VIEW TRANSITIONS & KEYFRAMES
    ========================================================================== */
 .toast-pill {
   position: fixed;
   bottom: 24px;
   left: 50%;
-  transform: translateX(-50%) translateY(80px);
+  transform: translateX(-50%) translateY(80px) scale(0.94);
   background: var(--text-main);
   color: var(--md-sys-color-surface);
-  padding: 8px 18px;
+  padding: 10px 22px;
   border-radius: var(--radius-pill);
-  font-size: 0.82rem;
+  font-family: var(--font-display);
+  font-size: 0.84rem;
   font-weight: 800;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   z-index: 2000;
   opacity: 0;
-  transition: var(--transition-spring);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 .toast-pill.show {
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0) scale(1);
   opacity: 1;
 }
+
+/* View Switching Animation (Cockpit ⇄ Beknopte Widget) */
+.view-enter {
+  animation: m3ViewEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+@keyframes m3ViewEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 
 .app-footer {
   margin-top: auto;
@@ -1624,12 +1775,14 @@ body {
 }
 
 .spin {
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+
 
 /* 14. RESPONSIVE BREAKPOINT ENHANCEMENTS (Mobile, Tablet & Cockpit Displays)
    ========================================================================== */

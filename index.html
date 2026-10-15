@@ -16,11 +16,8 @@
 </head>
 <body data-weather-state="sunny">
 
-  <!-- Ambient Dynamic Mesh Background -->
-  <div class="dynamic-bg-container">
-    <div class="mesh-blob mesh-blob-1"></div>
-    <div class="mesh-blob mesh-blob-2"></div>
-  </div>
+  <!-- Ambient Dynamic Mesh Background (Hardware Accelerated) -->
+  <div class="dynamic-bg-container"></div>
 
   <div class="dashboard-wrapper">
 
@@ -138,7 +135,7 @@
         <!-- View Switcher (Cockpit ⇄ Single Widget) -->
         <button class="view-mode-toggle-btn" id="view-mode-toggle-btn" title="Schakel weergave tussen Uitgebreide Cockpit en Compacte Widget">
           <span id="view-mode-btn-icon">📱</span>
-          <span id="view-mode-btn-text">Widget</span>
+          <span id="view-mode-btn-text">Beknopt</span>
         </button>
 
         <!-- Theme Toggle (Light / Auto / Dark) -->
@@ -190,11 +187,11 @@
     <main class="cockpit-view" id="cockpit-view">
 
       <!-- TOP HERO: MASTER JOURNEY VERDICT -->
-      <section class="m3-card hero-master-card" id="master-verdict-card" data-verdict="green">
+      <section class="m3-card hero-master-card m3-day-switch" id="master-verdict-card" data-verdict="green">
         <div class="master-top-row">
           <div class="master-route-badge-wrap">
             <span class="master-verdict-pill" id="master-verdict-pill">
-              <span>🏍️</span> 100% RIDE ON!
+              <span>🏍️</span> GROEN LICHT
             </span>
             <div class="master-route-text" id="master-route-text">
               <span id="master-start-name">Ameide</span> ➔ <span id="master-dest-name">Bilthoven</span>
@@ -204,7 +201,7 @@
             </button>
           </div>
           <div class="master-score-pill" id="master-verdict-score">
-            Index: 95/100
+            Score: 95/100
           </div>
         </div>
 
@@ -226,13 +223,13 @@
       <section class="commute-grid-2col">
 
         <!-- Ochtendrit Card -->
-        <div class="m3-card commute-slot-card" id="slot-morning-card">
+        <div class="m3-card commute-slot-card m3-day-switch" id="slot-morning-card">
           <div class="slot-header-row">
             <div class="slot-title-group">
               <div class="slot-icon-circle">🌅</div>
               <div class="slot-title-text">
                 <div class="slot-name">Ochtendrit</div>
-                <div class="slot-time" id="morning-slot-time">08:00 (Heen)</div>
+                <div class="slot-time" id="morning-slot-time">08.00 uur (Heen)</div>
               </div>
             </div>
             <span class="slot-status-pill" id="morning-status-badge" data-verdict="green">
@@ -248,7 +245,7 @@
             </div>
             <div class="metric-cell">
               <span class="metric-label">Regen</span>
-              <span class="metric-value" id="morning-rain">0.0 mm</span>
+              <span class="metric-value" id="morning-rain">0,0 mm</span>
             </div>
             <div class="metric-cell">
               <span class="metric-label">Stoten</span>
@@ -262,13 +259,13 @@
         </div>
 
         <!-- Avondrit Card -->
-        <div class="m3-card commute-slot-card" id="slot-evening-card">
+        <div class="m3-card commute-slot-card m3-day-switch" id="slot-evening-card">
           <div class="slot-header-row">
             <div class="slot-title-group">
               <div class="slot-icon-circle">🌇</div>
               <div class="slot-title-text">
                 <div class="slot-name">Avondrit</div>
-                <div class="slot-time" id="evening-slot-time">17:00 (Terug)</div>
+                <div class="slot-time" id="evening-slot-time">17.00 uur (Terug)</div>
               </div>
             </div>
             <span class="slot-status-pill" id="evening-status-badge" data-verdict="green">
@@ -284,7 +281,7 @@
             </div>
             <div class="metric-cell">
               <span class="metric-label">Regen</span>
-              <span class="metric-value" id="evening-rain">0.0 mm</span>
+              <span class="metric-value" id="evening-rain">0,0 mm</span>
             </div>
             <div class="metric-cell">
               <span class="metric-label">Stoten</span>
@@ -300,7 +297,7 @@
       </section>
 
       <!-- PRIMARY FOCUS: UITRUSTING & KLEDINGADVIES -->
-      <section class="m3-card gear-advisor-expressive" id="gear-advisor-card">
+      <section class="m3-card gear-advisor-expressive m3-day-switch" id="gear-advisor-card">
         <div class="gear-header-row">
           <div class="gear-title-wrap">
             <span class="gear-icon">🦺</span>
@@ -321,7 +318,7 @@
       </section>
 
       <!-- 4 ESSENTIAL SAFETY TELEMETRY METERS -->
-      <section class="safety-telemetry-grid">
+      <section class="safety-telemetry-grid m3-day-switch">
 
         <!-- Zijwind -->
         <div class="telemetry-gauge-card">
@@ -334,7 +331,7 @@
             <span class="gauge-status-tag" id="meter-wind-tag">Veilig</span>
           </div>
           <div class="gauge-bar-track">
-            <div class="gauge-bar-fill" id="meter-wind-bar" style="width: 32%; background: #10b981;"></div>
+            <div class="gauge-bar-fill" id="meter-wind-bar" style="width: 0%; background: #10b981;"></div>
           </div>
         </div>
 
@@ -349,7 +346,7 @@
             <span class="gauge-status-tag" id="meter-grip-tag">Optimaal</span>
           </div>
           <div class="gauge-bar-track">
-            <div class="gauge-bar-fill" id="meter-grip-bar" style="width: 100%; background: #10b981;"></div>
+            <div class="gauge-bar-fill" id="meter-grip-bar" style="width: 0%; background: #10b981;"></div>
           </div>
         </div>
 
@@ -357,14 +354,14 @@
         <div class="telemetry-gauge-card">
           <div class="gauge-top-row">
             <span>Regenkans</span>
-            <span id="meter-rain-mm">0.0 mm</span>
+            <span id="meter-rain-mm">0,0 mm</span>
           </div>
           <div class="gauge-primary-row">
             <span class="gauge-main-val" id="meter-rain-val">Droog</span>
             <span class="gauge-status-tag" id="meter-rain-tag">0%</span>
           </div>
           <div class="gauge-bar-track">
-            <div class="gauge-bar-fill" id="meter-rain-bar" style="width: 6%; background: #10b981;"></div>
+            <div class="gauge-bar-fill" id="meter-rain-bar" style="width: 0%; background: #10b981;"></div>
           </div>
         </div>
 
@@ -379,7 +376,7 @@
             <span class="gauge-status-tag" id="meter-temp-tag">Behaaglijk</span>
           </div>
           <div class="gauge-bar-track">
-            <div class="gauge-bar-fill" id="meter-temp-bar" style="width: 45%; background: #10b981;"></div>
+            <div class="gauge-bar-fill" id="meter-temp-bar" style="width: 0%; background: #10b981;"></div>
           </div>
         </div>
 
@@ -414,7 +411,7 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
               <span id="hero-city-name">Ameide</span>
             </div>
-            <span class="hero-time-badge" id="hero-update-time">Live</span>
+            <span class="hero-time-badge" id="hero-update-time">Actueel</span>
           </div>
 
           <div class="hero-temp-row-large">
@@ -448,11 +445,11 @@
             </div>
             <div class="spec-tile">
               <span class="spec-tile-lbl">Neerslag</span>
-              <span class="spec-tile-val" id="spec-precip">0.0 mm</span>
+              <span class="spec-tile-val" id="spec-precip">0,0 mm</span>
               <span class="spec-tile-sub" id="spec-precip-prob">Kans: 0%</span>
             </div>
             <div class="spec-tile">
-              <span class="spec-tile-lbl">UV Index</span>
+              <span class="spec-tile-lbl">Zonkracht (uv)</span>
               <span class="spec-tile-val" id="spec-uv">2</span>
               <span class="spec-tile-sub" id="spec-uv-status">Laag</span>
             </div>
@@ -491,7 +488,7 @@
          VIEW 2: SINGLE WIDGET VIEW (Compact Mode voor telefoon/stuurbevestiging)
          ==================================================================== -->
     <main class="widget-view" id="widget-view" style="display: none;">
-      <div class="single-widget-card" id="single-widget-card" data-verdict="green">
+      <div class="single-widget-card m3-day-switch" id="single-widget-card" data-verdict="green">
         <!-- Widget Header -->
         <div class="widget-hero-header">
           <div>
@@ -508,7 +505,7 @@
 
         <!-- Widget Verdict Banner -->
         <div class="widget-verdict-banner" id="widget-verdict-banner" data-verdict="green">
-          <span id="widget-verdict-pill">🟢 100% RIDE ON!</span>
+          <span id="widget-verdict-pill">🟢 GROEN LICHT</span>
           <span id="widget-verdict-score">Score: 95/100</span>
         </div>
 
@@ -520,24 +517,24 @@
         <div class="widget-commute-preview-grid">
           <div class="widget-commute-box">
             <div class="widget-box-title">
-              <span>🌅 Ochtendrit (08:00)</span>
+              <span id="widget-morning-title">🌅 Ochtendrit (08.00 uur)</span>
               <span id="widget-morning-badge" style="color: #10b981; font-weight: 800;">DROOG</span>
             </div>
             <div class="widget-box-metrics">
               <span id="widget-morning-temp">6°C</span>
-              <span id="widget-morning-rain">0.0 mm</span>
+              <span id="widget-morning-rain">0,0 mm</span>
               <span id="widget-morning-gusts">12 km/u</span>
             </div>
           </div>
 
           <div class="widget-commute-box">
             <div class="widget-box-title">
-              <span>🌇 Avondrit (17:00)</span>
+              <span id="widget-evening-title">🌇 Avondrit (17.00 uur)</span>
               <span id="widget-evening-badge" style="color: #10b981; font-weight: 800;">DROOG</span>
             </div>
             <div class="widget-box-metrics">
               <span id="widget-evening-temp">17°C</span>
-              <span id="widget-evening-rain">0.0 mm</span>
+              <span id="widget-evening-rain">0,0 mm</span>
               <span id="widget-evening-gusts">25 km/u</span>
             </div>
           </div>
@@ -775,11 +772,11 @@
       <!-- Analysis Verdict Banner in Modal -->
       <div class="m3-card hero-master-card" id="route-verdict-banner" data-verdict="green" style="padding:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span class="master-verdict-pill" id="route-verdict-badge">🟢 100% DROOG</span>
+          <span class="master-verdict-pill" id="route-verdict-badge">🟢 VOLLEDIG DROOG</span>
           <span class="master-score-pill" id="route-score-badge">Score: 95/100</span>
         </div>
         <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;" id="route-verdict-headline">
-          Volledig droog traject
+          Volledig droog traject.
         </div>
         <div style="font-size:0.8rem;color:var(--text-muted);" id="route-verdict-explanation">
           Geen regen verwacht bij vertrek of onderweg.
@@ -812,11 +809,14 @@
   <!-- Toast Notification -->
   <div class="toast-pill" id="toast-pill">Locatie bijgewerkt!</div>
 
-  <!-- Modular Scripts -->
+  <!-- Modulaire Scripts (Decoupled Architecture) -->
   <script src="js/config.js"></script>
-  <script src="js/route-engine.js"></script>
-  <script src="js/commute-engine.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/state.js"></script>
   <script src="js/weather-service.js"></script>
+  <script src="js/commute-engine.js"></script>
+  <script src="js/route-engine.js"></script>
+  <script src="js/ui-renderer.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
