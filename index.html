@@ -99,9 +99,9 @@
         </div>
       </div>
 
-      <!-- Center Controls: Day Toggle, Route Pill, Location Pill (In Logical Centered Order) -->
+      <!-- Center Controls: Day Toggle & Unified Route/Location Pill -->
       <div class="nav-center">
-        <!-- 1. Day Segmented Toggle (Vandaag / Morgen) - FIRST IN LOGICAL ORDER -->
+        <!-- 1. Day Segmented Toggle (Vandaag / Volgende werkdag) -->
         <div class="day-toggle-group" id="nav-day-toggle" role="tablist">
           <button class="day-toggle-btn active" id="nav-day-today" data-day="today" role="tab" aria-selected="true">
             Vandaag
@@ -111,36 +111,21 @@
           </button>
         </div>
 
-        <!-- 2. Route Pill (Opens Ritplanner) - SECOND IN LOGICAL ORDER -->
-        <button class="nav-pill-btn nav-route-pill" id="nav-route-btn" title="Route aanpassen of omdraaien" aria-label="Route aanpassen" aria-haspopup="dialog">
+        <!-- 2. Unified Route & Location Pill (Opens Rit, Locaties & Voorkeuren) -->
+        <button class="nav-pill-btn nav-route-pill" id="nav-route-btn" title="Rit, locaties (van A naar B), GPS, basislocatie en voorkeuren instellen" aria-label="Rit en locaties aanpassen" aria-haspopup="dialog">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
           </svg>
-          <span class="nav-route-names" id="nav-route-names">Ameide ➔ Bilthoven</span>
-          <span class="nav-route-time" id="nav-route-time-chip">~40m</span>
-        </button>
-
-        <!-- 3. Location Pill (Opens Location Selector) - THIRD IN LOGICAL ORDER -->
-        <button class="nav-pill-btn nav-location-pill" id="open-location-btn" title="Kies andere basislocatie" aria-label="Locatie kiezen" aria-haspopup="dialog">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          <span id="nav-location-label">Ameide, NL</span>
+          <span class="nav-route-names" id="nav-route-names">Utrecht ➔ Amersfoort</span>
         </button>
       </div>
 
-      <!-- Actions: View Switcher, Theme, Refresh, Settings, Desktop Extras -->
+      <!-- Actions: View Switcher, Refresh, Fullscreen, Settings -->
       <div class="nav-actions">
         <!-- View Switcher (Cockpit ⇄ Single Widget) -->
         <button class="view-mode-toggle-btn" id="view-mode-toggle-btn" title="Schakel weergave tussen Uitgebreide Cockpit en Compacte Widget">
           <span id="view-mode-btn-icon">📱</span>
           <span id="view-mode-btn-text">Beknopt</span>
-        </button>
-
-        <!-- Theme Toggle (Light / Auto / Dark) -->
-        <button class="m3-icon-btn" id="theme-toggle-btn" title="Thema wisselen (Licht / Auto / Donker)" aria-label="Thema wisselen">
-          <span id="theme-btn-icon">☀️</span>
         </button>
 
         <!-- Refresh Data -->
@@ -153,26 +138,15 @@
           </svg>
         </button>
 
-        <!-- Secondary Desktop-Only Icons (GPS & Fullscreen) -->
-        <button class="m3-icon-btn nav-desktop-only" id="gps-btn" title="Gebruik huidige GPS locatie" aria-label="Huidige GPS positie bepalen">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="3"></circle>
-            <line x1="12" y1="2" x2="12" y2="5"></line>
-            <line x1="12" y1="19" x2="12" y2="22"></line>
-            <line x1="2" y1="12" x2="5" y2="12"></line>
-            <line x1="19" y1="12" x2="22" y2="12"></line>
-          </svg>
-        </button>
-
+        <!-- Fullscreen (Desktop) -->
         <button class="m3-icon-btn nav-desktop-only" id="fullscreen-btn" title="Volledig scherm (F11 / ESC)" aria-label="Volledig scherm">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
           </svg>
         </button>
 
-        <!-- Settings -->
-        <button class="m3-icon-btn" id="open-settings-btn" title="Instellingen en toleranties" aria-label="Instellingen">
+        <!-- Settings (Thema, Reistijden & Voorkeuren) -->
+        <button class="m3-icon-btn" id="open-settings-btn" title="Instellingen, thema (licht/donker) en voorkeuren" aria-label="Instellingen">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -194,19 +168,19 @@
               <span>🏍️</span> GROEN LICHT
             </span>
             <div class="master-route-text" id="master-route-text">
-              <span id="master-start-name">Ameide</span> ➔ <span id="master-dest-name">Bilthoven</span>
+              <span id="master-start-name">Utrecht</span> ➔ <span id="master-dest-name">Amersfoort</span>
             </div>
             <button type="button" class="master-swap-btn" id="master-swap-btn" title="Draai heen- en terugrit om">
               ⇄ Wissel
             </button>
           </div>
-          <div class="master-score-pill" id="master-verdict-score">
-            Score: 95/100
-          </div>
+          <button type="button" class="master-score-pill score-breakdown-trigger" id="master-verdict-score" title="Klik om de opbouw van deze score te bekijken" aria-label="Score details en opbouw bekijken">
+            Score: 95/100 ℹ️
+          </button>
         </div>
 
         <h1 class="master-headline" id="master-verdict-headline">
-          100% Droog asfalt & kalme wind over het hele traject!
+          100% Droog asfalt &amp; kalme wind over het hele traject!
         </h1>
 
         <p class="master-explanation" id="master-verdict-explanation">
@@ -215,7 +189,7 @@
 
         <div class="master-corridor-hint" id="master-corridor-hint">
           <span>🛣️</span>
-          <span id="master-corridor-subtext">Routecorridor gecontroleerd (via Utrecht • ~36 km • ~40m reistijd)</span>
+          <span id="master-corridor-subtext">Routecorridor gecontroleerd (via Zeist • ~24 km)</span>
         </div>
       </section>
 
@@ -233,7 +207,7 @@
               </div>
             </div>
             <span class="slot-status-pill" id="morning-status-badge" data-verdict="green">
-              🟢 DROOG & VEILIG
+              🟢 DROOG &amp; VEILIG
             </span>
           </div>
 
@@ -241,7 +215,7 @@
           <div class="slot-metrics-tonal-box">
             <div class="metric-cell">
               <span class="metric-label">Temp</span>
-              <span class="metric-value" id="morning-temp">6°C</span>
+              <span class="metric-value" id="morning-temp">11°C</span>
             </div>
             <div class="metric-cell">
               <span class="metric-label">Regen</span>
@@ -249,12 +223,12 @@
             </div>
             <div class="metric-cell">
               <span class="metric-label">Stoten</span>
-              <span class="metric-value" id="morning-gusts">12 km/u</span>
+              <span class="metric-value" id="morning-gusts">18 km/u</span>
             </div>
           </div>
 
           <div class="slot-advice-note" id="morning-note">
-            👉 Groen licht: Volledig droog vertrek in Ameide en droge aankomst in Bilthoven.
+            👉 Groen licht: Volledig droog vertrek en veilige rijcondities onderweg.
           </div>
         </div>
 
@@ -404,7 +378,7 @@
           <div class="card-title-row">
             <div class="card-title-text">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-              <span id="hero-city-name">Ameide</span>
+              <span id="hero-city-name">Utrecht</span>
             </div>
             <span class="hero-time-badge" id="hero-update-time">Actueel</span>
           </div>
@@ -467,6 +441,7 @@
             <div class="card-title-text">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <span>7-Daagse Verwachting</span>
+              <span class="hero-subtle-loc" id="daily-city-name">Utrecht</span>
             </div>
             <span class="hero-time-badge">Weekoverzicht</span>
           </div>
@@ -488,7 +463,7 @@
         <!-- Widget Header -->
         <div class="widget-hero-header">
           <div>
-            <div class="widget-route-text" id="widget-route-text">Ameide ➔ Bilthoven</div>
+            <div class="widget-route-text" id="widget-route-text">Utrecht ➔ Amersfoort</div>
             <div style="font-size: 0.76rem; color: var(--text-muted);" id="widget-date-time">Vandaag • KNMI Harmonie</div>
           </div>
           <div class="widget-temp-wrap">
@@ -502,11 +477,11 @@
         <!-- Widget Verdict Banner -->
         <div class="widget-verdict-banner" id="widget-verdict-banner" data-verdict="green">
           <span id="widget-verdict-pill">🟢 GROEN LICHT</span>
-          <span id="widget-verdict-score">Score: 95/100</span>
+          <button type="button" class="widget-score-pill score-breakdown-trigger" id="widget-verdict-score" title="Klik om score-opbouw te bekijken" aria-label="Bekijk opbouw van deze score">Score: 95/100 ℹ️</button>
         </div>
 
         <div style="font-size: 0.84rem; line-height: 1.35; color: var(--text-muted); font-weight: 600;" id="widget-verdict-summary">
-          100% Droog asfalt & kalme wind over het hele traject!
+          100% Droog asfalt &amp; kalme wind over het hele traject!
         </div>
 
         <!-- 2 Commute Blocks -->
@@ -517,9 +492,9 @@
               <span id="widget-morning-badge" style="color: #10b981; font-weight: 800;">DROOG</span>
             </div>
             <div class="widget-box-metrics">
-              <span id="widget-morning-temp">6°C</span>
+              <span id="widget-morning-temp">11°C</span>
               <span id="widget-morning-rain">0,0 mm</span>
-              <span id="widget-morning-gusts">12 km/u</span>
+              <span id="widget-morning-gusts">18 km/u</span>
             </div>
           </div>
 
@@ -566,239 +541,576 @@
   </div>
 
   <!-- ==========================================================================
-       MODAL 1: LOCATION PICKER
-       ========================================================================== -->
-  <div class="modal-backdrop" id="location-modal" role="dialog" aria-modal="true" aria-labelledby="location-modal-title">
-    <div class="m3-modal-sheet">
-      <div class="modal-header-row">
-        <div class="modal-title-group">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-          <h2 id="location-modal-title">Locatie Kiezen</h2>
-        </div>
-        <button type="button" class="modal-close-btn" id="close-location-modal-btn" aria-label="Sluiten">&times;</button>
-      </div>
-
-      <button type="button" class="modal-primary-btn" id="modal-gps-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-        <span>Gebruik mijn huidige GPS-locatie</span>
-      </button>
-
-      <div class="route-input-wrap">
-        <input type="text" class="route-waypoint-input" id="location-search-input" placeholder="Zoek Nederlandse stad of dorp..." autocomplete="off" />
-        <div class="route-search-dropdown" id="search-results-list"></div>
-      </div>
-
-      <div>
-        <div style="font-size:0.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">
-          Populaire Steden
-        </div>
-        <div class="preset-chips-flex" id="preset-cities-container"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==========================================================================
-       MODAL 2: SETTINGS (Thema, Reistijden, Toleranties)
+       MODAL 1: PAGINA-INSTELLINGEN & WEERGAVE (Wiki-kaart Stijl)
        ========================================================================== -->
   <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
-    <div class="m3-modal-sheet">
+    <div class="m3-modal-sheet score-modal-sheet" style="max-width: 720px;">
       <div class="modal-header-row">
         <div class="modal-title-group">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <h2 id="settings-modal-title">Instellingen & Toleranties</h2>
+          <span style="font-size: 1.5rem;">⚙️</span>
+          <div>
+            <h2 id="settings-modal-title">Pagina-instellingen &amp; Weergave</h2>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Kies je gewenste kleurenthema (Licht / Donker) en dashboard-indeling</div>
+          </div>
         </div>
         <button type="button" class="modal-close-btn" id="close-modal-btn" aria-label="Sluiten">&times;</button>
       </div>
 
-      <!-- Thema -->
-      <div>
-        <div style="font-size:0.8rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">
-          Thema Keuze
+      <!-- Sectie 1: Kleurenthema (Light / Auto / Dark Mode) -->
+      <div class="wiki-card">
+        <div class="wiki-card-header">
+          <span>🌓</span>
+          <div>
+            <div class="wiki-card-title">Weergave &amp; Kleurenthema</div>
+            <div class="wiki-card-sub">Kies tussen helder daglicht, automatisch of donkere modus</div>
+          </div>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="city-chip" id="theme-btn-light" style="flex:1;text-align:center;">☀️ Licht (Standaard)</button>
-          <button class="city-chip" id="theme-btn-auto" style="flex:1;text-align:center;">🔄 Auto</button>
-          <button class="city-chip" id="theme-btn-dark" style="flex:1;text-align:center;">🌙 Donker</button>
+        <div class="theme-selector-grid">
+          <button type="button" class="theme-choice-card" id="theme-btn-light">
+            <span class="theme-choice-icon">☀️</span>
+            <span class="theme-choice-title">Licht Thema</span>
+            <span class="theme-choice-desc">Hoog contrast voor overdag</span>
+          </button>
+          <button type="button" class="theme-choice-card" id="theme-btn-auto">
+            <span class="theme-choice-icon">🔄</span>
+            <span class="theme-choice-title">Automatisch</span>
+            <span class="theme-choice-desc">Volgt dag- en nachtritme</span>
+          </button>
+          <button type="button" class="theme-choice-card" id="theme-btn-dark">
+            <span class="theme-choice-icon">🌙</span>
+            <span class="theme-choice-title">Donker Thema</span>
+            <span class="theme-choice-desc">Rustig voor ogen in de avond</span>
+          </button>
         </div>
       </div>
 
-      <!-- Reistijden -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="route-waypoint-field">
-          <label for="setting-morning-time" style="font-size:0.82rem;font-weight:700;">Ochtendvertrek (Heen)</label>
-          <select class="route-waypoint-input" id="setting-morning-time">
-            <option value="06:00">06:00</option>
-            <option value="06:30">06:30</option>
-            <option value="07:00">07:00</option>
-            <option value="07:30">07:30</option>
-            <option value="08:00" selected>08:00 (Standaard)</option>
-            <option value="08:30">08:30</option>
-            <option value="09:00">09:00</option>
-            <option value="09:30">09:30</option>
-            <option value="10:00">10:00</option>
-          </select>
-        </div>
-        <div class="route-waypoint-field">
-          <label for="setting-evening-time" style="font-size:0.82rem;font-weight:700;">Avondvertrek (Terug)</label>
-          <select class="route-waypoint-input" id="setting-evening-time">
-            <option value="15:00">15:00</option>
-            <option value="15:30">15:30</option>
-            <option value="16:00">16:00</option>
-            <option value="16:30">16:30</option>
-            <option value="17:00" selected>17:00 (Standaard)</option>
-            <option value="17:30">17:30</option>
-            <option value="18:00">18:00</option>
-            <option value="18:30">18:30</option>
-            <option value="19:00">19:00</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Toleranties -->
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div>
-          <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;">
-            <span>Minimale Temperatuur</span>
-            <span id="val-min-temp">8°C</span>
+      <!-- Sectie 2: Dashboard Indeling (Cockpit vs Beknopte Widget) -->
+      <div class="wiki-card">
+        <div class="wiki-card-header">
+          <span>🖥️</span>
+          <div>
+            <div class="wiki-card-title">Dashboard-indeling</div>
+            <div class="wiki-card-sub">Schakel tussen de volledige motorcockpit en het compacte overzicht</div>
           </div>
-          <input type="range" min="0" max="15" value="8" class="route-waypoint-input" style="height:auto;padding:6px 0;" id="setting-min-temp" />
         </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;">
-            <span>Max Windstoot Limiet</span>
-            <span id="val-max-gusts">55 km/u</span>
-          </div>
-          <input type="range" min="35" max="80" step="5" value="55" class="route-waypoint-input" style="height:auto;padding:6px 0;" id="setting-max-gusts" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button type="button" class="theme-choice-card" id="settings-view-cockpit">
+            <span class="theme-choice-icon">📊</span>
+            <span class="theme-choice-title">Uitgebreide Cockpit</span>
+            <span class="theme-choice-desc">Volledig dashboard met 24-uurs trend &amp; 7 dagen</span>
+          </button>
+          <button type="button" class="theme-choice-card" id="settings-view-widget">
+            <span class="theme-choice-icon">📱</span>
+            <span class="theme-choice-title">Beknopte Widget</span>
+            <span class="theme-choice-desc">Compact één-kaart overzicht voor mobiel</span>
+          </button>
         </div>
       </div>
 
       <button type="button" class="modal-primary-btn" id="save-settings-btn">
-        Instellingen Opslaan
+        Sluiten
       </button>
     </div>
   </div>
 
   <!-- ==========================================================================
-       MODAL 3: RITPLANNER (Start + Bestemming & Automatische Corridor)
+       MODAL 2: MOTORRIT (A ➔ B), GPS, TIJDEN, VOORKEUREN & BASISLOCATIE (Wiki-stijl)
        ========================================================================== -->
   <div class="modal-backdrop" id="route-planner-modal" role="dialog" aria-modal="true" aria-labelledby="route-modal-title">
-    <div class="m3-modal-sheet">
+    <div class="m3-modal-sheet score-modal-sheet">
       <div class="modal-header-row">
         <div class="modal-title-group">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+          <span style="font-size: 1.5rem;">🏍️</span>
           <div>
-            <h2 id="route-modal-title">Motorrit & Routecorridor</h2>
-            <div style="font-size:0.74rem;color:var(--text-muted);">Automatisch gecontroleerd via KNMI Harmonie weermodel</div>
+            <h2 id="route-modal-title">Motorrit, Locaties &amp; Ritvoorkeuren</h2>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Bepaal je rit van A naar B, GPS-positie, vaste rittijden en gewenste temperatuur/wind</div>
           </div>
         </div>
         <button type="button" class="modal-close-btn" id="close-route-modal-btn" aria-label="Sluiten">&times;</button>
       </div>
 
-      <!-- Quick Preset Routes -->
-      <div class="preset-chips-flex" id="route-quick-presets">
-        <button type="button" class="city-chip" data-idx="0">Ameide ➔ Bilthoven</button>
-        <button type="button" class="city-chip" data-idx="1">Hilversum ➔ Amsterdam</button>
-        <button type="button" class="city-chip" data-idx="2">Utrecht ➔ Amersfoort</button>
-        <button type="button" class="city-chip" data-idx="3">Rotterdam ➔ Den Haag</button>
-      </div>
-
-      <!-- Startpunt Input -->
-      <div class="route-waypoint-field">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <label for="route-start-input" style="font-size:0.84rem;font-weight:800;">Startpunt (Vertrek)</label>
-          <button type="button" class="city-chip" id="route-start-gps-btn" style="padding:2px 8px;font-size:0.72rem;">GPS</button>
-        </div>
-        <div class="route-input-wrap">
-          <input type="text" id="route-start-input" class="route-waypoint-input" value="Ameide" placeholder="Typ startplaats..." autocomplete="off" />
-          <div class="route-search-dropdown" id="route-start-results"></div>
-        </div>
-      </div>
-
-      <!-- Swap Button -->
-      <div style="display:flex;align-items:center;justify-content:center;">
-        <button type="button" class="city-chip" id="route-swap-btn" style="font-weight:800;display:flex;align-items:center;gap:6px;">
-          ⇄ Draai start en bestemming om
+      <!-- Wiki-Stijl Tabs: 1. Motorrit (A -> B) & Voorkeuren | 2. Basislocatie (Weerstation) -->
+      <div class="score-wiki-tabs" role="tablist">
+        <button type="button" class="score-wiki-tab route-wiki-tab is-active" data-route-tab="route" role="tab" aria-selected="true">
+          <span>🏍️</span>
+          <span>Motorrit (Van A naar B) &amp; Voorkeuren</span>
+        </button>
+        <button type="button" class="score-wiki-tab route-wiki-tab" data-route-tab="base" role="tab" aria-selected="false">
+          <span>📍</span>
+          <span>Basislocatie (<span id="tab-base-loc-name">Utrecht</span>)</span>
         </button>
       </div>
 
-      <!-- Bestemming Input -->
-      <div class="route-waypoint-field">
-        <label for="route-dest-input" style="font-size:0.84rem;font-weight:800;">Bestemming (Aankomst)</label>
-        <div class="route-input-wrap">
-          <input type="text" id="route-dest-input" class="route-waypoint-input" value="Bilthoven" placeholder="Typ bestemming..." autocomplete="off" />
-          <div class="route-search-dropdown" id="route-dest-results"></div>
-        </div>
-      </div>
+      <!-- ==========================================
+           ROUTE TAB PANEL 1: MOTORRIT VAN A NAAR B, GPS, TIJDEN & VOORKEUREN
+           ========================================== -->
+      <div class="score-tab-panel route-tab-panel" data-route-panel="route" style="display: flex;">
 
-      <!-- Subtle Automated Corridor Preview -->
-      <div class="subtle-corridor-box">
-        <div>
-          <span>🛣️ Geautomatiseerde corridor: </span>
-          <strong id="corridor-preview-start">Ameide</strong> ➔
-          <span id="corridor-preview-mid" style="opacity:0.85;">Utrecht</span> ➔
-          <strong id="corridor-preview-dest">Bilthoven</strong>
-        </div>
-        <span class="brand-badge" id="route-auto-km-chip">~36 km</span>
-      </div>
+        <!-- Hoofdtegel: Ritlocaties (Van A naar B & GPS) -->
+        <div class="wiki-card">
+          <div class="wiki-card-header">
+            <span>🛣️</span>
+            <div>
+              <div class="wiki-card-title">Ritlocaties: Van A naar B</div>
+              <div class="wiki-card-sub">Bepaal het vertrek- en aankomstpunt van je motorrit</div>
+            </div>
+          </div>
 
-      <!-- Hidden midpoint input for engine state binding -->
-      <input type="hidden" id="route-mid-input" value="Utrecht" />
+          <!-- Geïntegreerde GPS Knop -->
+          <button type="button" class="gps-action-banner-btn" id="route-start-gps-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="3"></circle>
+              <line x1="12" y1="2" x2="12" y2="5"></line>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+              <line x1="2" y1="12" x2="5" y2="12"></line>
+              <line x1="19" y1="12" x2="22" y2="12"></line>
+            </svg>
+            <span>Gebruik mijn huidige GPS als vertrekpunt (A)</span>
+          </button>
 
-      <!-- Quick City Chips Helper -->
-      <div class="preset-chips-flex" id="route-preset-chips"></div>
+          <!-- 2-Koloms Invoer: Startpunt (A) & Bestemming (B) -->
+          <div class="route-ab-inputs-grid">
+            <!-- Vertrekpunt (A) -->
+            <div class="route-waypoint-field">
+              <label for="route-start-input" style="font-size:0.8rem;font-weight:800;">🅰️ Vertrekpunt (A)</label>
+              <div class="route-input-wrap">
+                <input type="text" id="route-start-input" class="route-waypoint-input" value="Utrecht" placeholder="Zoek vertrekplaats..." autocomplete="off" />
+                <div class="route-search-dropdown" id="route-start-results"></div>
+              </div>
+            </div>
 
-      <!-- Reistijd & Vertrektijd -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="route-waypoint-field">
-          <label style="font-size:0.8rem;font-weight:700;">Reistijd per etappe</label>
-          <div style="display:flex;gap:4px;" id="route-duration-buttons">
-            <button type="button" class="city-chip" data-duration="15">15m</button>
-            <button type="button" class="city-chip" data-duration="20" style="background:var(--md-sys-color-primary);color:#fff;">20m</button>
-            <button type="button" class="city-chip" data-duration="30">30m</button>
-            <button type="button" class="city-chip" data-duration="45">45m</button>
+            <!-- Wissel A en B -->
+            <div class="route-ab-swap-col">
+              <button type="button" class="city-chip" id="route-swap-btn" title="Draai Vertrek (A) en Bestemming (B) om" style="font-weight:800;display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 14px;">
+                ⇄ Wissel A &amp; B
+              </button>
+            </div>
+
+            <!-- Bestemming (B) -->
+            <div class="route-waypoint-field">
+              <label for="route-dest-input" style="font-size:0.8rem;font-weight:800;">🅱️ Bestemming (B)</label>
+              <div class="route-input-wrap">
+                <input type="text" id="route-dest-input" class="route-waypoint-input" value="Amersfoort" placeholder="Zoek bestemming..." autocomplete="off" />
+                <div class="route-search-dropdown" id="route-dest-results"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Automatische Motorroute & Afstand Samenvatting -->
+          <div class="subtle-corridor-box">
+            <div class="corridor-route-summary">
+              <span>🏍️ Motorroute: </span>
+              <strong id="corridor-preview-start">Utrecht</strong>
+              <span>➔</span>
+              <span id="corridor-preview-mid" style="opacity:0.85;">Zeist</span>
+              <span>➔</span>
+              <strong id="corridor-preview-dest">Amersfoort</strong>
+            </div>
+            <span class="corridor-km-pill" id="route-auto-km-chip">~24 km</span>
+          </div>
+
+          <!-- Hidden midpoint input -->
+          <input type="hidden" id="route-mid-input" value="Zeist" />
+
+          <!-- Snelkeuze Steden voor geselecteerd veld -->
+          <div>
+            <div style="font-size:0.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:5px;">
+              Snelle stedenkeuze (vult geselecteerd veld A of B)
+            </div>
+            <div class="preset-chips-flex" id="route-preset-chips"></div>
           </div>
         </div>
 
-        <div class="route-waypoint-field">
-          <label for="route-custom-time-input" style="font-size:0.8rem;font-weight:700;">Vertrektijd (Onderweg)</label>
-          <input type="time" class="route-waypoint-input" id="route-custom-time-input" />
+        <!-- De 2 Tegels: 1. Vaste Woon-Werktijden & 2. Gewenste Temp & Windlimiet -->
+        <div class="wiki-pillars-grid">
+          <!-- Tegel 1: Vaste Woon-Werktijden -->
+          <div class="wiki-card">
+            <div class="wiki-card-header">
+              <span>🕒</span>
+              <div>
+                <div class="wiki-card-title">Vaste Woon-Werktijden</div>
+                <div class="wiki-card-sub">Standaard tijdvakken voor Heen &amp; Terug</div>
+              </div>
+            </div>
+            <p class="wiki-card-body">
+              Het algoritme evalueert het weer en je motorroute standaard op deze twee dagelijkse vertrektijden.
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:auto;">
+              <div class="route-waypoint-field">
+                <label for="setting-morning-time" style="font-size:0.78rem;font-weight:800;">🌅 Ochtendrit (Heen)</label>
+                <select class="route-waypoint-input" id="setting-morning-time">
+                  <option value="06:00">06.00 uur</option>
+                  <option value="06:30">06.30 uur</option>
+                  <option value="07:00">07.00 uur</option>
+                  <option value="07:30">07.30 uur</option>
+                  <option value="08:00" selected>08.00 uur</option>
+                  <option value="08:30">08.30 uur</option>
+                  <option value="09:00">09.00 uur</option>
+                  <option value="09:30">09.30 uur</option>
+                  <option value="10:00">10.00 uur</option>
+                </select>
+              </div>
+              <div class="route-waypoint-field">
+                <label for="setting-evening-time" style="font-size:0.78rem;font-weight:800;">🌇 Avondrit (Terug)</label>
+                <select class="route-waypoint-input" id="setting-evening-time">
+                  <option value="15:00">15.00 uur</option>
+                  <option value="15:30">15.30 uur</option>
+                  <option value="16:00">16.00 uur</option>
+                  <option value="16:30">16.30 uur</option>
+                  <option value="17:00" selected>17.00 uur</option>
+                  <option value="17:30">17.30 uur</option>
+                  <option value="18:00">18.00 uur</option>
+                  <option value="18:30">18.30 uur</option>
+                  <option value="19:00">19.00 uur</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tegel 2: Gewenste Temp & Windlimiet -->
+          <div class="wiki-card">
+            <div class="wiki-card-header">
+              <span>🌡️</span>
+              <div>
+                <div class="wiki-card-title">Gewenste Temp &amp; Windlimiet</div>
+                <div class="wiki-card-sub">Jouw persoonlijke tolerantiegrenzen</div>
+              </div>
+            </div>
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>🧣 Gewenste min. temperatuur</span>
+                <span class="pref-val-pill" id="val-min-temp">8°C</span>
+              </div>
+              <input type="range" min="0" max="18" value="8" class="m3-range-slider" id="setting-min-temp" />
+            </div>
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>💨 Max. windsnelheid (stoten)</span>
+                <span class="pref-val-pill" id="val-max-gusts">55 km/u</span>
+              </div>
+              <input type="range" min="35" max="80" step="5" value="55" class="m3-range-slider" id="setting-max-gusts" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==========================================
+           ROUTE TAB PANEL 2: BASISLOCATIE & WEERSTATION
+           ========================================== -->
+      <div class="score-tab-panel route-tab-panel" data-route-panel="base" style="display: none;">
+        <div class="wiki-intro-box">
+          De <strong>Basislocatie</strong> bepaalt het lokale weerstation voor de actuele temperatuur, de 24-uurs trend en de 7-daagse verwachting. Standaard volgt deze automatisch het vertrekpunt van je rit, maar je kunt hier ook een losse plaats of je GPS-locatie instellen.
+        </div>
+
+        <div class="wiki-pillars-grid">
+          <!-- Linker Kaart: GPS & Zoeken -->
+          <div class="wiki-card">
+            <div class="wiki-card-header">
+              <span>📍</span>
+              <div>
+                <div class="wiki-card-title">Basislocatie Bepalen</div>
+                <div class="wiki-card-sub">Actief station: <strong id="nav-location-label">Utrecht, NL</strong></div>
+              </div>
+            </div>
+
+            <button type="button" class="gps-action-banner-btn" id="modal-gps-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+              </svg>
+              <span>Gebruik mijn huidige GPS-locatie</span>
+            </button>
+
+            <div class="route-waypoint-field" style="margin-top:4px;">
+              <label for="location-search-input" style="font-size:0.8rem;font-weight:800;">🔍 Zoek Nederlandse plaats of gemeente</label>
+              <div class="route-input-wrap">
+                <input type="text" class="route-waypoint-input" id="location-search-input" placeholder="Typ stad of dorp (bijv. Zwolle, Breda)..." autocomplete="off" />
+                <div class="route-search-dropdown" id="search-results-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rechter Kaart: Populaire Steden -->
+          <div class="wiki-card">
+            <div class="wiki-card-header">
+              <span>🏙️</span>
+              <div>
+                <div class="wiki-card-title">Populaire Steden in Nederland</div>
+                <div class="wiki-card-sub">Klik op een stad om direct het weer op te halen</div>
+              </div>
+            </div>
+            <div class="preset-chips-flex" id="preset-cities-container"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Analysis Verdict Banner in Modal -->
-      <div class="m3-card hero-master-card" id="route-verdict-banner" data-verdict="green" style="padding:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span class="master-verdict-pill" id="route-verdict-badge">🟢 VOLLEDIG DROOG</span>
-          <span class="master-score-pill" id="route-score-badge">Score: 95/100</span>
+      <button type="button" class="modal-primary-btn" id="close-route-save-btn">
+        Rit &amp; Voorkeuren Opslaan
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 4: SCORE BREAKDOWN & KENNISBANK (Wiki & FAQ Stijl)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="score-breakdown-modal" role="dialog" aria-modal="true" aria-labelledby="score-modal-title">
+    <div class="m3-modal-sheet score-modal-sheet">
+      <div class="modal-header-row">
+        <div class="modal-title-group">
+          <span style="font-size: 1.5rem;">🧮</span>
+          <div>
+            <h2 id="score-modal-title">Motorweer Score &amp; Kennisbank</h2>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Transparante berekening &amp; FAQ op basis van KNMI Harmonie-AROME</div>
+          </div>
         </div>
-        <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;" id="route-verdict-headline">
-          Volledig droog traject.
-        </div>
-        <div style="font-size:0.8rem;color:var(--text-muted);" id="route-verdict-explanation">
-          Geen regen verwacht bij vertrek of onderweg.
-        </div>
-        <div style="font-size:0.75rem;font-weight:700;color:var(--md-sys-color-primary);margin-top:4px;" id="route-verdict-tip"></div>
+        <button type="button" class="modal-close-btn" id="close-score-modal-btn" aria-label="Sluiten">&times;</button>
       </div>
 
-      <!-- Departure Alternatives -->
-      <div>
-        <div style="font-size:0.78rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">
-          Slimme Vertrekopties (Bui Ontwijken)
-        </div>
-        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;" id="route-alternatives-strip"></div>
-      </div>
-
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
-        <button type="button" class="modal-primary-btn" id="close-route-save-btn">
-          Route Toepassen &amp; Sluiten
+      <!-- Wiki & FAQ Tabs Switcher -->
+      <div class="score-wiki-tabs" role="tablist">
+        <button type="button" class="score-wiki-tab is-active" data-tab="live" role="tab" aria-selected="true">
+          <span>🧮</span>
+          <span>Live Score-opbouw</span>
         </button>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:0.74rem;color:var(--text-muted);">KNMI Harmonie 15-minuten data</span>
-          <button type="button" class="city-chip" id="route-refresh-btn" style="font-weight:700;padding:4px 10px;font-size:0.75rem;">
-            🔄 Herbereken
-          </button>
+        <button type="button" class="score-wiki-tab" data-tab="pillars" role="tab" aria-selected="false">
+          <span>📖</span>
+          <span>De 4 Pijlers</span>
+        </button>
+        <button type="button" class="score-wiki-tab" data-tab="faq" role="tab" aria-selected="false">
+          <span>❓</span>
+          <span>Veelgestelde Vragen</span>
+        </button>
+      </div>
+
+      <!-- ==========================================
+           TAB PANEL 1: LIVE SCORE OPBOUW
+           ========================================== -->
+      <div class="score-tab-panel" data-panel="live" style="display: flex;">
+        <!-- Hero Score Summary Card -->
+        <div class="score-hero-card" id="score-hero-card" data-verdict="green">
+          <div class="score-badge-circle" id="score-badge-circle">
+            <span id="score-badge-val">95</span>
+            <small>/100</small>
+          </div>
+          <div class="score-hero-text">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="master-verdict-pill" id="score-hero-verdict-pill">🟢 GROEN LICHT</span>
+            </div>
+            <div class="score-hero-title" id="score-hero-headline">Ideaal motorweer over jouw hele route</div>
+            <div class="score-hero-sub" id="score-hero-rule">
+              Het dagcijfer wordt bepaald door de laagste score van je twee ritten (Zwakste Schakel-principe).
+            </div>
+          </div>
+        </div>
+
+        <!-- Ochtend vs Avondrit Vergelijking -->
+        <div>
+          <div class="score-section-heading">
+            <span>Vergelijking Ritten</span>
+            <span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);">Heen vs. Terug</span>
+          </div>
+          <div class="score-slots-grid" id="score-slots-comparison">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Factoren & Aftrekposten -->
+        <div class="score-factors-section">
+          <div class="score-factors-title">
+            <span>Pijlers &amp; Aftrekposten Vandaag</span>
+            <span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);">Basis = 100 pt</span>
+          </div>
+          <div class="score-factors-list" id="score-factors-list">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Score Legenda -->
+        <div>
+          <div class="score-section-heading">
+            <span>Score Schaal &amp; Betekenis</span>
+          </div>
+          <div class="score-legend-grid">
+            <div class="score-legend-card green">
+              <span class="score-legend-title">🟢 80 – 100 pt</span>
+              <span>RIDE ON! Droog asfalt, kalme wind en veilige omstandigheden.</span>
+            </div>
+            <div class="score-legend-card yellow">
+              <span class="score-legend-title">🟡 50 – 79 pt</span>
+              <span>OPLETTEN. Wisselvallig: pas op voor buien of zijwindstoten.</span>
+            </div>
+            <div class="score-legend-card red">
+              <span class="score-legend-title">🔴 0 – 49 pt</span>
+              <span>KOEKBLIK DAG. Hoog risico: zware regen, storm of kans op gladheid.</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- ==========================================
+           TAB PANEL 2: DE 4 PIJLERS (WIKI)
+           ========================================== -->
+      <div class="score-tab-panel" data-panel="pillars" style="display: none;">
+        <div class="wiki-intro-box">
+          Elke motorrit start standaard op <strong>100 punten</strong> (ideale motorcondities). Het numerieke KNMI Harmonie-AROME weermodel berekent vervolgens aftrekpunten op basis van 4 kritieke veiligheidspijlers.
+        </div>
+
+        <div class="wiki-pillars-grid">
+          <!-- Pijler 1 -->
+          <div class="wiki-card">
+            <div class="wiki-card-header">
+              <span>💧</span>
+              <div>
+                <div class="wiki-card-title">Pijler 1: Neerslag &amp; Asfaltgrip</div>
+                <div class="wiki-card-sub">Max. -50 punten aftrek</div>
+              </div>
+            </div>
+            <p class="wiki-card-body">
+              Water op het wegdek vermindert de bandengrip aanzienlijk en belemmert het zicht. Daarom heeft neerslag direct forse invloed: bij een meetbare bui (&gt;0,15 mm) op de heen- óf terugrit daalt de score meteen onder de 80 punten naar <strong>oranje</strong>.
+            </p>
+            <table class="wiki-table">
+              <thead>
+                <tr><th>Situatie</th><th>Drempelwaarde</th><th>Aftrek</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Droog wegdek</td><td>0,0 mm</td><td><span class="pts-neutral">0 pt</span></td></tr>
+                <tr><td>Enkel spatje</td><td>0,05 – 0,15 mm</td><td><span class="pts-pen">-10 pt</span></td></tr>
+                <tr><td>Lichte bui / meetbaar nat</td><td>0,15 – 0,8 mm</td><td><span class="pts-pen">-28 pt (Direct &lt;80)</span></td></tr>
+                <tr><td>Matige regenbui</td><td>0,8 – 2,0 mm (of &gt;60% kans)</td><td><span class="pts-pen">-35 pt</span></td></tr>
+                <tr><td>Stevige regenval / stortbui</td><td>&gt; 2,0 mm</td><td><span class="pts-pen">-50 pt (Koekblik Dag)</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pijler 2 -->
+          <div class="wiki-card">
+            <div class="wiki-card-header">
+              <span>💨</span>
+              <div>
+                <div class="wiki-card-title">Pijler 2: Windkracht &amp; Zijwindstoten</div>
+                <div class="wiki-card-sub">Max. -50 punten aftrek</div>
+              </div>
+            </div>
+            <p class="wiki-card-body">
+              Motorfietsen zijn extreem gevoelig voor plotselinge windstoten bij open weilanden, bruggen, viaducten en het passeren van vrachtverkeer.
+            </p>
+            <table class="wiki-table">
+              <thead>
+                <tr><th>Situatie</th><th>Windstoten (10m)</th><th>Aftrek</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Vriendelijke wind</td><td>&lt; 40 km/u</td><td><span class="pts-neutral">0 pt</span></td></tr>
+                <tr><td>Merkbare snelwegwind</td><td>40 – 55 km/u</td><td><span class="pts-pen">-5 pt</span></td></tr>
+                <tr><td>Felle zijwind op open stukken</td><td>&gt; 55 km/u</td><td><span class="pts-pen">-15 pt</span></td></tr>
+                <tr><td>Boven jouw persoonlijke limiet</td><td>Instelbaar in menu</td><td><span class="pts-pen">-20 tot -35 pt</span></td></tr>
+                <tr><td>Gevaarlijke windstoten</td><td>&gt; 70 – 75 km/u</td><td><span class="pts-pen">-45 tot -50 pt</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pijler 3 -->
+          <div class="wiki-card">
+            <div class="wiki-card-header">
+              <span>🌡️</span>
+              <div>
+                <div class="wiki-card-title">Pijler 3: Temperatuur &amp; Gladheid</div>
+                <div class="wiki-card-sub">Max. -60 punten aftrek</div>
+              </div>
+            </div>
+            <p class="wiki-card-body">
+              Kou verlaagt de flexibiliteit van motorbanden en vertraagt je spierreacties. Onder 3°C kan het wegdek op bruggen en schaduwplekken opvriezen.
+            </p>
+            <table class="wiki-table">
+              <thead>
+                <tr><th>Situatie</th><th>Temperatuur</th><th>Aftrek</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Behaaglijk &amp; warm asfalt</td><td>Boven jouw minimum</td><td><span class="pts-neutral">0 pt</span></td></tr>
+                <tr><td>Onder persoonlijke koudegrens</td><td>Instelbaar (standaard 8°C)</td><td><span class="pts-pen">-20 pt</span></td></tr>
+                <tr><td>Extreme warmte in vol motorpak</td><td>&gt; 30°C</td><td><span class="pts-pen">-20 pt</span></td></tr>
+                <tr><td>Kans op opvriezing of ijzel</td><td>&lt; 3°C</td><td><span class="pts-pen">-60 pt (Direct rood)</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pijler 4 -->
+          <div class="wiki-card">
+            <div class="wiki-card-header">
+              <span>⚡</span>
+              <div>
+                <div class="wiki-card-title">Pijler 4: Noodweer, Onweer &amp; Hagel</div>
+                <div class="wiki-card-sub">Direct -60 punten aftrek</div>
+              </div>
+            </div>
+            <p class="wiki-card-body">
+              Onweersbuien brengen hagel, bliksemgevaar en gevaarlijke valwinden met zich mee. Bij WMO-onweercodes (95-99) daalt de score automatisch naar een onveilige conditie.
+            </p>
+            <table class="wiki-table">
+              <thead>
+                <tr><th>Situatie</th><th>Weercode</th><th>Aftrek</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Geen onweersdreiging</td><td>Regulier weer</td><td><span class="pts-neutral">0 pt</span></td></tr>
+                <tr><td>Onweersbui of hagel</td><td>WMO 95, 96, 97, 99</td><td><span class="pts-pen">-60 pt (Koekblik Dag)</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           TAB PANEL 3: VEELGESTELDE VRAGEN (FAQ)
+           ========================================== -->
+      <div class="score-tab-panel" data-panel="faq" style="display: none;">
+        <div class="faq-list">
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>🏍️</span>
+              <span>Waarom bepaalt de laagste ritscore het hele dagadvies?</span>
+            </div>
+            <div class="faq-answer">
+              Dit is het <strong>Zwakste Schakel-principe</strong>. Als de ochtendrit droog is (bijv. 95/100), maar er valt regen tijdens de terugreis (score 72/100 of lager), dan krijgt de hele dag direct een <strong>🟡 oranje advies</strong>. Je moet immers aan het einde van de middag ook weer droog en veilig thuiskomen. Hierdoor word je nooit verrast door een groen dagadvies wanneer je 's middags door de regen moet rijden.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>🏍️</span>
+              <span>Hoe kan ik de score afstemmen op mijn eigen ervaring en motor?</span>
+            </div>
+            <div class="faq-answer">
+              Klik bovenin de navigatiebalk op je <strong>Motorrit (A ➔ B)</strong>. Daar kun je naast je vertrek- en aankomstpunt direct jouw <em>vaste rittijden</em>, je <em>minimale temperatuur</em> (bijv. 6°C voor doorgewinterde rijders of 12°C voor mooi-weer rijders) en je <em>maximale windstootlimiet</em> instellen. Het algoritme past de aftrekpunten meteen aan op jouw persoonlijke toleranties.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>🛣️</span>
+              <span>Hoe controleert het algoritme mijn motorroute?</span>
+            </div>
+            <div class="faq-answer">
+              Op basis van je vertrekpunt (A) en bestemming (B) worden je startpunt, een automatische tussenlocatie halverwege en je aankomstpunt gescand. Het algoritme berekent voor elk punt hoe laat je daar rijdt en controleert met 15-minuten precisie of je onderweg een bui tegemoet rijdt.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>🛰️</span>
+              <span>Waarom het KNMI Harmonie weermodel en niet GFS of ECMWF?</span>
+            </div>
+            <div class="faq-answer">
+              Harmonie-AROME is het officiële numerieke hoge-resolutiemodel van het KNMI met een raster van slechts 2 kilometer over Nederland. In tegenstelling tot wereldwijde modellen (zoals GFS op 25 km) signaleert Harmonie lokale buienlijnen, kustconvergenties en windschiftingen veel nauwkeuriger.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="modal-primary-btn" id="close-score-ack-btn">
+        Begrepen &amp; Sluiten
+      </button>
     </div>
   </div>
 

@@ -21,7 +21,6 @@ const UIRenderer = {
         metaTheme: document.querySelector('meta[name="theme-color"]'),
         navLocationLabel: document.getElementById('nav-location-label'),
         navRouteNames: document.getElementById('nav-route-names'),
-        navRouteTimeChip: document.getElementById('nav-route-time-chip'),
         navNextDayText: document.getElementById('nav-next-day-text'),
         dayToggleButtons: document.querySelectorAll('.day-toggle-btn'),
 
@@ -102,6 +101,7 @@ const UIRenderer = {
         // Strips
         hourlyStrip: document.getElementById('hourly-strip'),
         dailyList: document.getElementById('daily-list'),
+        dailyCityName: document.getElementById('daily-city-name'),
 
         // Single Widget
         singleWidgetCard: document.getElementById('single-widget-card'),
@@ -126,6 +126,16 @@ const UIRenderer = {
         widgetWindText: document.getElementById('widget-wind-text'),
         widgetGripText: document.getElementById('widget-grip-text'),
         widgetRainText: document.getElementById('widget-rain-text'),
+
+        // Score Breakdown Modal
+        scoreBreakdownModal: document.getElementById('score-breakdown-modal'),
+        scoreHeroCard: document.getElementById('score-hero-card'),
+        scoreBadgeVal: document.getElementById('score-badge-val'),
+        scoreHeroVerdictPill: document.getElementById('score-hero-verdict-pill'),
+        scoreHeroHeadline: document.getElementById('score-hero-headline'),
+        scoreHeroRule: document.getElementById('score-hero-rule'),
+        scoreSlotsComparison: document.getElementById('score-slots-comparison'),
+        scoreFactorsList: document.getElementById('score-factors-list'),
 
         refreshIcon: document.getElementById('refresh-icon')
       };
@@ -252,7 +262,7 @@ const UIRenderer = {
   },
 
   /**
-   * Activeert een vloeiende, getrapte binnenkomst over de belangrijkste dashboardkaarten.
+   * Activeert een serene, rustige fade-overgang over de dashboardkaarten.
    */
   triggerContentTransition() {
     const cards = [
@@ -261,18 +271,18 @@ const UIRenderer = {
       document.getElementById('slot-evening-card'),
       document.getElementById('gear-advisor-card'),
       document.querySelector('.safety-telemetry-grid'),
+      document.querySelector('.weather-hero-mini'),
+      document.querySelector('.daily-forecast-card'),
       document.getElementById('single-widget-card')
     ].filter(Boolean);
 
-    cards.forEach((el, index) => {
+    cards.forEach(el => {
       el.classList.remove('m3-day-switch');
-      el.style.animationDelay = `${index * 0.04}s`;
+      el.style.animationDelay = '';
     });
 
     requestAnimationFrame(() => {
-      setTimeout(() => {
-        cards.forEach(el => el.classList.add('m3-day-switch'));
-      }, 20);
+      cards.forEach(el => el.classList.add('m3-day-switch'));
     });
   },
 
@@ -284,12 +294,15 @@ const UIRenderer = {
     if (els.navLocationLabel && state.location) {
       els.navLocationLabel.textContent = `${state.location.name}, ${state.location.country || 'NL'}`;
     }
+    const tabBaseLoc = document.getElementById('tab-base-loc-name');
+    if (tabBaseLoc && state.location) {
+      tabBaseLoc.textContent = state.location.name;
+    }
+    if (els.dailyCityName && state.location) {
+      els.dailyCityName.textContent = state.location.name;
+    }
     if (els.navRouteNames && state.route && state.route.start && state.route.dest) {
       els.navRouteNames.textContent = `${state.route.start.name} ➔ ${state.route.dest.name}`;
-    }
-    if (els.navRouteTimeChip && state.route) {
-      const totalMinutes = (state.route.legDurationMinutes || 20) * 2;
-      els.navRouteTimeChip.textContent = I18n.formatters.minutes(totalMinutes);
     }
   },
 
@@ -399,9 +412,14 @@ const UIRenderer = {
       els.masterVerdictCard.dataset.verdict = advice.dayVerdict;
     }
     if (els.masterVerdictPill) els.masterVerdictPill.textContent = advice.dayPill;
-    if (els.masterVerdictScore) els.masterVerdictScore.textContent = `Score: ${advice.minScore}/100`;
+    if (els.masterVerdictScore) els.masterVerdictScore.innerHTML = `Score: ${advice.minScore}/100 <span class="score-info-icon" title="Bekijk score-opbouw">ℹ️</span>`;
     if (els.masterVerdictHeadline) els.masterVerdictHeadline.textContent = advice.dayHeadline;
     if (els.masterVerdictExplanation) els.masterVerdictExplanation.textContent = advice.dayExplanation;
+
+    this._lastData = data;
+    this._lastAdvice = advice;
+    this._lastState = state;
+    this.renderScoreBreakdown(advice, state);
 
     if (els.masterStartName && state.route && state.route.start) {
       els.masterStartName.textContent = state.route.start.name;
@@ -411,10 +429,10 @@ const UIRenderer = {
     }
 
     if (els.masterCorridorSubtext && state.route) {
-      const midText = state.route.mid ? `via ${state.route.mid.name} • ` : '';
-      const kmText = state.route.roadKm ? `${I18n.formatters.distance(state.route.roadKm)} • ` : '';
-      const minsText = `${I18n.formatters.minutes((state.route.legDurationMinutes || 20) * 2)} reistijd`;
-      els.masterCorridorSubtext.textContent = `Routecorridor gecontroleerd (${midText}${kmText}${minsText})`;
+      const midText = state.route.mid ? `via ${state.route.mid.name}` : '';
+      const kmText = state.route.roadKm ? I18n.formatters.distance(state.route.roadKm) : '';
+      const parts = [midText, kmText].filter(Boolean).join(' • ');
+      els.masterCorridorSubtext.textContent = parts ? `Routecorridor gecontroleerd (${parts})` : 'Routecorridor gecontroleerd';
     }
 
     // --- 2. DE TWEE RITTEN (OCHTEND & AVOND) ---
@@ -429,6 +447,7 @@ const UIRenderer = {
       const mVerd = advice.morningAnalysis ? advice.morningAnalysis.verdict : advice.morningScore.verdict;
       els.morningStatusBadge.textContent = mText;
       els.morningStatusBadge.dataset.verdict = mVerd;
+      if (els.slotMorningCard) els.slotMorningCard.dataset.verdict = mVerd;
     }
     if (els.morningTemp) {
       const t = advice.morningAnalysis ? advice.morningAnalysis.startWeather.temp : advice.morningData.avgTemp;
@@ -456,6 +475,7 @@ const UIRenderer = {
       const eVerd = advice.eveningAnalysis ? advice.eveningAnalysis.verdict : advice.eveningScore.verdict;
       els.eveningStatusBadge.textContent = eText;
       els.eveningStatusBadge.dataset.verdict = eVerd;
+      if (els.slotEveningCard) els.slotEveningCard.dataset.verdict = eVerd;
     }
     if (els.eveningTemp) {
       const t = advice.eveningAnalysis ? advice.eveningAnalysis.startWeather.temp : advice.eveningData.avgTemp;
@@ -546,6 +566,7 @@ const UIRenderer = {
 
     // --- 5. LIVE WEER & 6 SPECIFICATIES ---
     if (els.heroCityName) els.heroCityName.textContent = state.location.name || 'Ameide';
+    if (els.dailyCityName) els.dailyCityName.textContent = state.location.name || 'Utrecht';
 
     let dayIdx = 0;
     if (daily && daily.time) {
@@ -636,7 +657,7 @@ const UIRenderer = {
     }
     if (els.widgetVerdictBanner) els.widgetVerdictBanner.dataset.verdict = advice.dayVerdict;
     if (els.widgetVerdictPill) els.widgetVerdictPill.textContent = advice.dayPill;
-    if (els.widgetVerdictScore) els.widgetVerdictScore.textContent = `Score: ${advice.minScore}/100`;
+    if (els.widgetVerdictScore) els.widgetVerdictScore.innerHTML = `Score: ${advice.minScore}/100 <span class="score-info-icon">ℹ️</span>`;
     if (els.widgetVerdictSummary) els.widgetVerdictSummary.textContent = advice.dayHeadline;
 
     if (els.widgetMorningTitle) {
@@ -701,14 +722,11 @@ const UIRenderer = {
       const idx = hourly.time.findIndex(t => t.startsWith(`${activeDateStr}T06:00`));
       startIdx = idx !== -1 ? idx : Math.max(0, hourly.time.findIndex(t => t.startsWith(activeDateStr)));
     } else {
-      // Begin 's ochtends vroeg (06:00) zodat ook de heenrit altijd in de strip aanwezig is
-      const morningStart = hourly.time.findIndex(t => t.startsWith(`${activeDateStr}T06:00`));
-      const dayFirst = hourly.time.findIndex(t => t.startsWith(activeDateStr));
-      const baseStart = morningStart !== -1 ? morningStart : (dayFirst !== -1 ? dayFirst : 0);
-      startIdx = Math.max(0, Math.min(baseStart, currentIdx - 1));
+      // Toon exact de afgelopen 2 uur voor het huidige tijdstip voor directe context
+      startIdx = Math.max(0, currentIdx - 2);
     }
 
-    const endIdx = Math.min(hourly.time.length, Math.max(startIdx + 24, currentIdx + 6));
+    const endIdx = Math.min(hourly.time.length, Math.max(startIdx + 26, currentIdx + 24));
 
     const chips = [];
     for (let i = startIdx; i < endIdx; i++) {
@@ -829,6 +847,211 @@ const UIRenderer = {
         });
       }, 40);
     });
+  },
+
+  /**
+   * Rendert de gedetailleerde score-opbouw en aftrekposten in de popup/modal.
+   */
+  renderScoreBreakdown(advice, state) {
+    if (!advice) return;
+    const els = this._getElements();
+    if (!els.scoreBreakdownModal) return;
+
+    const mScore = advice.morningAnalysis ? advice.morningAnalysis.score : advice.morningScore.score;
+    const eScore = advice.eveningAnalysis ? advice.eveningAnalysis.score : advice.eveningScore.score;
+    const minScore = advice.minScore;
+
+    // 1. Hero Card
+    if (els.scoreBadgeVal) els.scoreBadgeVal.textContent = minScore;
+    if (els.scoreHeroCard) els.scoreHeroCard.dataset.verdict = advice.dayVerdict;
+    if (els.scoreHeroVerdictPill) {
+      els.scoreHeroVerdictPill.textContent = advice.dayPill;
+      els.scoreHeroVerdictPill.dataset.verdict = advice.dayVerdict;
+    }
+    if (els.scoreHeroHeadline) els.scoreHeroHeadline.textContent = advice.dayHeadline;
+
+    if (els.scoreHeroRule) {
+      if (mScore === eScore) {
+        els.scoreHeroRule.textContent = `Zowel de ochtend- als de avondrit scoren ${mScore}/100. Het dagadvies staat daarom gelijk op ${mScore}/100.`;
+      } else if (mScore < eScore) {
+        els.scoreHeroRule.textContent = `De ochtendrit (${mScore}/100) scoort lager dan de avondrit (${eScore}/100). Het Zwakste Schakel-principe hanteert de laagste score als dagadvies.`;
+      } else {
+        els.scoreHeroRule.textContent = `De avondrit (${eScore}/100) scoort lager dan de ochtendrit (${mScore}/100). Het Zwakste Schakel-principe hanteert de terugreis als dagadvies om te voorkomen dat je strandt.`;
+      }
+    }
+
+    // 2. Ritten Vergelijking
+    if (els.scoreSlotsComparison) {
+      const mTime = (state.commute.morningTime || '08:00').replace(':', '.');
+      const eTime = (state.commute.eveningTime || '17:00').replace(':', '.');
+
+      const mVerd = advice.morningAnalysis ? advice.morningAnalysis.verdict : advice.morningScore.verdict;
+      const mBadge = advice.morningAnalysis ? advice.morningAnalysis.badgeText : advice.morningScore.badgeText;
+      const mTemp = advice.morningAnalysis ? advice.morningAnalysis.startWeather.temp : advice.morningData.avgTemp;
+      const mRain = advice.morningAnalysis ? advice.morningAnalysis.maxRainOverall : advice.morningData.totalPrecip;
+      const mGusts = advice.morningAnalysis ? advice.morningAnalysis.maxGustsOverall : advice.morningData.maxGusts;
+      const mDeductions = (advice.morningAnalysis && advice.morningAnalysis.deductions) || (advice.morningScore && advice.morningScore.deductions) || [];
+
+      const eVerd = advice.eveningAnalysis ? advice.eveningAnalysis.verdict : advice.eveningScore.verdict;
+      const eBadge = advice.eveningAnalysis ? advice.eveningAnalysis.badgeText : advice.eveningScore.badgeText;
+      const eTemp = advice.eveningAnalysis ? advice.eveningAnalysis.startWeather.temp : advice.eveningData.avgTemp;
+      const eRain = advice.eveningAnalysis ? advice.eveningAnalysis.maxRainOverall : advice.eveningData.totalPrecip;
+      const eGusts = advice.eveningAnalysis ? advice.eveningAnalysis.maxGustsOverall : advice.eveningData.maxGusts;
+      const eDeductions = (advice.eveningAnalysis && advice.eveningAnalysis.deductions) || (advice.eveningScore && advice.eveningScore.deductions) || [];
+
+      const isMorningWeakest = mScore <= eScore;
+      const isEveningWeakest = eScore < mScore;
+
+      els.scoreSlotsComparison.innerHTML = `
+        <div class="score-slot-box ${isMorningWeakest ? 'is-weakest' : ''}">
+          <div class="score-slot-top">
+            <span class="score-slot-title">🌅 Ochtend (${mTime}u)</span>
+            <span class="score-slot-num" style="color: ${mScore >= 80 ? '#10b981' : mScore >= 50 ? '#f59e0b' : '#ef4444'};">${mScore}/100</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin:2px 0;">
+            <span class="slot-status-pill" data-verdict="${mVerd}" style="font-size:0.68rem;padding:2px 8px;">${mBadge}</span>
+            ${isMorningWeakest ? '<span class="score-weakest-tag">Zwakste schakel</span>' : ''}
+          </div>
+          <div class="score-slot-meta">
+            <span>🌡️ ${I18n.formatters.celsius(mTemp)} • 💧 ${I18n.formatters.millimeters(mRain)} • 💨 ${I18n.formatters.kmh(mGusts)}</span>
+            <span style="font-size:0.72rem;color:var(--text-muted);">${mDeductions.length === 0 ? '✨ Geen aftrek (100% droog & kalm)' : mDeductions.map(d => `${d.title} (${d.points} pt)`).join(', ')}</span>
+          </div>
+        </div>
+
+        <div class="score-slot-box ${isEveningWeakest ? 'is-weakest' : ''}">
+          <div class="score-slot-top">
+            <span class="score-slot-title">🌇 Avond (${eTime}u)</span>
+            <span class="score-slot-num" style="color: ${eScore >= 80 ? '#10b981' : eScore >= 50 ? '#f59e0b' : '#ef4444'};">${eScore}/100</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin:2px 0;">
+            <span class="slot-status-pill" data-verdict="${eVerd}" style="font-size:0.68rem;padding:2px 8px;">${eBadge}</span>
+            ${isEveningWeakest ? '<span class="score-weakest-tag">Zwakste schakel</span>' : ''}
+          </div>
+          <div class="score-slot-meta">
+            <span>🌡️ ${I18n.formatters.celsius(eTemp)} • 💧 ${I18n.formatters.millimeters(eRain)} • 💨 ${I18n.formatters.kmh(eGusts)}</span>
+            <span style="font-size:0.72rem;color:var(--text-muted);">${eDeductions.length === 0 ? '✨ Geen aftrek (100% droog & kalm)' : eDeductions.map(d => `${d.title} (${d.points} pt)`).join(', ')}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // 3. Pijlers & Aftrekposten
+    if (els.scoreFactorsList) {
+      const isMorningDecisive = mScore <= eScore;
+      const decisiveSlot = isMorningDecisive ? (advice.morningAnalysis || advice.morningScore) : (advice.eveningAnalysis || advice.eveningScore);
+      const decisiveData = isMorningDecisive ? advice.morningData : advice.eveningData;
+      const deductions = (decisiveSlot && decisiveSlot.deductions) || [];
+
+      const rainDed = deductions.find(d => d.category === 'rain');
+      const windDed = deductions.find(d => d.category === 'wind');
+      const tempDed = deductions.find(d => d.category === 'temp');
+      const stormDed = deductions.find(d => d.category === 'storm');
+
+      const maxG = advice.telemetry ? advice.telemetry.maxGusts : (decisiveData ? decisiveData.maxGusts : 25);
+      const userGustLimit = state.commute.maxGusts || 55;
+      const minT = advice.telemetry
+        ? (advice.morningAnalysis ? Math.min(advice.morningAnalysis.startWeather.temp, advice.eveningAnalysis.startWeather.temp) : Math.min(advice.morningData ? advice.morningData.avgTemp : 15, advice.eveningData ? advice.eveningData.avgTemp : 15))
+        : (decisiveData ? decisiveData.avgTemp : 15);
+      const userTempLimit = state.commute.minTemp !== undefined ? state.commute.minTemp : 8;
+
+      const items = [];
+
+      // Basis
+      items.push(`
+        <div class="score-factor-item">
+          <div class="score-factor-info">
+            <span class="score-factor-name">🎯 Startscore (Optimaal)</span>
+            <span class="score-factor-desc">Elke rit start op 100 punten bij ideaal, droog en kalm weer.</span>
+          </div>
+          <span class="score-factor-points points-neutral">100 pt</span>
+        </div>
+      `);
+
+      // Neerslag
+      if (rainDed) {
+        items.push(`
+          <div class="score-factor-item has-penalty">
+            <div class="score-factor-info">
+              <span class="score-factor-name">${rainDed.icon || '🌧️'} ${rainDed.title}</span>
+              <span class="score-factor-desc">${rainDed.desc}</span>
+            </div>
+            <span class="score-factor-points points-penalty">${rainDed.points} pt</span>
+          </div>
+        `);
+      } else {
+        const precipVal = decisiveData ? decisiveData.totalPrecip : 0;
+        items.push(`
+          <div class="score-factor-item">
+            <div class="score-factor-info">
+              <span class="score-factor-name">💧 Neerslag &amp; Grip</span>
+              <span class="score-factor-desc">Volledig droog wegdek (${I18n.formatters.millimeters(precipVal)}), 100% wegdekgrip.</span>
+            </div>
+            <span class="score-factor-points points-neutral">0 pt</span>
+          </div>
+        `);
+      }
+
+      // Wind
+      if (windDed) {
+        items.push(`
+          <div class="score-factor-item has-penalty">
+            <div class="score-factor-info">
+              <span class="score-factor-name">${windDed.icon || '💨'} ${windDed.title}</span>
+              <span class="score-factor-desc">${windDed.desc}</span>
+            </div>
+            <span class="score-factor-points points-penalty">${windDed.points} pt</span>
+          </div>
+        `);
+      } else {
+        items.push(`
+          <div class="score-factor-item">
+            <div class="score-factor-info">
+              <span class="score-factor-name">💨 Wind &amp; Zijwind</span>
+              <span class="score-factor-desc">Zijwindstoten (${I18n.formatters.kmh(maxG)}) blijven veilig onder jouw limiet van ${I18n.formatters.kmh(userGustLimit)}.</span>
+            </div>
+            <span class="score-factor-points points-neutral">0 pt</span>
+          </div>
+        `);
+      }
+
+      // Temperatuur
+      if (tempDed) {
+        items.push(`
+          <div class="score-factor-item has-penalty">
+            <div class="score-factor-info">
+              <span class="score-factor-name">${tempDed.icon || '🧣'} ${tempDed.title}</span>
+              <span class="score-factor-desc">${tempDed.desc}</span>
+            </div>
+            <span class="score-factor-points points-penalty">${tempDed.points} pt</span>
+          </div>
+        `);
+      } else {
+        items.push(`
+          <div class="score-factor-item">
+            <div class="score-factor-info">
+              <span class="score-factor-name">🌡️ Temperatuur &amp; Asfalt</span>
+              <span class="score-factor-desc">Temperatuur (${I18n.formatters.celsius(minT)}) ligt veilig boven jouw koudegrens van ${I18n.formatters.celsius(userTempLimit)}, geen ijzelrisico.</span>
+            </div>
+            <span class="score-factor-points points-neutral">0 pt</span>
+          </div>
+        `);
+      }
+
+      // Onweer
+      if (stormDed) {
+        items.push(`
+          <div class="score-factor-item has-severe-penalty">
+            <div class="score-factor-info">
+              <span class="score-factor-name">⚡ ${stormDed.title}</span>
+              <span class="score-factor-desc">${stormDed.desc}</span>
+            </div>
+            <span class="score-factor-points points-penalty">${stormDed.points} pt</span>
+          </div>
+        `);
+      }
+
+      els.scoreFactorsList.innerHTML = items.join('');
+    }
   }
 };
 

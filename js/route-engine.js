@@ -312,28 +312,28 @@ const RouteEngine = {
 
       headline = `Let op: Je vertrekt droog in ${startName}, maar rond ${firstRainTime} uur rijd je een bui tegemoet bij ${firstRainPoint}.`;
       explanation = `Bij vertrek is het nog droog. Tussen ${startWeather.timeStr} en ${firstRainTime} uur trekt er neerslag over (${I18n.formatters.millimeters(rainAmount)}).`;
-      adviceTip = "Verschuif je vertrektijd hieronder met 15 of 30 minuten om de bui te ontwijken.";
+      adviceTip = "Houd rekening met nat wegdek halverwege je rit en neem regenkleding mee.";
     } else if (startHasRain && !midHasRain && !destHasRain) {
       scenario = 'CLEARING_UP';
       verdict = 'yellow';
       badgeText = I18n.t.verdicts.clearingUp;
       headline = `Start met regen in ${startName}, maar droog asfalt vanaf ${midName}.`;
-      explanation = `Trek bij vertrek direct je regenkleding aan. Na circa ${legMinutes} minuten rijd je de bui uit.`;
-      adviceTip = `Vertrek ${legMinutes} minuten later om de regenbui te vermijden.`;
+      explanation = `Trek bij vertrek direct je regenkleding aan. Na circa ${legMinutes} minuten rijden klaart het op.`;
+      adviceTip = `Even later vertrekken voorkomt een nat begin van je rit.`;
     } else if (startHasRain && (midHasRain || destHasRain)) {
       scenario = 'RAIN_THROUGHOUT';
       verdict = 'red';
       badgeText = I18n.t.verdicts.rainThroughout;
-      headline = `Regen op het hele traject van ${startName} naar ${destName}.`;
+      headline = `Regen tijdens de hele motorrit van ${startName} naar ${destName}.`;
       explanation = `Zowel bij vertrek als onderweg valt neerslag. De piek bedraagt ${I18n.formatters.millimeters(maxRainOverall)}.`;
       adviceTip = "Draag een waterdicht regenpak en een pinlock-vizier of stel de rit uit.";
     } else {
       scenario = 'FULLY_DRY';
       verdict = 'green';
       badgeText = I18n.t.verdicts.dryRoute;
-      headline = `Volledig droog traject van ${startName} naar ${destName}.`;
-      explanation = `Geen neerslag verwacht bij vertrek (${startWeather.timeStr} uur), halverwege noch bij aankomst.`;
-      adviceTip = "Uitstekende omstandigheden voor vertrek.";
+      headline = `Volledig droge motorrit van ${startName} naar ${destName}.`;
+      explanation = `Geen neerslag verwacht bij vertrek (${startWeather.timeStr} uur), onderweg noch bij aankomst.`;
+      adviceTip = "Uitstekende omstandigheden voor je rit.";
     }
 
     if (maxGustsOverall > userMaxGusts) {
@@ -345,18 +345,47 @@ const RouteEngine = {
     }
 
     let score = 100;
-    if (maxRainOverall > 2.0) score -= 50;
-    else if (maxRainOverall > 0.8) score -= 30;
-    else if (maxRainOverall > 0.2) score -= 15;
-    else if (maxRainOverall > 0.05) score -= 5;
+    const deductions = [];
+    if (maxRainOverall > 2.0) {
+      score -= 50;
+      deductions.push({ category: 'rain', icon: '🌧️', points: -50, title: 'Hevige neerslag op route', desc: `Piek van ${I18n.formatters.millimeters(maxRainOverall)}` });
+    } else if (maxRainOverall > 0.8) {
+      score -= 35;
+      deductions.push({ category: 'rain', icon: '🌦️', points: -35, title: 'Matige regenbui op route', desc: `Piek van ${I18n.formatters.millimeters(maxRainOverall)}` });
+    } else if (maxRainOverall > 0.15) {
+      score -= 28;
+      deductions.push({ category: 'rain', icon: '🌦️', points: -28, title: 'Bui op de route', desc: `Piek van ${I18n.formatters.millimeters(maxRainOverall)} neerslag` });
+    } else if (maxRainOverall > 0.05) {
+      score -= 10;
+      deductions.push({ category: 'rain', icon: '💧', points: -10, title: 'Enkel spatje op route', desc: `Piek van ${I18n.formatters.millimeters(maxRainOverall)}` });
+    }
 
-    if (maxGustsOverall > 70) score -= 45;
-    else if (maxGustsOverall > userMaxGusts) score -= 25;
-    else if (maxGustsOverall > 45) score -= 10;
+    if (maxGustsOverall > 70) {
+      score -= 45;
+      deductions.push({ category: 'wind', icon: '💨', points: -45, title: 'Gevaarlijke windstoten', desc: `Tot ${I18n.formatters.kmh(maxGustsOverall)} over traject` });
+    } else if (maxGustsOverall > userMaxGusts) {
+      score -= 25;
+      deductions.push({ category: 'wind', icon: '💨', points: -25, title: 'Boven jouw windlimiet', desc: `${I18n.formatters.kmh(maxGustsOverall)} (limiet: ${I18n.formatters.kmh(userMaxGusts)})` });
+    } else if (maxGustsOverall > 45) {
+      score -= 10;
+      deductions.push({ category: 'wind', icon: '💨', points: -10, title: 'Merkbare zijwind', desc: `${I18n.formatters.kmh(maxGustsOverall)} op open stukken` });
+    }
 
     const minTemp = Math.min(startWeather.temp, midWeather.temp, destWeather.temp);
-    if (minTemp < 4) score -= 40;
-    else if (minTemp < 8) score -= 15;
+    if (minTemp < 4) {
+      score -= 40;
+      deductions.push({ category: 'temp', icon: '❄️', points: -40, title: 'Gladheid / vrieskou', desc: `Minimumtemperatuur ${I18n.formatters.celsius(minTemp)}` });
+    } else if (minTemp < 8) {
+      score -= 15;
+      deductions.push({ category: 'temp', icon: '🧣', points: -15, title: 'Frisse temperatuur', desc: `Minimumtemperatuur ${I18n.formatters.celsius(minTemp)}` });
+    }
+
+    // Veiligheidskoppeling: een gele of rode rit kan nooit een groene score (>=80) behouden
+    if (verdict === 'yellow') {
+      score = Math.min(score, 75);
+    } else if (verdict === 'red') {
+      score = Math.min(score, 45);
+    }
 
     score = Math.max(10, Math.min(100, score));
 
@@ -379,7 +408,8 @@ const RouteEngine = {
       headline,
       explanation,
       adviceTip,
-      score
+      score,
+      deductions
     };
   },
 

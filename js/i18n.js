@@ -220,12 +220,11 @@ const I18n = {
     routePlanner: {
       title: "Motorrit en routecorridor",
       subtitle: "Automatisch getoetst via het KNMI Harmonie-weermodel",
-      startPoint: "Startpunt (vertrek)",
-      destination: "Bestemming (aankomst)",
-      corridorLabel: "Gecontroleerde routecorridor:",
-      travelTimePerLeg: "Reistijd per etappe",
-      departureTime: "Vertrektijd (onderweg)",
-      smartAlternatives: "Slimme vertrektijden om buien te ontwijken",
+      startPoint: "Vertrekpunt (A)",
+      destination: "Bestemming (B)",
+      corridorLabel: "Motorroute:",
+      travelTimePerLeg: "Geschatte ritduur",
+      departureTime: "Vertrektijd",
       modelDataInfo: "KNMI Harmonie 15-minutengegevens"
     },
 

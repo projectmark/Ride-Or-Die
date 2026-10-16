@@ -12,11 +12,21 @@ class StateStore {
 
   _getInitialState() {
     const d = Config.DEFAULTS;
+    const randomRoute = (typeof Config.getRandomPresetRoute === 'function')
+      ? Config.getRandomPresetRoute()
+      : d.ROUTE;
+
     return {
       theme: d.THEME,
       viewMode: d.VIEW_MODE,
       selectedDay: d.SELECTED_DAY,
-      location: { ...d.LOCATION },
+      userConfiguredLocation: false,
+      location: {
+        name: randomRoute.start.name,
+        latitude: randomRoute.start.lat,
+        longitude: randomRoute.start.lon,
+        country: randomRoute.start.country || 'NL'
+      },
       commute: {
         morningTime: d.COMMUTE.morningTime || d.COMMUTE.MORNING_TIME || '08:00',
         eveningTime: d.COMMUTE.eveningTime || d.COMMUTE.EVENING_TIME || '17:00',
@@ -25,10 +35,10 @@ class StateStore {
         ...d.COMMUTE
       },
       route: {
-        start: { ...d.ROUTE.start },
-        mid: { ...d.ROUTE.mid },
-        dest: { ...d.ROUTE.dest },
-        legDurationMinutes: d.ROUTE.legDurationMinutes,
+        start: { ...randomRoute.start },
+        mid: { ...randomRoute.mid },
+        dest: { ...randomRoute.dest },
+        legDurationMinutes: randomRoute.duration || d.ROUTE.legDurationMinutes || 20,
         roadKm: 36,
         waypointsWeather: { start: null, mid: null, dest: null },
         morningAnalysis: null,
@@ -76,6 +86,19 @@ class StateStore {
   }
 
   /**
+   * Markeert dat de gebruiker zelf een locatie of traject heeft ingesteld.
+   */
+  markUserConfigured() {
+    this.state.userConfiguredLocation = true;
+    try {
+      localStorage.setItem('rideordie_user_configured', 'true');
+    } catch (e) {
+      // Negeer storage fouten in private browsing
+    }
+    this.save();
+  }
+
+  /**
    * Laadt opgeslagen toestand uit localStorage met veilige fallbacks.
    */
   load() {
@@ -98,14 +121,6 @@ class StateStore {
         this.state.selectedDay = day;
       }
 
-      const locRaw = localStorage.getItem('rideordie_loc');
-      if (locRaw) {
-        const parsedLoc = JSON.parse(locRaw);
-        if (parsedLoc && parsedLoc.name && parsedLoc.latitude) {
-          this.state.location = parsedLoc;
-        }
-      }
-
       const commuteRaw = localStorage.getItem('rideordie_commute');
       if (commuteRaw) {
         const parsedCommute = JSON.parse(commuteRaw);
@@ -119,15 +134,28 @@ class StateStore {
         };
       }
 
-      const routeRaw = localStorage.getItem('rideordie_route');
-      if (routeRaw) {
-        const parsedRoute = JSON.parse(routeRaw);
-        if (parsedRoute.start && parsedRoute.dest) {
-          this.state.route.start = parsedRoute.start;
-          this.state.route.dest = parsedRoute.dest;
-          if (parsedRoute.mid) this.state.route.mid = parsedRoute.mid;
-          if (parsedRoute.legDurationMinutes) this.state.route.legDurationMinutes = parsedRoute.legDurationMinutes;
-          if (parsedRoute.roadKm) this.state.route.roadKm = parsedRoute.roadKm;
+      const isUserConfigured = localStorage.getItem('rideordie_user_configured') === 'true';
+      this.state.userConfiguredLocation = isUserConfigured;
+
+      if (isUserConfigured) {
+        const locRaw = localStorage.getItem('rideordie_loc');
+        if (locRaw) {
+          const parsedLoc = JSON.parse(locRaw);
+          if (parsedLoc && parsedLoc.name && parsedLoc.latitude) {
+            this.state.location = parsedLoc;
+          }
+        }
+
+        const routeRaw = localStorage.getItem('rideordie_route');
+        if (routeRaw) {
+          const parsedRoute = JSON.parse(routeRaw);
+          if (parsedRoute.start && parsedRoute.dest) {
+            this.state.route.start = parsedRoute.start;
+            this.state.route.dest = parsedRoute.dest;
+            if (parsedRoute.mid) this.state.route.mid = parsedRoute.mid;
+            if (parsedRoute.legDurationMinutes) this.state.route.legDurationMinutes = parsedRoute.legDurationMinutes;
+            if (parsedRoute.roadKm) this.state.route.roadKm = parsedRoute.roadKm;
+          }
         }
       }
     } catch (err) {
@@ -143,15 +171,17 @@ class StateStore {
       localStorage.setItem('rideordie_theme', this.state.theme);
       localStorage.setItem('rideordie_view_mode', this.state.viewMode);
       localStorage.setItem('rideordie_selected_day', this.state.selectedDay);
-      localStorage.setItem('rideordie_loc', JSON.stringify(this.state.location));
       localStorage.setItem('rideordie_commute', JSON.stringify(this.state.commute));
-      localStorage.setItem('rideordie_route', JSON.stringify({
-        start: this.state.route.start,
-        mid: this.state.route.mid,
-        dest: this.state.route.dest,
-        legDurationMinutes: this.state.route.legDurationMinutes,
-        roadKm: this.state.route.roadKm
-      }));
+      if (this.state.userConfiguredLocation) {
+        localStorage.setItem('rideordie_loc', JSON.stringify(this.state.location));
+        localStorage.setItem('rideordie_route', JSON.stringify({
+          start: this.state.route.start,
+          mid: this.state.route.mid,
+          dest: this.state.route.dest,
+          legDurationMinutes: this.state.route.legDurationMinutes,
+          roadKm: this.state.route.roadKm
+        }));
+      }
     } catch (err) {
       console.warn("Fout bij opslaan toestand:", err);
     }

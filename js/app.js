@@ -132,46 +132,9 @@ const App = {
       );
 
       route.waypointsWeather = waypointsWeather;
-      this._renderRouteModalAnalysis();
       this._renderCurrentData();
     } catch (err) {
       console.warn("Fout bij trajectanalyse:", err);
-    }
-  },
-
-  /**
-   * Rendert de route-analyse in de dialoog.
-   */
-  _renderRouteModalAnalysis() {
-    const route = State.state.route;
-    if (!route.waypointsWeather || !route.waypointsWeather.start) return;
-
-    const evalRes = RouteEngine.evaluateRoute(route, route.waypointsWeather, new Date());
-    if (!evalRes) return;
-
-    const banner = document.getElementById('route-verdict-banner');
-    const badge = document.getElementById('route-verdict-badge');
-    const score = document.getElementById('route-score-badge');
-    const headline = document.getElementById('route-verdict-headline');
-    const expl = document.getElementById('route-verdict-explanation');
-    const tip = document.getElementById('route-verdict-tip');
-
-    if (banner) banner.dataset.verdict = evalRes.verdict;
-    if (badge) badge.textContent = evalRes.badgeText;
-    if (score) score.textContent = `Score: ${evalRes.score}/100`;
-    if (headline) headline.textContent = evalRes.headline;
-    if (expl) expl.textContent = evalRes.explanation;
-    if (tip) tip.textContent = evalRes.adviceTip || '';
-
-    // Alternatievenstrip
-    const strip = document.getElementById('route-alternatives-strip');
-    if (strip) {
-      const alts = RouteEngine.computeDepartureAlternatives(route, route.waypointsWeather, new Date());
-      strip.innerHTML = alts.slots.map(s => `
-        <button type="button" class="city-chip ${s.isCurrent ? 'active' : ''}" style="white-space:nowrap;font-size:0.75rem;">
-          ${s.departureTimeStr} uur • ${s.maxRain > 0 ? `💧 ${I18n.formatters.millimeters(s.maxRain)}` : '🟢 Droog'}
-        </button>
-      `).join('');
     }
   },
 
@@ -180,7 +143,9 @@ const App = {
    */
   selectLocation(name, lat, lon, country = 'NL') {
     State.set('location', { name, latitude: Number(lat), longitude: Number(lon), country });
-    this.closeModal('location-modal');
+    State.markUserConfigured();
+    this._renderLocationChips();
+    this.closeModal('route-planner-modal');
     this.refreshWeather(false);
     UIRenderer.showToast(I18n.t.toasts.locationChanged(name));
   },
@@ -190,6 +155,7 @@ const App = {
    */
   selectRoutePoint(key, name, lat, lon, country = 'NL') {
     State.state.route[key] = { name, lat: Number(lat), lon: Number(lon), country };
+    State.markUserConfigured();
     RouteEngine.syncRouteState(State.state.route.start, State.state.route.dest, State.state.route.legDurationMinutes);
 
     const input = document.getElementById(`route-${key}-input`);
@@ -204,9 +170,10 @@ const App = {
 
     this._updateCorridorPreview();
     this._renderRouteChips();
+    this._renderLocationChips();
     State.save();
     this.analyzeCurrentRoute(false);
-    UIRenderer.showToast(`${name} gekozen voor de route`);
+    UIRenderer.showToast(`${name} gekozen voor je motorrit`);
   },
 
   /**
@@ -216,6 +183,7 @@ const App = {
     const temp = State.state.route.start;
     State.state.route.start = State.state.route.dest;
     State.state.route.dest = temp;
+    State.markUserConfigured();
 
     RouteEngine.syncRouteState(State.state.route.start, State.state.route.dest, State.state.route.legDurationMinutes);
     if (State.state.route.start) {
@@ -234,6 +202,7 @@ const App = {
 
     this._updateCorridorPreview();
     this._renderRouteChips();
+    this._renderLocationChips();
     State.save();
     this.refreshWeather(false);
     this.analyzeCurrentRoute(false);
@@ -253,6 +222,34 @@ const App = {
     if (kmChip && route.roadKm) kmChip.textContent = I18n.formatters.distance(route.roadKm);
   },
 
+  _syncPreferenceSlidersToDOM() {
+    const minT = State.state.commute.minTemp !== undefined ? State.state.commute.minTemp : 8;
+    const maxG = State.state.commute.maxGusts !== undefined ? State.state.commute.maxGusts : 55;
+
+    const selM = document.getElementById('setting-morning-time');
+    const selE = document.getElementById('setting-evening-time');
+    if (selM && State.state.commute.morningTime) selM.value = State.state.commute.morningTime;
+    if (selE && State.state.commute.eveningTime) selE.value = State.state.commute.eveningTime;
+
+    const rTemp = document.getElementById('setting-min-temp');
+    if (rTemp) rTemp.value = minT;
+    const vTemp = document.getElementById('val-min-temp');
+    if (vTemp) vTemp.textContent = I18n.formatters.celsius(minT);
+
+    const rGusts = document.getElementById('setting-max-gusts');
+    if (rGusts) rGusts.value = maxG;
+    const vGusts = document.getElementById('val-max-gusts');
+    if (vGusts) vGusts.textContent = I18n.formatters.kmh(maxG);
+  },
+
+  _syncSettingsViewButtons() {
+    const isWidget = State.get('viewMode') === 'widget';
+    const btnCockpit = document.getElementById('settings-view-cockpit');
+    const btnWidget = document.getElementById('settings-view-widget');
+    if (btnCockpit) btnCockpit.classList.toggle('active', !isWidget);
+    if (btnWidget) btnWidget.classList.toggle('active', isWidget);
+  },
+
   _renderLocationChips() {
     const container = document.getElementById('preset-cities-container');
     if (!container) return;
@@ -263,64 +260,87 @@ const App = {
   },
 
   _renderRouteChips() {
-    const quickPresets = document.getElementById('route-quick-presets');
-    if (quickPresets) {
-      const curStart = (State.state.route.start?.name || '').toLowerCase();
-      const curDest = (State.state.route.dest?.name || '').toLowerCase();
-      quickPresets.querySelectorAll('.city-chip').forEach(btn => {
-        const idx = parseInt(btn.dataset.idx, 10);
-        const r = Config.PRESET_ROUTES[idx];
-        const isMatch = r && r.start.name.toLowerCase() === curStart && r.dest.name.toLowerCase() === curDest;
-        btn.classList.toggle('active', !!isMatch);
-      });
-    }
-
     const routePresets = document.getElementById('route-preset-chips');
     if (routePresets) {
       const curDest = (State.state.route.dest?.name || '').toLowerCase();
-      routePresets.innerHTML = Config.PRESET_CITIES.slice(0, 10).map(c => `
+      routePresets.innerHTML = Config.PRESET_CITIES.slice(0, 12).map(c => `
         <button type="button" class="city-chip ${c.name.toLowerCase() === curDest ? 'active' : ''}" data-name="${c.name}" data-lat="${c.lat}" data-lon="${c.lon}">${c.name}</button>
       `).join('');
     }
   },
 
-  openModal(modalId) {
+  _switchRouteModalTab(targetTab) {
+    const modal = document.getElementById('route-planner-modal');
+    if (!modal) return;
+    modal.querySelectorAll('.route-wiki-tab').forEach(t => {
+      const isAct = t.getAttribute('data-route-tab') === targetTab;
+      t.classList.toggle('is-active', isAct);
+      t.setAttribute('aria-selected', isAct ? 'true' : 'false');
+    });
+    modal.querySelectorAll('.route-tab-panel').forEach(panel => {
+      panel.style.display = panel.getAttribute('data-route-panel') === targetTab ? 'flex' : 'none';
+    });
+    if (targetTab === 'base') {
+      this._renderLocationChips();
+    }
+  },
+
+  openModal(modalId, initialSubTab = null) {
+    if (modalId === 'location-modal') {
+      return this.openModal('route-planner-modal', 'base');
+    }
+
     const modal = document.getElementById(modalId);
     if (!modal) return;
-    if (modalId === 'location-modal') {
-      this._renderLocationChips();
-      const inp = document.getElementById('location-search-input');
-      if (inp) {
-        inp.value = '';
-        setTimeout(() => inp.focus(), 60);
-      }
-    } else if (modalId === 'route-planner-modal') {
+
+    const modalSheet = modal.querySelector('.score-modal-sheet, .m3-modal-sheet');
+    if (modalSheet) modalSheet.scrollTop = 0;
+
+    if (modalId === 'route-planner-modal') {
+      const targetTab = initialSubTab || 'route';
+      this._switchRouteModalTab(targetTab);
+
       const startIn = document.getElementById('route-start-input');
       const destIn = document.getElementById('route-dest-input');
       if (startIn && State.state.route.start) startIn.value = State.state.route.start.name;
       if (destIn && State.state.route.dest) destIn.value = State.state.route.dest.name;
+
+      this._syncPreferenceSlidersToDOM();
       this._updateCorridorPreview();
       this._renderRouteChips();
+      this._renderLocationChips();
       this.analyzeCurrentRoute(false);
     } else if (modalId === 'settings-modal') {
-      const selM = document.getElementById('setting-morning-time');
-      const selE = document.getElementById('setting-evening-time');
-      const rTemp = document.getElementById('setting-min-temp');
-      const rGusts = document.getElementById('setting-max-gusts');
-      if (selM) selM.value = State.state.commute.morningTime;
-      if (selE) selE.value = State.state.commute.eveningTime;
-      if (rTemp) rTemp.value = State.state.commute.minTemp;
-      if (rGusts) rGusts.value = State.state.commute.maxGusts;
-      const vTemp = document.getElementById('val-min-temp');
-      if (vTemp) vTemp.textContent = I18n.formatters.celsius(State.state.commute.minTemp);
-      const vGusts = document.getElementById('val-max-gusts');
-      if (vGusts) vGusts.textContent = I18n.formatters.kmh(State.state.commute.maxGusts);
+      UIRenderer.renderTheme(State.get('theme'), true);
+      this._syncSettingsViewButtons();
+    } else if (modalId === 'score-breakdown-modal') {
+      modal.querySelectorAll('.score-wiki-tab:not(.route-wiki-tab)').forEach(t => {
+        const isLive = t.getAttribute('data-tab') === 'live';
+        t.classList.toggle('is-active', isLive);
+        t.setAttribute('aria-selected', isLive ? 'true' : 'false');
+      });
+      modal.querySelectorAll('.score-tab-panel:not(.route-tab-panel)').forEach(panel => {
+        panel.style.display = panel.getAttribute('data-panel') === 'live' ? 'flex' : 'none';
+      });
+
+      const curData = State.get('weatherData');
+      if (curData) {
+        const curAdvice = CommuteEngine.computeAdvice(curData, {
+          selectedDay: State.get('selectedDay'),
+          morningTime: State.state.commute.morningTime,
+          eveningTime: State.state.commute.eveningTime,
+          minTemp: State.state.commute.minTemp,
+          maxGusts: State.state.commute.maxGusts
+        }, State.state.route);
+        UIRenderer.renderScoreBreakdown(curAdvice, State.state);
+      }
     }
     modal.classList.add('open');
   },
 
   closeModal(modalId) {
-    const modal = document.getElementById(modalId);
+    const targetId = modalId === 'location-modal' ? 'route-planner-modal' : modalId;
+    const modal = document.getElementById(targetId);
     if (modal) modal.classList.remove('open');
     ['search-results-list', 'route-start-results', 'route-dest-results'].forEach(id => {
       const el = document.getElementById(id);
@@ -378,6 +398,7 @@ const App = {
       toggleView.addEventListener('click', () => {
         const next = State.get('viewMode') === 'widget' ? 'cockpit' : 'widget';
         State.set('viewMode', next);
+        this._syncSettingsViewButtons();
         UIRenderer.showToast(next === 'widget' ? I18n.t.toasts.widgetModeActive : I18n.t.toasts.cockpitModeActive);
       });
     }
@@ -386,21 +407,30 @@ const App = {
     if (switchBack) {
       switchBack.addEventListener('click', () => {
         State.set('viewMode', 'cockpit');
+        this._syncSettingsViewButtons();
         UIRenderer.showToast(I18n.t.toasts.cockpitModeActive);
       });
     }
 
-    // 2. Themawissel
-    const themeBtn = document.getElementById('theme-toggle-btn');
-    if (themeBtn) {
-      themeBtn.addEventListener('click', () => {
-        const cur = State.get('theme');
-        const next = cur === 'light' ? 'auto' : cur === 'auto' ? 'dark' : 'light';
-        State.set('theme', next);
-        UIRenderer.showToast(`Thema ingesteld op ${I18n.t.themes[next]}`);
+    const btnCockpit = document.getElementById('settings-view-cockpit');
+    if (btnCockpit) {
+      btnCockpit.addEventListener('click', () => {
+        State.set('viewMode', 'cockpit');
+        this._syncSettingsViewButtons();
+        UIRenderer.showToast(I18n.t.toasts.cockpitModeActive);
       });
     }
 
+    const btnWidget = document.getElementById('settings-view-widget');
+    if (btnWidget) {
+      btnWidget.addEventListener('click', () => {
+        State.set('viewMode', 'widget');
+        this._syncSettingsViewButtons();
+        UIRenderer.showToast(I18n.t.toasts.widgetModeActive);
+      });
+    }
+
+    // 2. Themawissel
     ['light', 'auto', 'dark'].forEach(m => {
       const b = document.getElementById(`theme-btn-${m}`);
       if (b) b.addEventListener('click', () => {
@@ -428,8 +458,8 @@ const App = {
     if (fsBtn) fsBtn.addEventListener('click', () => this.toggleFullscreen());
     document.addEventListener('fullscreenchange', () => this._syncUrlHash());
 
-    // 5. GPS-locatie
-    const handleGps = () => {
+    // 5. GPS-locatie (Basislocatie & Startpunt Route)
+    const requestGpsLocation = (onSuccess) => {
       if (!navigator.geolocation) {
         UIRenderer.showToast(I18n.t.toasts.gpsUnsupported);
         return;
@@ -440,7 +470,7 @@ const App = {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
           const geo = await WeatherService.reverseGeocode(lat, lon);
-          this.selectLocation(geo.name, lat, lon, geo.country);
+          onSuccess(geo, lat, lon);
         },
         () => {
           UIRenderer.showToast(I18n.t.toasts.gpsDenied);
@@ -449,13 +479,23 @@ const App = {
       );
     };
 
-    const navGps = document.getElementById('gps-btn');
-    if (navGps) navGps.addEventListener('click', handleGps);
     const modalGps = document.getElementById('modal-gps-btn');
-    if (modalGps) modalGps.addEventListener('click', () => {
-      this.closeModal('location-modal');
-      handleGps();
-    });
+    if (modalGps) {
+      modalGps.addEventListener('click', () => {
+        requestGpsLocation((geo, lat, lon) => {
+          this.selectLocation(geo.name, lat, lon, geo.country);
+        });
+      });
+    }
+
+    const routeStartGps = document.getElementById('route-start-gps-btn');
+    if (routeStartGps) {
+      routeStartGps.addEventListener('click', () => {
+        requestGpsLocation((geo, lat, lon) => {
+          this.selectRoutePoint('start', geo.name, lat, lon, geo.country);
+        });
+      });
+    }
 
     // 6. Dialoogvensters openen en sluiten
     const bindModal = (openId, closeId, modalId) => {
@@ -465,14 +505,68 @@ const App = {
       if (closeBtn) closeBtn.addEventListener('click', () => this.closeModal(modalId));
     };
 
-    bindModal('open-location-btn', 'close-location-modal-btn', 'location-modal');
     bindModal('open-settings-btn', 'close-modal-btn', 'settings-modal');
     bindModal('nav-route-btn', 'close-route-modal-btn', 'route-planner-modal');
 
-    const saveCloseRoute = document.getElementById('close-route-save-btn');
-    if (saveCloseRoute) saveCloseRoute.addEventListener('click', () => this.closeModal('route-planner-modal'));
+    const closeScoreBtn = document.getElementById('close-score-modal-btn');
+    if (closeScoreBtn) closeScoreBtn.addEventListener('click', () => this.closeModal('score-breakdown-modal'));
+    const closeScoreAck = document.getElementById('close-score-ack-btn');
+    if (closeScoreAck) closeScoreAck.addEventListener('click', () => this.closeModal('score-breakdown-modal'));
 
-    ['location-modal', 'settings-modal', 'route-planner-modal'].forEach(id => {
+    // Wiki / FAQ Tab switching inside score breakdown modal
+    const scoreTabs = document.querySelectorAll('.score-wiki-tab:not(.route-wiki-tab)');
+    scoreTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.getAttribute('data-tab');
+        if (!targetTab) return;
+        scoreTabs.forEach(t => {
+          const isActive = t === tab;
+          t.classList.toggle('is-active', isActive);
+          t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+        document.querySelectorAll('.score-tab-panel:not(.route-tab-panel)').forEach(panel => {
+          panel.style.display = panel.getAttribute('data-panel') === targetTab ? 'flex' : 'none';
+        });
+      });
+    });
+
+    // Tab switching inside Route & Locatie modal (Motorrit vs Basislocatie)
+    const routeTabs = document.querySelectorAll('.route-wiki-tab');
+    routeTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.getAttribute('data-route-tab');
+        if (targetTab) this._switchRouteModalTab(targetTab);
+      });
+    });
+
+    // Delegate any score-breakdown-trigger clicks to open score breakdown modal
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.score-breakdown-trigger');
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openModal('score-breakdown-modal');
+      }
+    });
+
+    const saveCloseRoute = document.getElementById('close-route-save-btn');
+    if (saveCloseRoute) {
+      saveCloseRoute.addEventListener('click', () => {
+        State.save();
+        this.closeModal('route-planner-modal');
+        this._renderCurrentData();
+        UIRenderer.showToast(I18n.t.toasts.settingsSaved);
+      });
+    }
+
+    const saveSettings = document.getElementById('save-settings-btn');
+    if (saveSettings) {
+      saveSettings.addEventListener('click', () => {
+        this.closeModal('settings-modal');
+      });
+    }
+
+    ['settings-modal', 'route-planner-modal', 'score-breakdown-modal'].forEach(id => {
       const modal = document.getElementById(id);
       if (modal) {
         modal.addEventListener('click', (e) => {
@@ -483,9 +577,9 @@ const App = {
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        this.closeModal('location-modal');
         this.closeModal('settings-modal');
         this.closeModal('route-planner-modal');
+        this.closeModal('score-breakdown-modal');
       }
     });
 
@@ -495,9 +589,6 @@ const App = {
       const btn = document.getElementById(id);
       if (btn) btn.addEventListener('click', () => this.swapRoute());
     });
-
-    const routeRef = document.getElementById('route-refresh-btn');
-    if (routeRef) routeRef.addEventListener('click', () => this.analyzeCurrentRoute(true));
 
     // 8. Zoekveld Locatie
     const locInp = document.getElementById('location-search-input');
@@ -585,23 +676,6 @@ const App = {
       }
     });
 
-    const routeQuick = document.getElementById('route-quick-presets');
-    if (routeQuick) {
-      routeQuick.addEventListener('click', (e) => {
-        const btn = e.target.closest('.city-chip');
-        if (btn && btn.dataset.idx !== undefined) {
-          const r = Config.PRESET_ROUTES[parseInt(btn.dataset.idx, 10)];
-          if (r) {
-            State.state.route.start = { ...r.start };
-            State.state.route.dest = { ...r.dest };
-            State.state.route.legDurationMinutes = r.duration;
-            this.selectRoutePoint('start', r.start.name, r.start.lat, r.start.lon);
-            this.selectRoutePoint('dest', r.dest.name, r.dest.lat, r.dest.lon);
-          }
-        }
-      });
-    }
-
     const routePresets = document.getElementById('route-preset-chips');
     if (routePresets) {
       routePresets.addEventListener('click', (e) => {
@@ -612,59 +686,38 @@ const App = {
       });
     }
 
-    const durBox = document.getElementById('route-duration-buttons');
-    if (durBox) {
-      durBox.addEventListener('click', (e) => {
-        const btn = e.target.closest('.city-chip');
-        if (btn && btn.dataset.duration) {
-          durBox.querySelectorAll('.city-chip').forEach(b => {
-            b.style.background = '';
-            b.style.color = '';
-          });
-          btn.style.background = 'var(--md-sys-color-primary)';
-          btn.style.color = '#fff';
-          State.state.route.legDurationMinutes = parseInt(btn.dataset.duration, 10);
-          State.save();
-          this.analyzeCurrentRoute(false);
-        }
-      });
-    }
-
-    // 10. Instellingen opslaan
-    const saveSettings = document.getElementById('save-settings-btn');
-    if (saveSettings) {
-      saveSettings.addEventListener('click', () => {
-        const selM = document.getElementById('setting-morning-time');
-        const selE = document.getElementById('setting-evening-time');
-        const rTemp = document.getElementById('setting-min-temp');
-        const rGusts = document.getElementById('setting-max-gusts');
-
-        if (selM) State.state.commute.morningTime = selM.value;
-        if (selE) State.state.commute.eveningTime = selE.value;
-        if (rTemp) State.state.commute.minTemp = parseInt(rTemp.value, 10);
-        if (rGusts) State.state.commute.maxGusts = parseInt(rGusts.value, 10);
-
+    // 10. Vaste Rittijden & Temperatuur/Windlimiet (in het Rit-scherm)
+    const selMorning = document.getElementById('setting-morning-time');
+    if (selMorning) {
+      selMorning.addEventListener('change', (e) => {
+        State.state.commute.morningTime = e.target.value;
         State.save();
-        this.closeModal('settings-modal');
         this._renderCurrentData();
-        UIRenderer.showToast(I18n.t.toasts.settingsSaved);
       });
     }
 
-    const rMinTemp = document.getElementById('setting-min-temp');
-    if (rMinTemp) {
-      rMinTemp.addEventListener('input', (e) => {
-        const v = document.getElementById('val-min-temp');
-        if (v) v.textContent = I18n.formatters.celsius(e.target.value);
+    const selEvening = document.getElementById('setting-evening-time');
+    if (selEvening) {
+      selEvening.addEventListener('change', (e) => {
+        State.state.commute.eveningTime = e.target.value;
+        State.save();
+        this._renderCurrentData();
       });
     }
-    const rMaxGusts = document.getElementById('setting-max-gusts');
-    if (rMaxGusts) {
-      rMaxGusts.addEventListener('input', (e) => {
-        const v = document.getElementById('val-max-gusts');
-        if (v) v.textContent = I18n.formatters.kmh(e.target.value);
+
+    const bindPrefSlider = (inputId, prop) => {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      el.addEventListener('input', (e) => {
+        State.state.commute[prop] = parseInt(e.target.value, 10);
+        this._syncPreferenceSlidersToDOM();
+        State.save();
+        this._renderCurrentData();
       });
-    }
+    };
+
+    bindPrefSlider('setting-min-temp', 'minTemp');
+    bindPrefSlider('setting-max-gusts', 'maxGusts');
   }
 };
 

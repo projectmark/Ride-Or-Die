@@ -104,6 +104,7 @@ const CommuteEngine = {
   scoreCommuteSlot(slot, userLimits = {}) {
     let score = 100;
     const reasons = [];
+    const deductions = [];
     const R = Config.THRESHOLDS.RAIN;
     const W = Config.THRESHOLDS.WIND;
     const T = Config.THRESHOLDS.TEMPERATURE;
@@ -113,53 +114,66 @@ const CommuteEngine = {
 
     // 1. Neerslagbeoordeling
     if (slot.totalPrecip > R.SEVERE_MM || (slot.totalPrecip > R.HEAVY_MM && slot.maxPrecipProb > 75)) {
-      score -= 45;
+      score -= 50;
+      deductions.push({ category: 'rain', icon: '🌧️', points: -50, title: 'Stevige regenval', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag voorspeld` });
       reasons.push(`Stevige regenval verwacht (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
     } else if (slot.totalPrecip > R.MODERATE_MM || (slot.totalPrecip > 0.3 && slot.maxPrecipProb > 60)) {
-      score -= 25;
+      score -= 35;
+      deductions.push({ category: 'rain', icon: '🌦️', points: -35, title: 'Kans op een bui', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag (kans ${slot.maxPrecipProb}%)` });
       reasons.push(`Kans op een bui (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
     } else if (slot.totalPrecip > R.LIGHT_MM) {
-      score -= 15;
+      score -= 28;
+      deductions.push({ category: 'rain', icon: '🌦️', points: -28, title: 'Lichte motregen / bui', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag` });
       reasons.push(`Lichte bui of motregen (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
     } else if (slot.totalPrecip > R.TRACE_MM) {
-      score -= 5;
+      score -= 10;
+      deductions.push({ category: 'rain', icon: '💧', points: -10, title: 'Mogelijk spatje neerslag', desc: 'Minimale neerslaghoeveelheid' });
       reasons.push("Mogelijk een enkel spatje neerslag.");
     } else if (slot.maxPrecipProb > 65) {
-      score -= 5;
+      score -= 10;
+      deductions.push({ category: 'rain', icon: '💧', points: -10, title: 'Lichte buienkans', desc: `${slot.maxPrecipProb}% regenkans in de regio` });
       reasons.push(`Overwegend droog, lichte buienkans in de regio (${slot.maxPrecipProb}%).`);
     }
 
     // 2. Wind- en stotenbeoordeling
     if (slot.maxGusts > W.DANGEROUS_GUSTS) {
       score -= 50;
+      deductions.push({ category: 'wind', icon: '💨', points: -50, title: 'Gevaarlijke windstoten', desc: `${I18n.formatters.kmh(slot.maxGusts)} (boven ${W.DANGEROUS_GUSTS} km/u limiet)` });
       reasons.push(`Gevaarlijke windstoten van ${I18n.formatters.kmh(slot.maxGusts)}.`);
     } else if (slot.maxGusts > maxGustsLimit) {
       const penalty = (slot.maxGusts - maxGustsLimit) > 10 ? 35 : 20;
       score -= penalty;
+      deductions.push({ category: 'wind', icon: '💨', points: -penalty, title: 'Boven jouw windlimiet', desc: `Stoten van ${I18n.formatters.kmh(slot.maxGusts)} (jouw limiet: ${I18n.formatters.kmh(maxGustsLimit)})` });
       reasons.push(`Windstoten (${I18n.formatters.kmh(slot.maxGusts)}) boven jouw limiet van ${I18n.formatters.kmh(maxGustsLimit)}.`);
     } else if (slot.maxGusts > W.STRONG_GUSTS) {
       score -= 15;
+      deductions.push({ category: 'wind', icon: '💨', points: -15, title: 'Felle zijwind', desc: `${I18n.formatters.kmh(slot.maxGusts)} op open wegen` });
       reasons.push(`Felle zijwind op open wegen (${I18n.formatters.kmh(slot.maxGusts)}).`);
     } else if (slot.maxGusts > 40) {
       score -= 5;
+      deductions.push({ category: 'wind', icon: '💨', points: -5, title: 'Merkbare snelwegwind', desc: `${I18n.formatters.kmh(slot.maxGusts)} stoten` });
       reasons.push(`Merkbare wind op de snelweg (${I18n.formatters.kmh(slot.maxGusts)}).`);
     }
 
     // 3. Temperatuur- en gladheidsbeoordeling
     if (slot.avgTemp < T.ICE_RISK) {
       score -= 60;
+      deductions.push({ category: 'temp', icon: '❄️', points: -60, title: 'Kans op gladheid of ijzel', desc: `${I18n.formatters.celsius(slot.avgTemp)} (asfalt kan bevriezen)` });
       reasons.push("Kans op gladheid of ijzel op het asfalt.");
     } else if (slot.avgTemp < minTempLimit) {
       score -= 20;
+      deductions.push({ category: 'temp', icon: '🧣', points: -20, title: 'Onder jouw minimumtemperatuur', desc: `${I18n.formatters.celsius(slot.avgTemp)} (jouw limiet: ${I18n.formatters.celsius(minTempLimit)})` });
       reasons.push(`Koud (${I18n.formatters.celsius(slot.avgTemp)}), onder jouw limiet van ${I18n.formatters.celsius(minTempLimit)}.`);
     } else if (slot.avgTemp > T.EXTREME_HEAT) {
       score -= 20;
+      deductions.push({ category: 'temp', icon: '☀️', points: -20, title: 'Extreme warmte', desc: `${I18n.formatters.celsius(slot.avgTemp)} in motorpak` });
       reasons.push(`Erg warm in motorpak (${I18n.formatters.celsius(slot.avgTemp)}).`);
     }
 
     // 4. Onweerscodes
     if ([95, 96, 97, 99].includes(slot.worstCode)) {
       score -= 60;
+      deductions.push({ category: 'storm', icon: '⚡', points: -60, title: 'Onweer of hagel', desc: 'Code oranje/rood gevaar' });
       reasons.push("Onweer of hagel voorspeld.");
     }
 
@@ -175,7 +189,7 @@ const CommuteEngine = {
       badgeText = I18n.t.verdicts.yellowBadge;
     }
 
-    return { score, verdict, badgeText, reasons };
+    return { score, verdict, badgeText, reasons, deductions };
   },
 
   /**
@@ -265,31 +279,41 @@ const CommuteEngine = {
 
     const mScore = morningAnalysis ? morningAnalysis.score : morningScore.score;
     const eScore = eveningAnalysis ? eveningAnalysis.score : eveningScore.score;
+    const mVerd = morningAnalysis ? morningAnalysis.verdict : morningScore.verdict;
+    const eVerd = eveningAnalysis ? eveningAnalysis.verdict : eveningScore.verdict;
     const minScore = Math.min(mScore, eScore);
 
     const startName = routeState && routeState.start ? routeState.start.name : 'Start';
     const destName = routeState && routeState.dest ? routeState.dest.name : 'Bestemming';
     const midName = routeState && routeState.mid ? routeState.mid.name : 'Halverwege';
 
+    const morningRainAmt = morningAnalysis ? morningAnalysis.maxRainOverall : (morningData ? morningData.totalPrecip : 0);
+    const eveningRainAmt = eveningAnalysis ? eveningAnalysis.maxRainOverall : (eveningData ? eveningData.totalPrecip : 0);
+    const isMorningWet = mVerd !== 'green' || morningRainAmt >= Config.THRESHOLDS.RAIN.LIGHT_MM;
+    const isEveningWet = eVerd !== 'green' || eveningRainAmt >= Config.THRESHOLDS.RAIN.LIGHT_MM;
+
     let dayVerdict = "green";
     let dayPill = I18n.t.verdicts.greenBadge;
     let dayHeadline = "Groen licht: Heerlijk motorweer over jouw hele traject!";
     let dayExplanation = `Zowel de ochtend- als avondrit zijn droog en veilig tussen ${startName} en ${destName}.`;
 
-    if (minScore < 50) {
+    if (minScore < 50 || mVerd === 'red' || eVerd === 'red') {
       dayVerdict = "red";
       dayPill = I18n.t.verdicts.redBadge;
       dayHeadline = "Slecht weer op je route. Pak liever de auto of het ov.";
       dayExplanation = `Onveilige omstandigheden door regen of harde windstoten tussen ${startName} en ${destName}.`;
-    } else if (minScore < 80) {
+    } else if (minScore < 80 || mVerd === 'yellow' || eVerd === 'yellow' || isMorningWet || isEveningWet) {
       dayVerdict = "yellow";
       dayPill = I18n.t.verdicts.yellowBadge;
-      if (morningAnalysis && morningAnalysis.verdict === 'yellow' && eveningAnalysis && eveningAnalysis.verdict === 'green') {
-        dayHeadline = `Let op bij de heenrit: kans op een bui bij ${midName}.`;
-        dayExplanation = `Onderweg trekt een bui over (${I18n.formatters.millimeters(morningAnalysis.maxRainOverall)}). De terugreis is droog.`;
-      } else if (eveningAnalysis && eveningAnalysis.verdict === 'yellow' && morningAnalysis && morningAnalysis.verdict === 'green') {
+      if (isMorningWet && !isEveningWet) {
+        dayHeadline = `Let op bij de heenrit: kans op een bui op je route.`;
+        dayExplanation = `Onderweg trekt een bui over (${I18n.formatters.millimeters(morningRainAmt)}). De terugreis is wel droog.`;
+      } else if (!isMorningWet && isEveningWet) {
         dayHeadline = `Heenrit droog, maar bui verwacht bij de terugreis.`;
-        dayExplanation = `Ochtendrit is droog. Bij de terugreis valt neerslag nabij ${midName} (${I18n.formatters.millimeters(eveningAnalysis.maxRainOverall)}).`;
+        dayExplanation = `Ochtendrit is droog en veilig. Bij de terugreis valt neerslag (${I18n.formatters.millimeters(eveningRainAmt)}). Regenpak mee!`;
+      } else if (isMorningWet && isEveningWet) {
+        dayHeadline = "Wisselvallig weer: kans op buien tijdens beide ritten.";
+        dayExplanation = "Houd rekening met nat asfalt en verminderde grip zowel 's ochtends als 's avonds.";
       } else {
         dayHeadline = "Rijden kan prima, maar wees voorbereid op wisselvallig weer.";
         dayExplanation = "Mogelijk een spatje neerslag of merkbare zijwind op open stukken weg.";

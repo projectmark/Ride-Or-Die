@@ -18,8 +18,8 @@
   Standaard ingesteld op een rustige, frisse lichte weergave (geen ongewenst donker scherm). Inclusief een snelle toggle-knop in de navigatiebalk om te wisselen tussen **Licht**, **Automatisch** (volgt zonsopgang/ondergang of systeem) en **Donker**.
 - **🇳🇱 Rechtstreeks KNMI Harmonie-AROME Weermodel (2 km)**:
   Geen grove wereldwijde schattingen, maar de hoogst beschikbare resolutie van het KNMI (via Open-Meteo `knmi_seamless`) met nauwkeurige neerslag, lokale windstoten, temperatuur en zicht.
-- **⏱️ Slimme Tijdlijn (Vanaf afgelopen uur)**:
-  Begint exact bij het afgelopen uur en toont wat er aankomt (`het afgelopen uur + komende 24 uur`), met visuele highlights voor het actuele uur en jouw woon-werktijden.
+- **⏱️ Slimme Uurlijkse Trend (Afgelopen 2 uur + komende 24 uur)**:
+  Begint exact bij de afgelopen 2 uur voor het actuele moment voor directe trendcontext en toont wat er aankomt over de komende 24 uur, met visuele highlights voor het actuele uur en jouw rittijden.
 - **📱 100% Schaalbaar & Responsief**:
   Volledig geoptimaliseerd tegen tekstoverlap en afsnijden. Schaalt vloeiend van compacte 7-8 inch cockpit-schermen en desktop breedbeeld tot smartphones (met gecentreerde mobiele navigatie).
 - **🚀 100% Modulair, Standalone & Serverless**:
@@ -65,11 +65,11 @@ Elke rit start met een perfecte score van **100/100**. Risicofactoren trekken cu
 
 | Risicofactor | Drempelwaarde | Aftrek | Reden in advies |
 | :--- | :--- | :--- | :--- |
-| **Hevige regen** | > 3.0 mm (of > 1.5 mm bij > 75% kans) | **-45 pt** | *Stevige regenval verwacht (>3 mm)* |
-| **Regenbui** | > 0.8 mm (of > 0.3 mm bij > 60% kans) | **-25 pt** | *Kans op bui (x.x mm)* |
-| **Lichte bui / motregen** | 0.2 – 0.8 mm | **-15 pt** | *Lichte bui of motregen* |
-| **Spatje neerslag** | 0.05 – 0.2 mm | **-5 pt** | *Mogelijk enkel spatje neerslag* |
-| **Regionale onzekerheid** | 0.0 mm maar regenkans > 65% | **-5 pt** | *Overwegend droog (buienkans in regio)* |
+| **Hevige regen / stortbui** | > 2.0 mm (of > 1.5 mm bij > 75% kans) | **-50 pt** | *Stevige regenval verwacht (>2 mm)* |
+| **Matige regenbui** | 0.8 – 2.0 mm (of > 0.3 mm bij > 60% kans) | **-35 pt** | *Kans op bui (x.x mm)* |
+| **Lichte bui / meetbare regen** | 0.15 – 0.8 mm | **-28 pt** | *Bui op de route (direct oranje/geel)* |
+| **Spatje neerslag** | 0.05 – 0.15 mm | **-10 pt** | *Mogelijk enkel spatje neerslag* |
+| **Regionale onzekerheid** | 0.0 mm maar regenkans > 65% | **-10 pt** | *Overwegend droog (buienkans in regio)* |
 | **Gevaarlijke stormstoten**| Piekstoten > 70 km/u | **-50 pt** | *Gevaarlijke windstoten (>70 km/u)* |
 | **Felle zijwind** | Piekstoten > 50 km/u | **-25 pt** | *Felle zijwind op bruggen/dijken* |
 | **Merkbare wind** | Piekstoten > 40 km/u | **-10 pt** | *Merkbare wind op snelweg* |
@@ -79,20 +79,20 @@ Elke rit start met een perfecte score van **100/100**. Risicofactoren trekken cu
 | **Onweer of hagel** | WMO-code 95, 96, 99 | **-60 pt** | *Onweer en hagel voorspeld* |
 
 #### 3. Scoregrenzen & Verdicten
-- 🟢 **80 – 100 pt (🏍️ RIDE ON!)**: Ideale omstandigheden. Droog asfalt, kalme wind en aangename temperatuur.
-- 🟡 **50 – 79 pt (⚠️ OPLETTEN)**: Rijden kan prima, maar wees voorbereid. Pas je snelheid aan op open stukken en houd rekening met een bui of zijwind.
-- 🔴 **< 50 pt (🚗 DIE HARD ONLY / KOEKBLIK DAG)**: Onveilige condities. Te veel risico op een nat pak, gevaarlijke windstoten of gladheid. Pak liever de auto of het OV!
+- 🟢 **80 – 100 pt (🏍️ RIDE ON!)**: Ideale omstandigheden. Volledig droog asfalt, kalme wind en aangename temperatuur.
+- 🟡 **50 – 79 pt (⚠️ OPLETTEN)**: Wisselvallig of nat: regen op de route (of terugweg), stevige wind of frisse kou. Regenpak mee!
+- 🔴 **< 50 pt (🚗 DIE HARD ONLY / KOEKBLIK DAG)**: Onveilige condities. Te veel risico op zware regen, gevaarlijke windstoten of gladheid. Pak liever de auto of het OV!
 
 #### 4. Hoe Combinaties in de Praktijk Werken
-Het algoritme straft combinaties van ongunstige omstandigheden cumulatief af:
-- **Eén milde factor**: Alleen zijwindstoten van 52 km/u (-25 pt) op een droge lentedag (18°C) $\rightarrow$ Score: **75/100 (🟡 Geel)**. Je kunt verantwoord rijden als je alert bent op dijken en viaducten.
-- **Dubbele combinatie (Wind + Regen)**: Windstoten van 52 km/u (-25 pt) **én** een bui van 1.2 mm (-25 pt) $\rightarrow$ Score: **50/100 (🟡/🔴 randgeval)**.
-- **Drievoudige combinatie (Wind + Regen + Kou)**: Windstoten 52 km/u (-25 pt) + regenbui 1.2 mm (-25 pt) + temperatuur onder minimum (-20 pt) $\rightarrow$ Score: **30/100 (🔴 Rood: Koekblik Dag)**.
+Het algoritme straft ongunstige omstandigheden realistisch af zodat regen direct zwaar weegt:
+- **Eén lichte regenbui**: Een bui van 0.3 mm (-28 pt) $\rightarrow$ Score: **72/100 (🟡 Geel/Oranje)**. Direct het advies om alert te zijn en regenkleding mee te nemen.
+- **Dubbele combinatie (Wind + Lichte bui)**: Windstoten van 52 km/u (-25 pt) **én** een bui van 0.5 mm (-28 pt) $\rightarrow$ Score: **47/100 (🔴 Rood: Koekblik Dag)**.
+- **Drievoudige combinatie (Wind + Regen + Kou)**: Windstoten 52 km/u (-25 pt) + regenbui 1.2 mm (-35 pt) + temperatuur onder minimum (-20 pt) $\rightarrow$ Score: **20/100 (🔴 Rood: Koekblik Dag)**.
 
 #### 5. Het "Zwakste Schakel"-principe
 Het uiteindelijke dagadvies wordt bepaald door de **laagste score** van de ochtend- en avondrit (`minScore = Math.min(morning, evening)`):
-> *Als de ochtendrit een score van **95/100 (zonnig en droog)** heeft, maar de avondrit door een overtrekkende buienlijn met windstoten daalt naar **35/100 (Rood)**, dan toont de app direct **🔴 "Koekblik Dag: Pak liever de auto of OV!"**.*  
-Als motorrijder moet je immers aan het einde van de werkdag ook weer veilig en droog thuiskomen.
+> *Als de ochtendrit een score van **95/100 (zonnig en droog)** heeft, maar de avondrit heeft regen op de route (**score 72/100 of lager**), dan toont de app direct een **🟡 Oranje advies ("Heenrit droog, maar bui verwacht bij de terugreis")** met een lagere score van 72/100.*  
+Als motorrijder moet je immers aan het einde van de werkdag ook weer veilig en droog thuiskomen. Hierdoor word je nooit misleid door een groen dagadvies wanneer je 's middags door de regen moet rijden.
 
 #### 6. Dynamisch Kleding- & Uitrustingsadvies
 Op basis van de extremen over de ritten adviseert de cockpit direct de juiste uitrusting:
