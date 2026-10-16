@@ -68,10 +68,12 @@ const Config = {
       eveningTime: '17:00',
       minTemp: 8,
       maxGusts: 55,
+      avoidRain: false,
       MORNING_TIME: '08:00',
       EVENING_TIME: '17:00',
       MIN_TEMP: 8,
-      MAX_GUSTS: 55
+      MAX_GUSTS: 55,
+      AVOID_RAIN: false
     },
     LOCATION: {
       name: 'Utrecht',

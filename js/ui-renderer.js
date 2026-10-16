@@ -968,12 +968,16 @@ const UIRenderer = {
       `);
 
       // Neerslag
+      const isAvoidRain = state.commute && state.commute.avoidRain;
       if (rainDed) {
         items.push(`
-          <div class="score-factor-item has-penalty">
+          <div class="score-factor-item has-penalty ${rainDed.isInstantNoGo ? 'has-severe-penalty' : ''}">
             <div class="score-factor-info">
-              <span class="score-factor-name">${rainDed.icon || '🌧️'} ${rainDed.title}</span>
-              <span class="score-factor-desc">${rainDed.desc}</span>
+              <span class="score-factor-name">
+                ${rainDed.icon || '🌧️'} ${rainDed.title}
+                ${rainDed.isInstantNoGo ? '<span class="score-instant-badge">🚨 Instant No-Go</span>' : ''}
+              </span>
+              <span class="score-factor-desc">${rainDed.desc} (${isAvoidRain ? 'Droogrijder-modus: weegt zwaar' : 'All-weather modus: acceptabel met kleding'})</span>
             </div>
             <span class="score-factor-points points-penalty">${rainDed.points} pt</span>
           </div>
@@ -984,7 +988,7 @@ const UIRenderer = {
           <div class="score-factor-item">
             <div class="score-factor-info">
               <span class="score-factor-name">💧 Neerslag &amp; Grip</span>
-              <span class="score-factor-desc">Volledig droog wegdek (${I18n.formatters.millimeters(precipVal)}), 100% wegdekgrip.</span>
+              <span class="score-factor-desc">Volledig droog wegdek (${I18n.formatters.millimeters(precipVal)}), 100% wegdekgrip. (${isAvoidRain ? 'Droogrijder-modus' : 'All-weather modus'})</span>
             </div>
             <span class="score-factor-points points-neutral">0 pt</span>
           </div>
@@ -994,9 +998,12 @@ const UIRenderer = {
       // Wind
       if (windDed) {
         items.push(`
-          <div class="score-factor-item has-penalty">
+          <div class="score-factor-item has-penalty ${windDed.isInstantNoGo ? 'has-severe-penalty' : ''}">
             <div class="score-factor-info">
-              <span class="score-factor-name">${windDed.icon || '💨'} ${windDed.title}</span>
+              <span class="score-factor-name">
+                ${windDed.icon || '💨'} ${windDed.title}
+                ${windDed.isInstantNoGo ? '<span class="score-instant-badge">🚨 Instant No-Go</span>' : ''}
+              </span>
               <span class="score-factor-desc">${windDed.desc}</span>
             </div>
             <span class="score-factor-points points-penalty">${windDed.points} pt</span>
@@ -1017,9 +1024,12 @@ const UIRenderer = {
       // Temperatuur
       if (tempDed) {
         items.push(`
-          <div class="score-factor-item has-penalty">
+          <div class="score-factor-item has-penalty ${tempDed.isInstantNoGo ? 'has-severe-penalty' : ''}">
             <div class="score-factor-info">
-              <span class="score-factor-name">${tempDed.icon || '🧣'} ${tempDed.title}</span>
+              <span class="score-factor-name">
+                ${tempDed.icon || '🧣'} ${tempDed.title}
+                ${tempDed.isInstantNoGo ? '<span class="score-instant-badge">🚨 Instant No-Go</span>' : ''}
+              </span>
               <span class="score-factor-desc">${tempDed.desc}</span>
             </div>
             <span class="score-factor-points points-penalty">${tempDed.points} pt</span>
@@ -1042,7 +1052,10 @@ const UIRenderer = {
         items.push(`
           <div class="score-factor-item has-severe-penalty">
             <div class="score-factor-info">
-              <span class="score-factor-name">⚡ ${stormDed.title}</span>
+              <span class="score-factor-name">
+                ⚡ ${stormDed.title}
+                ${stormDed.isInstantNoGo ? '<span class="score-instant-badge">🚨 Instant No-Go</span>' : ''}
+              </span>
               <span class="score-factor-desc">${stormDed.desc}</span>
             </div>
             <span class="score-factor-points points-penalty">${stormDed.points} pt</span>

@@ -734,55 +734,74 @@
               </div>
             </div>
             <p class="wiki-card-body">
-              Het algoritme evalueert het weer en je motorroute standaard op deze twee dagelijkse vertrektijden.
+              Het KNMI Harmonie-model evalueert je motorroute standaard op deze twee dagelijkse vertrektijden.
             </p>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:auto;">
-              <div class="route-waypoint-field">
-                <label for="setting-morning-time" style="font-size:0.78rem;font-weight:800;">🌅 Ochtendrit (Heen)</label>
-                <select class="route-waypoint-input" id="setting-morning-time">
-                  <option value="06:00">06.00 uur</option>
-                  <option value="06:30">06.30 uur</option>
-                  <option value="07:00">07.00 uur</option>
-                  <option value="07:30">07.30 uur</option>
-                  <option value="08:00" selected>08.00 uur</option>
-                  <option value="08:30">08.30 uur</option>
-                  <option value="09:00">09.00 uur</option>
-                  <option value="09:30">09.30 uur</option>
-                  <option value="10:00">10.00 uur</option>
-                </select>
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>🌅 Ochtendrit (Heen)</span>
+                <span class="pref-val-pill" id="val-morning-time">08.00 uur</span>
               </div>
-              <div class="route-waypoint-field">
-                <label for="setting-evening-time" style="font-size:0.78rem;font-weight:800;">🌇 Avondrit (Terug)</label>
-                <select class="route-waypoint-input" id="setting-evening-time">
-                  <option value="15:00">15.00 uur</option>
-                  <option value="15:30">15.30 uur</option>
-                  <option value="16:00">16.00 uur</option>
-                  <option value="16:30">16.30 uur</option>
-                  <option value="17:00" selected>17.00 uur</option>
-                  <option value="17:30">17.30 uur</option>
-                  <option value="18:00">18.00 uur</option>
-                  <option value="18:30">18.30 uur</option>
-                  <option value="19:00">19.00 uur</option>
-                </select>
+              <select class="m3-select-input" id="setting-morning-time">
+                <option value="06:00">06.00 uur</option>
+                <option value="06:30">06.30 uur</option>
+                <option value="07:00">07.00 uur</option>
+                <option value="07:30">07.30 uur</option>
+                <option value="08:00" selected>08.00 uur</option>
+                <option value="08:30">08.30 uur</option>
+                <option value="09:00">09.00 uur</option>
+                <option value="09:30">09.30 uur</option>
+                <option value="10:00">10.00 uur</option>
+              </select>
+              <div class="pref-slider-hint">Standaard vertrektijd vanaf huis naar je werk of bestemming.</div>
+            </div>
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>🌇 Avondrit (Terug)</span>
+                <span class="pref-val-pill" id="val-evening-time">17.00 uur</span>
+              </div>
+              <select class="m3-select-input" id="setting-evening-time">
+                <option value="15:00">15.00 uur</option>
+                <option value="15:30">15.30 uur</option>
+                <option value="16:00">16.00 uur</option>
+                <option value="16:30">16.30 uur</option>
+                <option value="17:00" selected>17.00 uur</option>
+                <option value="17:30">17.30 uur</option>
+                <option value="18:00">18.00 uur</option>
+                <option value="18:30">18.30 uur</option>
+                <option value="19:00">19.00 uur</option>
+              </select>
+              <div class="pref-slider-hint">Standaard vertrektijd voor de terugreis naar huis.</div>
+            </div>
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>⏱️ Slim Uitwijkvenster</span>
+                <span class="pref-val-pill">Actief</span>
+              </div>
+              <div class="pref-slider-hint" style="line-height:1.45;">
+                Het Harmonie-model scant automatisch van <strong>-30 min</strong> tot <strong>+90 min</strong> rond jouw vertrektijd en signaleert wanneer eerder of later rijden droger is.
               </div>
             </div>
           </div>
 
-          <!-- Tegel 2: Gewenste Temp & Windlimiet -->
+          <!-- Tegel 2: Gewenste Temp, Wind & Regenvoorkeur -->
           <div class="wiki-card">
             <div class="wiki-card-header">
-              <span>🌡️</span>
+              <span>🎛️</span>
               <div>
-                <div class="wiki-card-title">Gewenste Temp &amp; Windlimiet</div>
-                <div class="wiki-card-sub">Jouw persoonlijke tolerantiegrenzen</div>
+                <div class="wiki-card-title">Rijvoorkeuren &amp; Toleranties</div>
+                <div class="wiki-card-sub">Temperatuur, wind &amp; regenacceptatie</div>
               </div>
             </div>
+            <p class="wiki-card-body">
+              Stel jouw persoonlijke comfort- en veiligheidsgrenzen in voor temperatuur, wind en regen op de motor.
+            </p>
             <div class="pref-slider-group">
               <div class="pref-slider-header">
                 <span>🧣 Gewenste min. temperatuur</span>
                 <span class="pref-val-pill" id="val-min-temp">8°C</span>
               </div>
               <input type="range" min="0" max="18" value="8" class="m3-range-slider" id="setting-min-temp" />
+              <div class="pref-slider-hint">Onder deze gevoelstemperatuur adviseert het systeem thermokleding of de auto.</div>
             </div>
             <div class="pref-slider-group">
               <div class="pref-slider-header">
@@ -790,6 +809,22 @@
                 <span class="pref-val-pill" id="val-max-gusts">55 km/u</span>
               </div>
               <input type="range" min="35" max="80" step="5" value="55" class="m3-range-slider" id="setting-max-gusts" />
+              <div class="pref-slider-hint">Boven deze windstootlimiet volgt een oranje of rood waarschuwingsadvies.</div>
+            </div>
+            <div class="pref-slider-group pref-toggle-group">
+              <div class="pref-slider-header">
+                <span>🌧️ Liever droog rijden (regen weegt zwaar)</span>
+                <span class="pref-val-pill" id="val-avoid-rain">Uit (All-weather)</span>
+              </div>
+              <label class="pref-switch-label" for="setting-avoid-rain">
+                <span class="pref-switch-desc" id="desc-avoid-rain">
+                  All-weather modus: Lichte regen of een korte bui is acceptabel met motorkleding (geel advies). Zet de vink aan om regen zwaar te laten tellen (direct rood advies).
+                </span>
+                <div class="m3-toggle-switch">
+                  <input type="checkbox" id="setting-avoid-rain" class="m3-toggle-input" />
+                  <span class="m3-toggle-slider"></span>
+                </div>
+              </label>
             </div>
           </div>
         </div>
@@ -965,22 +1000,23 @@
               <span>💧</span>
               <div>
                 <div class="wiki-card-title">Pijler 1: Neerslag &amp; Asfaltgrip</div>
-                <div class="wiki-card-sub">Max. -50 punten aftrek</div>
+                <div class="wiki-card-sub">All-weather vs. Droogrijder instelbaar</div>
               </div>
             </div>
             <p class="wiki-card-body">
-              Water op het wegdek vermindert de bandengrip aanzienlijk en belemmert het zicht. Daarom heeft neerslag direct forse invloed: bij een meetbare bui (&gt;0,15 mm) op de heen- óf terugrit daalt de score meteen onder de 80 punten naar <strong>oranje</strong>.
+              Water op de weg vermindert grip en zicht. Maar of regen een belemmering is, hangt af van jouw motorkleding en helm. In je ritvoorkeuren kun je daarom kiezen tussen <strong>All-weather (Regen acceptabel)</strong> en <strong>Liever droog rijden (strikte aftrek)</strong>.
             </p>
             <table class="wiki-table">
               <thead>
-                <tr><th>Situatie</th><th>Drempelwaarde</th><th>Aftrek</th></tr>
+                <tr><th>Situatie</th><th>Neerslag</th><th>All-weather</th><th>Droogrijder</th></tr>
               </thead>
               <tbody>
-                <tr><td>Droog wegdek</td><td>0,0 mm</td><td><span class="pts-neutral">0 pt</span></td></tr>
-                <tr><td>Enkel spatje</td><td>0,05 – 0,15 mm</td><td><span class="pts-pen">-10 pt</span></td></tr>
-                <tr><td>Lichte bui / meetbaar nat</td><td>0,15 – 0,8 mm</td><td><span class="pts-pen">-28 pt (Direct &lt;80)</span></td></tr>
-                <tr><td>Matige regenbui</td><td>0,8 – 2,0 mm (of &gt;60% kans)</td><td><span class="pts-pen">-35 pt</span></td></tr>
-                <tr><td>Stevige regenval / stortbui</td><td>&gt; 2,0 mm</td><td><span class="pts-pen">-50 pt (Koekblik Dag)</span></td></tr>
+                <tr><td>Droog wegdek</td><td>0,0 mm</td><td><span class="pts-neutral">0 pt</span></td><td><span class="pts-neutral">0 pt</span></td></tr>
+                <tr><td>Enkel spatje</td><td>0,05 – 0,15 mm</td><td><span class="pts-pen">-5 pt</span></td><td><span class="pts-pen">-10 pt</span></td></tr>
+                <tr><td>Lichte bui / motregen</td><td>0,15 – 0,8 mm</td><td><span class="pts-pen">-12 pt (Geel)</span></td><td><span class="pts-pen">-28 pt (&lt;80)</span></td></tr>
+                <tr><td>Matige regenbui</td><td>0,8 – 2,0 mm</td><td><span class="pts-pen">-22 pt (Geel)</span></td><td><span class="pts-pen">-38 pt</span></td></tr>
+                <tr><td>Stevige regenval</td><td>2,0 – 3,5 mm</td><td><span class="pts-pen">-30 pt (Geel)</span></td><td><span class="pts-pen">-50 pt (Rood)</span></td></tr>
+                <tr><td>Wolkbreuk / stortregen</td><td>&gt; 3,5 mm</td><td colspan="2"><span class="pts-pen">-50 tot -60 pt (🚨 Instant No-Go)</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -1078,11 +1114,31 @@
 
           <div class="faq-item">
             <div class="faq-question">
+              <span>🌧️</span>
+              <span>Waarom betekent regen niet automatisch een rode status?</span>
+            </div>
+            <div class="faq-answer">
+              Regen is per motorrijder en uitrusting verschillend. Met een waterdicht motorpak, pinlock-vizier en all-season banden kan er prima en veilig gereden worden bij lichte regen of af en toe een bui. Daarom hanteert de app in <strong>All-weather modus</strong> een mildere aftrek (score ~68-78) met een geel advies ("Regenpak mee!"). Rijd je liever alleen droog? Vink dan in je ritvoorkeuren <strong>"Liever droog rijden"</strong> aan; dan kleurt elke regenbui de status direct rood (Koekblik Dag).
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>🚨</span>
+              <span>Wat zijn de "Instant No-Go's" waarbij er beslist niet gereden wordt?</span>
+            </div>
+            <div class="faq-answer">
+              Veiligheid staat voorop. Onvoorwaardelijke no-go's zijn: <strong>kans op ijzel, vorst of sneeuw (&lt;2°C op het asfalt)</strong>, <strong>gevaarlijke stormstoten (&gt;75 km/u)</strong>, <strong>onweer of hagel (WMO 95-99)</strong> en <strong>wolkbreuken (&gt;3,5 mm neerslag)</strong>. In deze situaties kleurt de app voor iedereen altijd direct rood met een <em>NO-GO</em> waarschuwing.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
               <span>🏍️</span>
               <span>Hoe kan ik de score afstemmen op mijn eigen ervaring en motor?</span>
             </div>
             <div class="faq-answer">
-              Klik bovenin de navigatiebalk op je <strong>Motorrit (A ➔ B)</strong>. Daar kun je naast je vertrek- en aankomstpunt direct jouw <em>vaste rittijden</em>, je <em>minimale temperatuur</em> (bijv. 6°C voor doorgewinterde rijders of 12°C voor mooi-weer rijders) en je <em>maximale windstootlimiet</em> instellen. Het algoritme past de aftrekpunten meteen aan op jouw persoonlijke toleranties.
+              Klik bovenin de navigatiebalk op je <strong>Motorrit (A ➔ B)</strong>. Daar kun je naast je vertrek- en aankomstpunt direct jouw <em>vaste rittijden</em>, je <em>minimale temperatuur</em> (bijv. 6°C voor doorgewinterde rijders of 12°C voor mooi-weer rijders), je <em>maximale windstootlimiet</em> en de optie <em>"Liever droog rijden"</em> instellen. Het algoritme past de aftrekpunten meteen aan op jouw persoonlijke toleranties.
             </div>
           </div>
 

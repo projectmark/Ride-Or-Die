@@ -60,39 +60,41 @@ In plaats van een algemeen daggemiddelde analyseert het algoritme een specifiek 
 - **Temperatuur (`avgTemp`)**: Zowel gevoelstemperatuur als absolute temperatuur ten opzichte van jouw ingestelde minimumtemperatuur.
 - **Gevaarcodes (`worstCode`)**: WMO-weercodes voor onweer (95, 96, 99), hagel, dichte mist of sneeuw.
 
-#### 2. Het Cumulatieve 100-punts Aftreksysteem
-Elke rit start met een perfecte score van **100/100**. Risicofactoren trekken cumulatief strafpunten af:
+#### 2. Het Cumulatieve 100-punts Aftreksysteem & Regenvoorkeur
+Elke rit start met een perfecte basis van **100/100 punten**. Omdat motorrijders verschillende uitrusting (zoals een waterdicht regenpak en pinlock-vizier) en voorkeuren hebben, kun je via het ritpaneel kiezen hoe regen meeweegt:
+- **🏍️ All-weather / Regen accepteren (Standaard)**: Lichte regen of een bui is prima te rijden met goede motorkleding. De aftrek is mild, waardoor je ritscore in het geel (65-78 pt) blijft met advies *"Regenpak mee"*. Regen leidt niet automatisch tot een rode status!
+- **👔 Liever droog rijden (Vink aan in menu)**: Je rijdt alleen droog. Bij een bui of aanhoudende neerslag weegt de aftrek zwaar mee en kleurt de status direct rood (*Koekblik Dag*).
+- **🚨 Instant No-Go's (Altijd Rood)**: Extreme storm, ijzel, vorst, sneeuw en onweer zijn te allen tijde onvoorwaardelijke no-go's.
 
-| Risicofactor | Drempelwaarde | Aftrek | Reden in advies |
-| :--- | :--- | :--- | :--- |
-| **Hevige regen / stortbui** | > 2.0 mm (of > 1.5 mm bij > 75% kans) | **-50 pt** | *Stevige regenval verwacht (>2 mm)* |
-| **Matige regenbui** | 0.8 – 2.0 mm (of > 0.3 mm bij > 60% kans) | **-35 pt** | *Kans op bui (x.x mm)* |
-| **Lichte bui / meetbare regen** | 0.15 – 0.8 mm | **-28 pt** | *Bui op de route (direct oranje/geel)* |
-| **Spatje neerslag** | 0.05 – 0.15 mm | **-10 pt** | *Mogelijk enkel spatje neerslag* |
-| **Regionale onzekerheid** | 0.0 mm maar regenkans > 65% | **-10 pt** | *Overwegend droog (buienkans in regio)* |
-| **Gevaarlijke stormstoten**| Piekstoten > 70 km/u | **-50 pt** | *Gevaarlijke windstoten (>70 km/u)* |
-| **Felle zijwind** | Piekstoten > 50 km/u | **-25 pt** | *Felle zijwind op bruggen/dijken* |
-| **Merkbare wind** | Piekstoten > 40 km/u | **-10 pt** | *Merkbare wind op snelweg* |
-| **Kans op gladheid / ijzel**| Temperatuur < 2°C | **-60 pt** | *Kans op gladheid / ijzel!* |
-| **Kou / Onder comfort** | Temp < ingestelde minimum | **-20 pt** | *Koud (x°C) - thermokleding vereist* |
-| **Hitte in motorpak** | Temperatuur > 31°C | **-20 pt** | *Erg warm in motorpak (>30°C)* |
-| **Onweer of hagel** | WMO-code 95, 96, 99 | **-60 pt** | *Onweer en hagel voorspeld* |
+| Risicofactor | Situatie / Drempel | All-weather | Droogrijder | Status & Reden in advies |
+| :--- | :--- | :--- | :--- | :--- |
+| **🚨 IJzel / Vorst / Sneeuw** | Temp < 2°C of wintercode | **-60 pt** | **-60 pt** | 🔴 **Instant No-Go**: *Levensgevaarlijk glad asfalt!* |
+| **🚨 Stormstoten** | Piekstoten > 75 km/u | **-55 pt** | **-55 pt** | 🔴 **Instant No-Go**: *Gevaarlijke stormstoten (>75 km/u)* |
+| **🚨 Onweer of hagel** | WMO-code 95, 96, 97, 99 | **-60 pt** | **-60 pt** | 🔴 **Instant No-Go**: *Onweer, valwinden en hagel* |
+| **🚨 Wolkbreuk / Stortvloed**| Neerslag > 3.5 mm | **-50 pt** | **-60 pt** | 🔴 **Instant No-Go**: *Zicht nihil en aquaplaninggevaar* |
+| **Stevige regenbui** | 2.0 – 3.5 mm neerslag | **-30 pt** | **-50 pt** | 🟡 Geel (All-weather) / 🔴 Rood (Droogrijder) |
+| **Matige regenbui** | 0.8 – 2.0 mm neerslag | **-20 pt** | **-38 pt** | 🟡 Geel: *Regenpak en pinlock aan* |
+| **Lichte bui / motregen** | 0.15 – 0.8 mm neerslag | **-12 pt** | **-28 pt** | 🟡 Geel (Prima te doen met motorkleding) |
+| **Enkel spatje neerslag** | 0.05 – 0.15 mm | **-5 pt** | **-10 pt** | 🟢 Groen: *Minimaal spatje, wegdek begaanbaar* |
+| **Boven persoonlijke windlimiet** | Stoten boven ingestelde limiet | **-20 tot -30 pt** | **-20 tot -30 pt** | 🟡 Geel: *Merkbare zijwind op open stukken* |
+| **Kou onder persoonlijke grens**| Temp < ingestelde minimum | **-20 pt** | **-20 pt** | 🟡 Geel: *Koud - thermokleding vereist* |
+| **Hitte in motorpak** | Temperatuur > 31°C | **-20 pt** | **-20 pt** | 🟡 Geel: *Erg warm in motorpak (>30°C)* |
 
 #### 3. Scoregrenzen & Verdicten
-- 🟢 **80 – 100 pt (🏍️ RIDE ON!)**: Ideale omstandigheden. Volledig droog asfalt, kalme wind en aangename temperatuur.
-- 🟡 **50 – 79 pt (⚠️ OPLETTEN)**: Wisselvallig of nat: regen op de route (of terugweg), stevige wind of frisse kou. Regenpak mee!
-- 🔴 **< 50 pt (🚗 DIE HARD ONLY / KOEKBLIK DAG)**: Onveilige condities. Te veel risico op zware regen, gevaarlijke windstoten of gladheid. Pak liever de auto of het OV!
+- 🟢 **80 – 100 pt (🏍️ RIDE ON!)**: Ideale omstandigheden. Droog asfalt, kalme wind en veilige temperatuur.
+- 🟡 **50 – 79 pt (⚠️ OPLETTEN)**: Wisselvallig of nat: lichte buien op de route, stevige wind of kou. Goed te doen met motorkleding & regenpak!
+- 🔴 **< 50 pt (🚗 DIE HARD ONLY / KOEKBLIK DAG)**: Onveilige condities of droogrijder-uitsluiting. Pak liever de auto of het OV!
 
 #### 4. Hoe Combinaties in de Praktijk Werken
-Het algoritme straft ongunstige omstandigheden realistisch af zodat regen direct zwaar weegt:
-- **Eén lichte regenbui**: Een bui van 0.3 mm (-28 pt) $\rightarrow$ Score: **72/100 (🟡 Geel/Oranje)**. Direct het advies om alert te zijn en regenkleding mee te nemen.
-- **Dubbele combinatie (Wind + Lichte bui)**: Windstoten van 52 km/u (-25 pt) **én** een bui van 0.5 mm (-28 pt) $\rightarrow$ Score: **47/100 (🔴 Rood: Koekblik Dag)**.
-- **Drievoudige combinatie (Wind + Regen + Kou)**: Windstoten 52 km/u (-25 pt) + regenbui 1.2 mm (-35 pt) + temperatuur onder minimum (-20 pt) $\rightarrow$ Score: **20/100 (🔴 Rood: Koekblik Dag)**.
+- **All-weather rijder met lichte bui**: Een bui van 0.4 mm (-12 pt) $\rightarrow$ Score: **88/100 (🟡 Geel / Opletten: Regenpak mee)**. Geen rode status!
+- **All-weather rit met matige bui + wind**: Windstoten 48 km/u (-10 pt) + bui van 1.0 mm (-20 pt) $\rightarrow$ Score: **70/100 (🟡 Geel)**.
+- **Droogrijder met bui**: Zelfde bui van 0.4 mm (-28 pt) $\rightarrow$ Score zakt direct onder 80, en bij regen over het hele traject kleurt de status direct **🔴 Rood**.
+- **Instant No-Go situatie**: IJzelkans bij 1°C (-60 pt) of stormstoten van 80 km/u (-55 pt) $\rightarrow$ Score: **< 35 pt (🔴 NO-GO!)**, onafhankelijk van regenvoorkeur.
 
 #### 5. Het "Zwakste Schakel"-principe
 Het uiteindelijke dagadvies wordt bepaald door de **laagste score** van de ochtend- en avondrit (`minScore = Math.min(morning, evening)`):
-> *Als de ochtendrit een score van **95/100 (zonnig en droog)** heeft, maar de avondrit heeft regen op de route (**score 72/100 of lager**), dan toont de app direct een **🟡 Oranje advies ("Heenrit droog, maar bui verwacht bij de terugreis")** met een lagere score van 72/100.*  
-Als motorrijder moet je immers aan het einde van de werkdag ook weer veilig en droog thuiskomen. Hierdoor word je nooit misleid door een groen dagadvies wanneer je 's middags door de regen moet rijden.
+> *Als de ochtendrit een score van **95/100 (droog)** heeft, maar de terugreis heeft regen (**score 72/100**), dan toont de app direct een **🟡 Oranje advies ("Heenrit droog, maar bui verwacht bij de terugreis. Regenpak mee!")**.*  
+Hierdoor word je nooit misleid door een groen ochtendweerbericht wanneer je 's middags door de regen moet rijden.
 
 #### 6. Dynamisch Kleding- & Uitrustingsadvies
 Op basis van de extremen over de ritten adviseert de cockpit direct de juiste uitrusting:

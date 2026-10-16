@@ -155,7 +155,9 @@ const I18n = {
       rainEnRoute: "🔴 BUI ONDERWEG",
       clearingUp: "🟡 KLAART OP",
       rainThroughout: "🔴 REGEN OP HELE ROUTE",
-      sideWindAlert: "🟡 ZIJWINDWAARSCHUWING"
+      rainThroughoutWet: "🟡 NATTE RIT (REGENPAK)",
+      sideWindAlert: "🟡 ZIJWINDWAARSCHUWING",
+      instantNoGoBadge: "🔴 NO-GO!"
     },
 
     // Telemetrie & meetwaarden

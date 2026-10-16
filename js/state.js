@@ -32,6 +32,7 @@ class StateStore {
         eveningTime: d.COMMUTE.eveningTime || d.COMMUTE.EVENING_TIME || '17:00',
         minTemp: d.COMMUTE.minTemp !== undefined ? d.COMMUTE.minTemp : (d.COMMUTE.MIN_TEMP || 8),
         maxGusts: d.COMMUTE.maxGusts !== undefined ? d.COMMUTE.maxGusts : (d.COMMUTE.MAX_GUSTS || 55),
+        avoidRain: d.COMMUTE.avoidRain !== undefined ? d.COMMUTE.avoidRain : (d.COMMUTE.AVOID_RAIN !== undefined ? d.COMMUTE.AVOID_RAIN : false),
         ...d.COMMUTE
       },
       route: {
@@ -130,7 +131,8 @@ class StateStore {
           morningTime: parsedCommute.morningTime || parsedCommute.MORNING_TIME || this.state.commute.morningTime,
           eveningTime: parsedCommute.eveningTime || parsedCommute.EVENING_TIME || this.state.commute.eveningTime,
           minTemp: parsedCommute.minTemp !== undefined ? parsedCommute.minTemp : (parsedCommute.MIN_TEMP !== undefined ? parsedCommute.MIN_TEMP : this.state.commute.minTemp),
-          maxGusts: parsedCommute.maxGusts !== undefined ? parsedCommute.maxGusts : (parsedCommute.MAX_GUSTS !== undefined ? parsedCommute.MAX_GUSTS : this.state.commute.maxGusts)
+          maxGusts: parsedCommute.maxGusts !== undefined ? parsedCommute.maxGusts : (parsedCommute.MAX_GUSTS !== undefined ? parsedCommute.MAX_GUSTS : this.state.commute.maxGusts),
+          avoidRain: parsedCommute.avoidRain !== undefined ? !!parsedCommute.avoidRain : (this.state.commute.avoidRain || false)
         };
       }
 

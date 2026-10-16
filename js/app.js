@@ -72,7 +72,8 @@ const App = {
       morningTime: State.state.commute.morningTime,
       eveningTime: State.state.commute.eveningTime,
       minTemp: State.state.commute.minTemp,
-      maxGusts: State.state.commute.maxGusts
+      maxGusts: State.state.commute.maxGusts,
+      avoidRain: State.state.commute.avoidRain
     }, State.state.route);
 
     UIRenderer.renderDashboard(data, advice, State.state);
@@ -225,11 +226,23 @@ const App = {
   _syncPreferenceSlidersToDOM() {
     const minT = State.state.commute.minTemp !== undefined ? State.state.commute.minTemp : 8;
     const maxG = State.state.commute.maxGusts !== undefined ? State.state.commute.maxGusts : 55;
+    const avoidR = !!State.state.commute.avoidRain;
 
     const selM = document.getElementById('setting-morning-time');
     const selE = document.getElementById('setting-evening-time');
     if (selM && State.state.commute.morningTime) selM.value = State.state.commute.morningTime;
     if (selE && State.state.commute.eveningTime) selE.value = State.state.commute.eveningTime;
+
+    const vMorning = document.getElementById('val-morning-time');
+    if (vMorning && selM) {
+      const opt = selM.options[selM.selectedIndex];
+      vMorning.textContent = opt ? opt.text : (State.state.commute.morningTime || '08.00 uur');
+    }
+    const vEvening = document.getElementById('val-evening-time');
+    if (vEvening && selE) {
+      const opt = selE.options[selE.selectedIndex];
+      vEvening.textContent = opt ? opt.text : (State.state.commute.eveningTime || '17.00 uur');
+    }
 
     const rTemp = document.getElementById('setting-min-temp');
     if (rTemp) rTemp.value = minT;
@@ -240,6 +253,20 @@ const App = {
     if (rGusts) rGusts.value = maxG;
     const vGusts = document.getElementById('val-max-gusts');
     if (vGusts) vGusts.textContent = I18n.formatters.kmh(maxG);
+
+    const chkRain = document.getElementById('setting-avoid-rain');
+    if (chkRain) chkRain.checked = avoidR;
+    const vRain = document.getElementById('val-avoid-rain');
+    if (vRain) {
+      vRain.textContent = avoidR ? "Aan (Droogrijder)" : "Uit (All-weather)";
+      vRain.style.color = avoidR ? "#ef4444" : "#10b981";
+    }
+    const dRain = document.getElementById('desc-avoid-rain');
+    if (dRain) {
+      dRain.textContent = avoidR
+        ? "Strikte modus actief: Regen weegt zwaar. Bij noemenswaardige regen/buien kleurt het advies direct rood (advies: auto/ov)."
+        : "All-weather modus: Lichte regen of een korte bui is acceptabel met motorkleding (geel advies). Pas bij extreme storm, ijzel of wolkbreuk wordt het rood.";
+    }
   },
 
   _syncSettingsViewButtons() {
@@ -330,7 +357,8 @@ const App = {
           morningTime: State.state.commute.morningTime,
           eveningTime: State.state.commute.eveningTime,
           minTemp: State.state.commute.minTemp,
-          maxGusts: State.state.commute.maxGusts
+          maxGusts: State.state.commute.maxGusts,
+          avoidRain: State.state.commute.avoidRain
         }, State.state.route);
         UIRenderer.renderScoreBreakdown(curAdvice, State.state);
       }
@@ -691,6 +719,7 @@ const App = {
     if (selMorning) {
       selMorning.addEventListener('change', (e) => {
         State.state.commute.morningTime = e.target.value;
+        this._syncPreferenceSlidersToDOM();
         State.save();
         this._renderCurrentData();
       });
@@ -700,6 +729,7 @@ const App = {
     if (selEvening) {
       selEvening.addEventListener('change', (e) => {
         State.state.commute.eveningTime = e.target.value;
+        this._syncPreferenceSlidersToDOM();
         State.save();
         this._renderCurrentData();
       });
@@ -718,6 +748,16 @@ const App = {
 
     bindPrefSlider('setting-min-temp', 'minTemp');
     bindPrefSlider('setting-max-gusts', 'maxGusts');
+
+    const chkRain = document.getElementById('setting-avoid-rain');
+    if (chkRain) {
+      chkRain.addEventListener('change', (e) => {
+        State.state.commute.avoidRain = e.target.checked;
+        this._syncPreferenceSlidersToDOM();
+        State.save();
+        this._renderCurrentData();
+      });
+    }
   }
 };
 
