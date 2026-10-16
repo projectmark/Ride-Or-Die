@@ -1093,46 +1093,144 @@ body {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 6px;
+  overflow-y: hidden;
+  padding: 8px 6px 10px 6px; /* 8px speling aan de bovenkant voorkomt afkappen van de rand bij hover */
+  margin-top: -4px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
 
 .hour-chip {
-  flex: 0 0 68px;
+  flex: 0 0 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 4px;
+  padding: 6px 4px 8px 4px;
   border-radius: var(--radius-md);
   background: var(--md-sys-color-surface-container-low);
-  border: 1px solid var(--border-subtle);
-  gap: 4px;
+  border: 1.5px solid var(--border-subtle);
+  gap: 3px;
   text-align: center;
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease, border-color 0.18s ease;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   cursor: default;
+  position: relative;
+  box-sizing: border-box;
 }
 
 .hour-chip:hover {
   transform: translateY(-2px);
   background: var(--md-sys-color-surface);
-  border-color: var(--md-sys-color-primary);
+  border-color: rgba(2, 132, 199, 0.5);
+  box-shadow: 0 4px 12px rgba(12, 24, 41, 0.08);
 }
 
+/* Chip Tag / Badge boven het uur */
+.hour-tag {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  min-height: 15px;
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.hour-tag.tag-empty {
+  visibility: hidden;
+}
+
+/* 1. Huidig Uur (Nu) - Slate / Neutraal */
 .hour-chip.is-current-hour {
-  border-color: var(--md-sys-color-primary);
-  background: var(--md-sys-color-primary-container);
+  border: 1.5px solid #64748b;
+  background: rgba(100, 116, 139, 0.08);
 }
 
+.hour-chip.is-current-hour .hour-tag.tag-current {
+  background: #64748b;
+  color: #ffffff;
+}
+
+.hour-chip.is-current-hour:hover {
+  border-color: #475569;
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.22);
+}
+
+/* 2. Ochtendrit (Heen) - Oranje Amber (#f59e0b) */
 .hour-chip.is-commute-morning {
-  border-color: #f59e0b;
+  border: 2px solid #f59e0b;
   background: rgba(245, 158, 11, 0.12);
+  box-shadow: 0 1px 4px rgba(245, 158, 11, 0.14);
 }
 
+.hour-chip.is-commute-morning .hour-tag.tag-morning {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.hour-chip.is-commute-morning .hour-time {
+  color: #b45309;
+  font-weight: 800;
+}
+
+.hour-chip.is-commute-morning:hover {
+  border-color: #d97706;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.32);
+}
+
+/* 3. Avondrit (Terug) - Blauw Hemels (#0284c7) */
 .hour-chip.is-commute-evening {
-  border-color: #0284c7;
+  border: 2px solid #0284c7;
   background: rgba(2, 132, 199, 0.12);
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.14);
+}
+
+.hour-chip.is-commute-evening .hour-tag.tag-evening {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.hour-chip.is-commute-evening .hour-time {
+  color: #0369a1;
+  font-weight: 800;
+}
+
+.hour-chip.is-commute-evening:hover {
+  border-color: #0369a1;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.32);
+}
+
+/* Donkere modus verfijningen */
+[data-theme="dark"] .hour-chip.is-current-hour {
+  border-color: #94a3b8;
+  background: rgba(148, 163, 184, 0.12);
+}
+[data-theme="dark"] .hour-chip.is-current-hour .hour-tag.tag-current {
+  background: #94a3b8;
+  color: #0f172a;
+}
+[data-theme="dark"] .hour-chip.is-commute-morning {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.18);
+}
+[data-theme="dark"] .hour-chip.is-commute-morning .hour-time {
+  color: #fbbf24;
+}
+[data-theme="dark"] .hour-chip.is-commute-evening {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.18);
+}
+[data-theme="dark"] .hour-chip.is-commute-evening .hour-tag.tag-evening {
+  background: #38bdf8;
+  color: #0f172a;
+}
+[data-theme="dark"] .hour-chip.is-commute-evening .hour-time {
+  color: #38bdf8;
 }
 
 .hour-time {
@@ -1158,22 +1256,40 @@ body {
   color: var(--text-muted);
 }
 
-/* 7-Day Forecast Card */
+/* 7-Day Forecast Card (Fills card height gracefully) */
+.daily-forecast-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 .daily-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: space-between;
+  flex: 1;
+  gap: 2px;
+  margin-top: 6px;
 }
 
 .daily-row {
+  flex: 1;
+  min-height: 42px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 10px;
+  padding: 0 10px;
   border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  transition: background 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 0.84rem;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.daily-row:last-child {
+  border-bottom: none;
 }
 
 .daily-row:hover {
@@ -1181,39 +1297,65 @@ body {
   transform: translateX(3px);
 }
 
+.daily-row.is-today .daily-name {
+  color: var(--md-sys-color-primary);
+  font-weight: 800;
+}
+
 .daily-name {
-  width: 50px;
+  width: 64px;
   font-weight: 700;
   color: var(--text-main);
+  font-size: 0.84rem;
   flex-shrink: 0;
 }
 
 .daily-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.daily-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .daily-temp-bar-container {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
-  min-width: 80px;
+  gap: 8px;
+  min-width: 90px;
 }
 
-.daily-min, .daily-max {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+.daily-min {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
   font-weight: 700;
-  width: 24px;
+  color: var(--text-muted);
+  width: 26px;
   text-align: right;
+  flex-shrink: 0;
+}
+
+.daily-max {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-main);
+  width: 26px;
+  text-align: left;
+  flex-shrink: 0;
 }
 
 .temp-bar-track {
   flex: 1;
-  height: 6px;
-  background: rgba(148, 163, 184, 0.2);
+  height: 8px;
+  background: rgba(148, 163, 184, 0.22);
   border-radius: var(--radius-pill);
   position: relative;
   overflow: hidden;
@@ -1223,7 +1365,7 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: linear-gradient(90deg, #38bdf8, #f59e0b);
+  background: linear-gradient(90deg, #38bdf8 0%, #0284c7 45%, #f59e0b 100%);
   border-radius: var(--radius-pill);
   width: 0%;
   transition: width 0.75s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s ease;
@@ -1231,11 +1373,12 @@ body {
 }
 
 .daily-rain-pill {
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 700;
   color: var(--text-muted);
-  width: 60px;
+  width: 66px;
   text-align: right;
+  flex-shrink: 0;
 }
 
 /* 11. SINGLE WIDGET VIEW (Compact Mode)

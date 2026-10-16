@@ -17,7 +17,13 @@ class StateStore {
       viewMode: d.VIEW_MODE,
       selectedDay: d.SELECTED_DAY,
       location: { ...d.LOCATION },
-      commute: { ...d.COMMUTE },
+      commute: {
+        morningTime: d.COMMUTE.morningTime || d.COMMUTE.MORNING_TIME || '08:00',
+        eveningTime: d.COMMUTE.eveningTime || d.COMMUTE.EVENING_TIME || '17:00',
+        minTemp: d.COMMUTE.minTemp !== undefined ? d.COMMUTE.minTemp : (d.COMMUTE.MIN_TEMP || 8),
+        maxGusts: d.COMMUTE.maxGusts !== undefined ? d.COMMUTE.maxGusts : (d.COMMUTE.MAX_GUSTS || 55),
+        ...d.COMMUTE
+      },
       route: {
         start: { ...d.ROUTE.start },
         mid: { ...d.ROUTE.mid },
@@ -103,7 +109,14 @@ class StateStore {
       const commuteRaw = localStorage.getItem('rideordie_commute');
       if (commuteRaw) {
         const parsedCommute = JSON.parse(commuteRaw);
-        this.state.commute = { ...this.state.commute, ...parsedCommute };
+        this.state.commute = {
+          ...this.state.commute,
+          ...parsedCommute,
+          morningTime: parsedCommute.morningTime || parsedCommute.MORNING_TIME || this.state.commute.morningTime,
+          eveningTime: parsedCommute.eveningTime || parsedCommute.EVENING_TIME || this.state.commute.eveningTime,
+          minTemp: parsedCommute.minTemp !== undefined ? parsedCommute.minTemp : (parsedCommute.MIN_TEMP !== undefined ? parsedCommute.MIN_TEMP : this.state.commute.minTemp),
+          maxGusts: parsedCommute.maxGusts !== undefined ? parsedCommute.maxGusts : (parsedCommute.MAX_GUSTS !== undefined ? parsedCommute.MAX_GUSTS : this.state.commute.maxGusts)
+        };
       }
 
       const routeRaw = localStorage.getItem('rideordie_route');

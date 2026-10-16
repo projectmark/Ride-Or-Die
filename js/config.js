@@ -64,6 +64,10 @@ const Config = {
     VIEW_MODE: 'cockpit', // 'cockpit' | 'widget'
     SELECTED_DAY: 'today', // 'today' | 'nextWorkday'
     COMMUTE: {
+      morningTime: '08:00',
+      eveningTime: '17:00',
+      minTemp: 8,
+      maxGusts: 55,
       MORNING_TIME: '08:00',
       EVENING_TIME: '17:00',
       MIN_TEMP: 8,

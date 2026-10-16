@@ -677,13 +677,15 @@ const UIRenderer = {
     const now = new Date();
     const currentMs = now.getTime();
 
-    let startIdx = 0;
-    let currentIdx = -1;
+    const commuteConfig = commute || {};
+    const morningTimeStr = commuteConfig.morningTime || commuteConfig.MORNING_TIME || '08:00';
+    const eveningTimeStr = commuteConfig.eveningTime || commuteConfig.EVENING_TIME || '17:00';
+    const morningHour = parseInt(morningTimeStr.split(':')[0], 10);
+    const eveningHour = parseInt(eveningTimeStr.split(':')[0], 10);
 
-    if (isNextWorkday) {
-      const idx = hourly.time.findIndex(t => t.startsWith(`${activeDateStr}T06:00`));
-      startIdx = idx !== -1 ? idx : Math.max(0, hourly.time.findIndex(t => t.startsWith(activeDateStr)));
-    } else {
+    const currentHourTarget = `${workdayConfig.today.dateStr}T${String(now.getHours()).padStart(2, '0')}`;
+    let currentIdx = hourly.time.findIndex(t => t.startsWith(currentHourTarget));
+    if (currentIdx === -1) {
       let minDiff = Infinity;
       for (let i = 0; i < hourly.time.length; i++) {
         const diff = Math.abs(new Date(hourly.time[i]).getTime() - currentMs);
@@ -692,17 +694,26 @@ const UIRenderer = {
           currentIdx = i;
         }
       }
-      startIdx = Math.max(0, currentIdx - 1);
     }
 
-    const endIdx = Math.min(hourly.time.length, startIdx + 24);
-    const morningHour = parseInt((commute.morningTime || '08:00').split(':')[0], 10);
-    const eveningHour = parseInt((commute.eveningTime || '17:00').split(':')[0], 10);
+    let startIdx = 0;
+    if (isNextWorkday) {
+      const idx = hourly.time.findIndex(t => t.startsWith(`${activeDateStr}T06:00`));
+      startIdx = idx !== -1 ? idx : Math.max(0, hourly.time.findIndex(t => t.startsWith(activeDateStr)));
+    } else {
+      // Begin 's ochtends vroeg (06:00) zodat ook de heenrit altijd in de strip aanwezig is
+      const morningStart = hourly.time.findIndex(t => t.startsWith(`${activeDateStr}T06:00`));
+      const dayFirst = hourly.time.findIndex(t => t.startsWith(activeDateStr));
+      const baseStart = morningStart !== -1 ? morningStart : (dayFirst !== -1 ? dayFirst : 0);
+      startIdx = Math.max(0, Math.min(baseStart, currentIdx - 1));
+    }
+
+    const endIdx = Math.min(hourly.time.length, Math.max(startIdx + 24, currentIdx + 6));
 
     const chips = [];
     for (let i = startIdx; i < endIdx; i++) {
-      const timeObj = new Date(hourly.time[i]);
-      const hourNum = timeObj.getHours();
+      const timeStr = hourly.time[i];
+      const hourNum = parseInt(timeStr.substring(11, 13), 10);
       const hourStr = `${hourNum.toString().padStart(2, '0')}.00`;
       const temp = Math.round(hourly.temperature_2m[i]);
       const rainProb = hourly.precipitation_probability[i] || 0;
@@ -712,17 +723,34 @@ const UIRenderer = {
       const isNight = hourNum < 6 || hourNum > 21;
 
       let rainDisplay = precip > 0.05 ? `💧${I18n.formatters.decimal(precip, 1)}m` : (rainProb > 45 ? `⛅0m` : `☀️0%`);
+      const isSameDate = timeStr.startsWith(activeDateStr);
+      const isMorning = isSameDate && (hourNum === morningHour);
+      const isEvening = isSameDate && (hourNum === eveningHour);
       const isCurrent = !isNextWorkday && (i === currentIdx);
-      let commuteClass = '';
 
-      if (isCurrent) commuteClass = 'is-current-hour';
-      else if (hourly.time[i].startsWith(activeDateStr)) {
-        if (hourNum === morningHour) commuteClass = 'is-commute-morning';
-        else if (hourNum === eveningHour) commuteClass = 'is-commute-evening';
+      let commuteClass = '';
+      let tagText = '';
+      let tagClass = 'tag-empty';
+
+      if (isMorning) {
+        commuteClass = 'is-commute-morning';
+        if (isCurrent) commuteClass += ' is-current-hour';
+        tagText = isCurrent ? 'Heen (Nu)' : 'Heen';
+        tagClass = 'tag-morning';
+      } else if (isEvening) {
+        commuteClass = 'is-commute-evening';
+        if (isCurrent) commuteClass += ' is-current-hour';
+        tagText = isCurrent ? 'Terug (Nu)' : 'Terug';
+        tagClass = 'tag-evening';
+      } else if (isCurrent) {
+        commuteClass = 'is-current-hour';
+        tagText = 'Nu';
+        tagClass = 'tag-current';
       }
 
       chips.push(`
-        <div class="hour-chip ${commuteClass}">
+        <div class="hour-chip ${commuteClass}" data-hour="${hourNum}">
+          <span class="hour-tag ${tagClass}">${tagText || '&nbsp;'}</span>
           <span class="hour-time">${hourStr}</span>
           <div class="hour-icon">${this.getWeatherSvg(iconType, isNight)}</div>
           <span class="hour-temp">${temp}°</span>
@@ -735,6 +763,13 @@ const UIRenderer = {
     strip.classList.remove('m3-day-switch');
     requestAnimationFrame(() => {
       strip.classList.add('m3-day-switch');
+      const targetChip = strip.querySelector('.hour-chip.is-current-hour') || strip.querySelector('.hour-chip.is-commute-morning');
+      if (targetChip) {
+        const chipRect = targetChip.getBoundingClientRect();
+        const stripRect = strip.getBoundingClientRect();
+        const scrollOffset = strip.scrollLeft + (chipRect.left - stripRect.left) - (strip.clientWidth / 2) + (targetChip.clientWidth / 2);
+        strip.scrollLeft = Math.max(0, scrollOffset);
+      }
     });
   },
 
@@ -751,7 +786,9 @@ const UIRenderer = {
 
     for (let i = 0; i < count; i++) {
       const d = new Date(daily.time[i] + 'T00:00:00');
-      const name = i === 0 ? 'Vandaag' : i === 1 ? 'Morgen' : dayNames[d.getDay()];
+      const isToday = i === 0;
+      const isTomorrow = i === 1;
+      const name = isToday ? 'Vandaag' : isTomorrow ? 'Morgen' : dayNames[d.getDay()];
       const code = daily.weather_code[i] || 0;
       const iconType = (I18n.weatherCodes[code] || {}).icon || 'sun';
       const minTemp = Math.round(daily.temperature_2m_min[i]);
@@ -766,7 +803,7 @@ const UIRenderer = {
       let rainDisplay = rainSum > 0.1 ? `💧 ${I18n.formatters.decimal(rainSum, 1)}m` : (rainProb > 40 ? `⛅ 0m` : `☀️ 0%`);
 
       rows.push(`
-        <div class="daily-row">
+        <div class="daily-row ${isToday ? 'is-today' : ''}">
           <span class="daily-name">${name}</span>
           <div class="daily-icon">${this.getWeatherSvg(iconType, false)}</div>
           <div class="daily-temp-bar-container">
