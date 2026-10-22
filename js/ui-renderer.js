@@ -944,7 +944,8 @@ const UIRenderer = {
 
       const rainDed = deductions.find(d => d.category === 'rain');
       const windDed = deductions.find(d => d.category === 'wind');
-      const tempDed = deductions.find(d => d.category === 'temp');
+      const tempDeds = deductions.filter(d => d.category === 'temp' || d.category === 'cold_wet');
+      const seasonDeds = deductions.filter(d => d.category === 'season' || d.category === 'autumn');
       const stormDed = deductions.find(d => d.category === 'storm');
 
       const maxG = advice.telemetry ? advice.telemetry.maxGusts : (decisiveData ? decisiveData.maxGusts : 25);
@@ -953,6 +954,12 @@ const UIRenderer = {
         ? (advice.morningAnalysis ? Math.min(advice.morningAnalysis.startWeather.temp, advice.eveningAnalysis.startWeather.temp) : Math.min(advice.morningData ? advice.morningData.avgTemp : 15, advice.eveningData ? advice.eveningData.avgTemp : 15))
         : (decisiveData ? decisiveData.avgTemp : 15);
       const userTempLimit = state.commute.minTemp !== undefined ? state.commute.minTemp : 8;
+      const rainTolerance = state.commute.rainTolerance || (state.commute.avoidRain ? 'avoid' : 'flexible');
+      const rainTolLabel = rainTolerance === 'avoid'
+        ? 'Droogrijder (regen vermijden)'
+        : rainTolerance === 'all_weather'
+        ? 'Doorrijder (all-weather kleding)'
+        : 'Flexibel (lichte bui acceptabel)';
 
       const items = [];
 
@@ -968,7 +975,6 @@ const UIRenderer = {
       `);
 
       // Neerslag
-      const isAvoidRain = state.commute && state.commute.avoidRain;
       if (rainDed) {
         items.push(`
           <div class="score-factor-item has-penalty ${rainDed.isInstantNoGo ? 'has-severe-penalty' : ''}">
@@ -977,7 +983,7 @@ const UIRenderer = {
                 ${rainDed.icon || '🌧️'} ${rainDed.title}
                 ${rainDed.isInstantNoGo ? '<span class="score-instant-badge">🚨 Instant No-Go</span>' : ''}
               </span>
-              <span class="score-factor-desc">${rainDed.desc} (${isAvoidRain ? 'Droogrijder-modus: weegt zwaar' : 'All-weather modus: acceptabel met kleding'})</span>
+              <span class="score-factor-desc">${rainDed.desc} • Profiel: ${rainTolLabel}</span>
             </div>
             <span class="score-factor-points points-penalty">${rainDed.points} pt</span>
           </div>
@@ -988,7 +994,7 @@ const UIRenderer = {
           <div class="score-factor-item">
             <div class="score-factor-info">
               <span class="score-factor-name">💧 Neerslag &amp; Grip</span>
-              <span class="score-factor-desc">Volledig droog wegdek (${I18n.formatters.millimeters(precipVal)}), 100% wegdekgrip. (${isAvoidRain ? 'Droogrijder-modus' : 'All-weather modus'})</span>
+              <span class="score-factor-desc">Volledig droog wegdek (${I18n.formatters.millimeters(precipVal)}), 100% wegdekgrip • Profiel: ${rainTolLabel}</span>
             </div>
             <span class="score-factor-points points-neutral">0 pt</span>
           </div>
@@ -1021,30 +1027,48 @@ const UIRenderer = {
         `);
       }
 
-      // Temperatuur
-      if (tempDed) {
-        items.push(`
-          <div class="score-factor-item has-penalty ${tempDed.isInstantNoGo ? 'has-severe-penalty' : ''}">
-            <div class="score-factor-info">
-              <span class="score-factor-name">
-                ${tempDed.icon || '🧣'} ${tempDed.title}
-                ${tempDed.isInstantNoGo ? '<span class="score-instant-badge">🚨 Instant No-Go</span>' : ''}
-              </span>
-              <span class="score-factor-desc">${tempDed.desc}</span>
+      // Temperatuur, kou & verwarmde uitrusting
+      if (tempDeds.length > 0) {
+        tempDeds.forEach(td => {
+          items.push(`
+            <div class="score-factor-item has-penalty ${td.isInstantNoGo ? 'has-severe-penalty' : ''}">
+              <div class="score-factor-info">
+                <span class="score-factor-name">
+                  ${td.icon || '🧣'} ${td.title}
+                  ${td.isInstantNoGo ? '<span class="score-instant-badge">🚨 Instant No-Go</span>' : ''}
+                </span>
+                <span class="score-factor-desc">${td.desc}</span>
+              </div>
+              <span class="score-factor-points points-penalty">${td.points} pt</span>
             </div>
-            <span class="score-factor-points points-penalty">${tempDed.points} pt</span>
-          </div>
-        `);
+          `);
+        });
       } else {
+        const heatedNote = state.commute.heatedGloves ? ' • 🧤 Verwarmde handschoenen actief' : '';
         items.push(`
           <div class="score-factor-item">
             <div class="score-factor-info">
               <span class="score-factor-name">🌡️ Temperatuur &amp; Asfalt</span>
-              <span class="score-factor-desc">Temperatuur (${I18n.formatters.celsius(minT)}) ligt veilig boven jouw koudegrens van ${I18n.formatters.celsius(userTempLimit)}, geen ijzelrisico.</span>
+              <span class="score-factor-desc">Temperatuur (${I18n.formatters.celsius(minT)}) ligt behaaglijk boven jouw koudegrens van ${I18n.formatters.celsius(userTempLimit)}, geen ijzelrisico${heatedNote}.</span>
             </div>
             <span class="score-factor-points points-neutral">0 pt</span>
           </div>
         `);
+      }
+
+      // Seizoensfactor (bijv. Herfstbladeren)
+      if (seasonDeds.length > 0) {
+        seasonDeds.forEach(sd => {
+          items.push(`
+            <div class="score-factor-item has-penalty">
+              <div class="score-factor-info">
+                <span class="score-factor-name">${sd.icon || '🍂'} ${sd.title}</span>
+                <span class="score-factor-desc">${sd.desc}</span>
+              </div>
+              <span class="score-factor-points points-penalty">${sd.points} pt</span>
+            </div>
+          `);
+        });
       }
 
       // Onweer

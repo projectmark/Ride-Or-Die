@@ -73,7 +73,9 @@ const App = {
       eveningTime: State.state.commute.eveningTime,
       minTemp: State.state.commute.minTemp,
       maxGusts: State.state.commute.maxGusts,
-      avoidRain: State.state.commute.avoidRain
+      avoidRain: State.state.commute.avoidRain,
+      rainTolerance: State.state.commute.rainTolerance,
+      heatedGloves: State.state.commute.heatedGloves
     }, State.state.route);
 
     UIRenderer.renderDashboard(data, advice, State.state);
@@ -227,6 +229,8 @@ const App = {
     const minT = State.state.commute.minTemp !== undefined ? State.state.commute.minTemp : 8;
     const maxG = State.state.commute.maxGusts !== undefined ? State.state.commute.maxGusts : 55;
     const avoidR = !!State.state.commute.avoidRain;
+    const heatedG = !!State.state.commute.heatedGloves;
+    const rainTol = State.state.commute.rainTolerance || (avoidR ? 'avoid' : 'flexible');
 
     const selM = document.getElementById('setting-morning-time');
     const selE = document.getElementById('setting-evening-time');
@@ -249,13 +253,56 @@ const App = {
     const vTemp = document.getElementById('val-min-temp');
     if (vTemp) vTemp.textContent = I18n.formatters.celsius(minT);
 
+    // Verwarmde Handschoenen sync
+    const chkGloves = document.getElementById('setting-heated-gloves');
+    if (chkGloves) chkGloves.checked = heatedG;
+    const vGloves = document.getElementById('val-heated-gloves');
+    if (vGloves) {
+      vGloves.textContent = heatedG ? "Aan (vanaf 3°C)" : "Uit";
+      vGloves.style.color = heatedG ? "#f59e0b" : "var(--text-muted)";
+    }
+
     const rGusts = document.getElementById('setting-max-gusts');
     if (rGusts) rGusts.value = maxG;
     const vGusts = document.getElementById('val-max-gusts');
     if (vGusts) vGusts.textContent = I18n.formatters.kmh(maxG);
 
+    // Neerslagtolerantie buttons sync
+    const tolButtons = document.querySelectorAll('#setting-rain-tolerance-group .tolerance-seg-btn');
+    tolButtons.forEach(btn => {
+      const mode = btn.getAttribute('data-tolerance');
+      const isActive = mode === rainTol;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+    });
+
+    const vTolerance = document.getElementById('val-rain-tolerance');
+    if (vTolerance) {
+      if (rainTol === 'avoid') {
+        vTolerance.textContent = "Droogrijder";
+        vTolerance.style.color = "#ef4444";
+      } else if (rainTol === 'all_weather') {
+        vTolerance.textContent = "Doorrijder";
+        vTolerance.style.color = "#10b981";
+      } else {
+        vTolerance.textContent = "Flexibel";
+        vTolerance.style.color = "#0284c7";
+      }
+    }
+
+    const dTolerance = document.getElementById('desc-rain-tolerance');
+    if (dTolerance) {
+      if (rainTol === 'avoid') {
+        dTolerance.textContent = "Droogrijder: Regen weegt zwaar. Bij neerslag op je traject kleurt het advies direct rood (advies: auto/ov).";
+      } else if (rainTol === 'all_weather') {
+        dTolerance.textContent = "Doorrijder: Waterdicht pak & pinlock actief. Gewone regenbuien geven geel/groen advies; alleen wolkbreuk of onweer stopt je.";
+      } else {
+        dTolerance.textContent = "Flexibel: Een lichte bui (<0,8 mm) is acceptabel (geel advies), aanhoudende of zware regen wordt afgeraden.";
+      }
+    }
+
     const chkRain = document.getElementById('setting-avoid-rain');
-    if (chkRain) chkRain.checked = avoidR;
+    if (chkRain) chkRain.checked = (rainTol === 'avoid');
     const vRain = document.getElementById('val-avoid-rain');
     if (vRain) {
       vRain.textContent = avoidR ? "Aan (Droogrijder)" : "Uit (All-weather)";
@@ -358,7 +405,9 @@ const App = {
           eveningTime: State.state.commute.eveningTime,
           minTemp: State.state.commute.minTemp,
           maxGusts: State.state.commute.maxGusts,
-          avoidRain: State.state.commute.avoidRain
+          avoidRain: State.state.commute.avoidRain,
+          rainTolerance: State.state.commute.rainTolerance,
+          heatedGloves: State.state.commute.heatedGloves
         }, State.state.route);
         UIRenderer.renderScoreBreakdown(curAdvice, State.state);
       }
@@ -749,10 +798,33 @@ const App = {
     bindPrefSlider('setting-min-temp', 'minTemp');
     bindPrefSlider('setting-max-gusts', 'maxGusts');
 
+    const chkGloves = document.getElementById('setting-heated-gloves');
+    if (chkGloves) {
+      chkGloves.addEventListener('change', (e) => {
+        State.state.commute.heatedGloves = e.target.checked;
+        this._syncPreferenceSlidersToDOM();
+        State.save();
+        this._renderCurrentData();
+      });
+    }
+
+    const tolButtons = document.querySelectorAll('#setting-rain-tolerance-group .tolerance-seg-btn');
+    tolButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tol = btn.getAttribute('data-tolerance');
+        State.state.commute.rainTolerance = tol;
+        State.state.commute.avoidRain = (tol === 'avoid');
+        this._syncPreferenceSlidersToDOM();
+        State.save();
+        this._renderCurrentData();
+      });
+    });
+
     const chkRain = document.getElementById('setting-avoid-rain');
     if (chkRain) {
       chkRain.addEventListener('change', (e) => {
         State.state.commute.avoidRain = e.target.checked;
+        State.state.commute.rainTolerance = e.target.checked ? 'avoid' : 'flexible';
         this._syncPreferenceSlidersToDOM();
         State.save();
         this._renderCurrentData();

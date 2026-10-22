@@ -170,6 +170,8 @@ const I18n = {
       optimal: "Optimaal droog",
       damp: "Vochtig asfalt",
       slippery: "Glad en nat",
+      coldWetSlippery: "Koud & spekglad (<7°C)",
+      autumnLeaves: "Nat bladerdek (Herfst)",
       aboveLimit: "Boven jouw limiet",
       dangerous: "Gevaarlijk",
       alert: "Wees alert",
@@ -205,6 +207,7 @@ const I18n = {
     gear: {
       title: "Aanbevolen uitrusting en kleding",
       subtext: "Berekend op basis van de minimumtemperatuur en actuele neerslag op je route.",
+      heatedGloves: "🧤 Verwarmde handschoenen (Aan)",
       winterGloves: "🧤 Winterhandschoenen",
       thermoLining: "🧥 Thermovoering en kol",
       midGloves: "🧤 Halfseizoen-handschoenen",

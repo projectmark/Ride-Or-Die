@@ -789,20 +789,41 @@
               <span>🎛️</span>
               <div>
                 <div class="wiki-card-title">Rijvoorkeuren &amp; Toleranties</div>
-                <div class="wiki-card-sub">Temperatuur, wind &amp; regenacceptatie</div>
+                <div class="wiki-card-sub">Temperatuur, uitrusting &amp; neerslagprofiel</div>
               </div>
             </div>
             <p class="wiki-card-body">
-              Stel jouw persoonlijke comfort- en veiligheidsgrenzen in voor temperatuur, wind en regen op de motor.
+              Stel jouw persoonlijke comfort- en veiligheidsgrenzen in voor kou, wind, regenacceptatie en verwarmde motoruitrusting.
             </p>
+
+            <!-- Koude grens -->
             <div class="pref-slider-group">
               <div class="pref-slider-header">
                 <span>🧣 Gewenste min. temperatuur</span>
                 <span class="pref-val-pill" id="val-min-temp">8°C</span>
               </div>
               <input type="range" min="0" max="18" value="8" class="m3-range-slider" id="setting-min-temp" />
-              <div class="pref-slider-hint">Onder deze gevoelstemperatuur adviseert het systeem thermokleding of de auto.</div>
+              <div class="pref-slider-hint">Onder deze temperatuur adviseert het systeem thermokleding of de auto.</div>
             </div>
+
+            <!-- Verwarmde Handschoenen Toggle -->
+            <div class="pref-slider-group pref-toggle-group" id="group-heated-gloves">
+              <div class="pref-slider-header">
+                <span>🧤 Verwarmde handschoenen / Handvatverwarming</span>
+                <span class="pref-val-pill" id="val-heated-gloves">Uit</span>
+              </div>
+              <label class="pref-switch-label" for="setting-heated-gloves">
+                <span class="pref-switch-desc" id="desc-heated-gloves">
+                  Beschermt je vingers tegen verstijving en behoudt remkracht. Maakt rijden tot 3°C comfortabel (-5 pt i.p.v. -20 pt aftrek).
+                </span>
+                <div class="m3-toggle-switch warm">
+                  <input type="checkbox" id="setting-heated-gloves" class="m3-toggle-input" />
+                  <span class="m3-toggle-slider"></span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Windstoten -->
             <div class="pref-slider-group">
               <div class="pref-slider-header">
                 <span>💨 Max. windsnelheid (stoten)</span>
@@ -811,20 +832,42 @@
               <input type="range" min="35" max="80" step="5" value="55" class="m3-range-slider" id="setting-max-gusts" />
               <div class="pref-slider-hint">Boven deze windstootlimiet volgt een oranje of rood waarschuwingsadvies.</div>
             </div>
-            <div class="pref-slider-group pref-toggle-group">
+
+            <!-- Regenprofiel Tolerantie (Droogrijder, Flexibel, Doorrijder) -->
+            <div class="pref-slider-group" id="group-rain-tolerance">
               <div class="pref-slider-header">
-                <span>🌧️ Liever droog rijden (regen weegt zwaar)</span>
-                <span class="pref-val-pill" id="val-avoid-rain">Uit (All-weather)</span>
+                <span>🌧️ Neerslagtolerantie</span>
+                <span class="pref-val-pill" id="val-rain-tolerance">Flexibel</span>
               </div>
-              <label class="pref-switch-label" for="setting-avoid-rain">
-                <span class="pref-switch-desc" id="desc-avoid-rain">
-                  All-weather modus: Lichte regen of een korte bui is acceptabel met motorkleding (geel advies). Zet de vink aan om regen zwaar te laten tellen (direct rood advies).
-                </span>
-                <div class="m3-toggle-switch">
-                  <input type="checkbox" id="setting-avoid-rain" class="m3-toggle-input" />
-                  <span class="m3-toggle-slider"></span>
-                </div>
-              </label>
+              <div class="tolerance-segmented-group" id="setting-rain-tolerance-group" role="radiogroup" aria-label="Neerslagtolerantie">
+                <button type="button" class="tolerance-seg-btn" data-tolerance="avoid" role="radio" aria-checked="false">
+                  ☀️ Droogrijder
+                </button>
+                <button type="button" class="tolerance-seg-btn active" data-tolerance="flexible" role="radio" aria-checked="true">
+                  🌦️ Flexibel
+                </button>
+                <button type="button" class="tolerance-seg-btn" data-tolerance="all_weather" role="radio" aria-checked="false">
+                  🌧️ Doorrijder
+                </button>
+              </div>
+              <div class="pref-slider-hint" id="desc-rain-tolerance" style="margin-top:6px;">
+                Flexibel: Een lichte bui (&lt;0,8 mm) is acceptabel (geel advies), aanhoudende of zware regen wordt afgeraden.
+              </div>
+              <!-- Verborgen synchronisatie-checkbox voor backward compatibility -->
+              <input type="checkbox" id="setting-avoid-rain" class="m3-toggle-input" style="display:none;" />
+            </div>
+
+            <!-- Asfalt & Seizoensveiligheid Notice -->
+            <div class="safety-monitor-notice">
+              <div class="safety-notice-header">
+                <span>🛡️</span>
+                <span>Asfaltveiligheid &amp; Seizoensbewaking</span>
+              </div>
+              <div class="safety-notice-body">
+                <div>• <strong>IJzel, vorst of sneeuw (&le; 1,5°C):</strong> Onvoorwaardelijke <em>Instant No-Go</em>. Twee wielen hebben nul marge bij opvriezing.</div>
+                <div>• <strong>Koud &amp; nat asfalt (&lt; 7°C):</strong> Rubber warmt nauwelijks op en bruggen koelen snel af (-22 pt compound risico).</div>
+                <div>• <strong>Herfstbladerdek (sep t/m dec):</strong> Natte bladeren gedragen zich als zeep op het wegdek (-8 pt bij nat/winderig weer).</div>
+              </div>
             </div>
           </div>
         </div>
@@ -990,7 +1033,7 @@
            ========================================== -->
       <div class="score-tab-panel" data-panel="pillars" style="display: none;">
         <div class="wiki-intro-box">
-          Elke motorrit start standaard op <strong>100 punten</strong> (ideale motorcondities). Het numerieke KNMI Harmonie-AROME weermodel berekent vervolgens aftrekpunten op basis van 4 kritieke veiligheidspijlers.
+          Elke motorrit start standaard op <strong>100 punten</strong> (ideale motorcondities). Het numerieke KNMI Harmonie-AROME weermodel berekent vervolgens aftrekpunten op basis van 4 kritieke veiligheidspijlers, rekening houdend met jouw persoonlijke toleranties en uitrusting.
         </div>
 
         <div class="wiki-pillars-grid">
@@ -999,24 +1042,24 @@
             <div class="wiki-card-header">
               <span>💧</span>
               <div>
-                <div class="wiki-card-title">Pijler 1: Neerslag &amp; Asfaltgrip</div>
-                <div class="wiki-card-sub">All-weather vs. Droogrijder instelbaar</div>
+                <div class="wiki-card-title">Pijler 1: Neerslag &amp; Tolerantieprofiel</div>
+                <div class="wiki-card-sub">Droogrijder, Flexibel of Doorrijder</div>
               </div>
             </div>
             <p class="wiki-card-body">
-              Water op de weg vermindert grip en zicht. Maar of regen een belemmering is, hangt af van jouw motorkleding en helm. In je ritvoorkeuren kun je daarom kiezen tussen <strong>All-weather (Regen acceptabel)</strong> en <strong>Liever droog rijden (strikte aftrek)</strong>.
+              Water op de weg vermindert grip en vizierzicht. Hoe zwaar regen meetelt, schaalt dynamisch mee met jouw gekozen rijderstype:
             </p>
             <table class="wiki-table">
               <thead>
-                <tr><th>Situatie</th><th>Neerslag</th><th>All-weather</th><th>Droogrijder</th></tr>
+                <tr><th>Neerslagintensiteit</th><th>Droogrijder</th><th>Flexibel (standaard)</th><th>Doorrijder</th></tr>
               </thead>
               <tbody>
-                <tr><td>Droog wegdek</td><td>0,0 mm</td><td><span class="pts-neutral">0 pt</span></td><td><span class="pts-neutral">0 pt</span></td></tr>
-                <tr><td>Enkel spatje</td><td>0,05 – 0,15 mm</td><td><span class="pts-pen">-5 pt</span></td><td><span class="pts-pen">-10 pt</span></td></tr>
-                <tr><td>Lichte bui / motregen</td><td>0,15 – 0,8 mm</td><td><span class="pts-pen">-12 pt (Geel)</span></td><td><span class="pts-pen">-28 pt (&lt;80)</span></td></tr>
-                <tr><td>Matige regenbui</td><td>0,8 – 2,0 mm</td><td><span class="pts-pen">-22 pt (Geel)</span></td><td><span class="pts-pen">-38 pt</span></td></tr>
-                <tr><td>Stevige regenval</td><td>2,0 – 3,5 mm</td><td><span class="pts-pen">-30 pt (Geel)</span></td><td><span class="pts-pen">-50 pt (Rood)</span></td></tr>
-                <tr><td>Wolkbreuk / stortregen</td><td>&gt; 3,5 mm</td><td colspan="2"><span class="pts-pen">-50 tot -60 pt (🚨 Instant No-Go)</span></td></tr>
+                <tr><td>Droog wegdek (0 mm)</td><td><span class="pts-neutral">0 pt</span></td><td><span class="pts-neutral">0 pt</span></td><td><span class="pts-neutral">0 pt</span></td></tr>
+                <tr><td>Spatje (&lt;0,15 mm)</td><td><span class="pts-pen">-10 pt</span></td><td><span class="pts-pen">-6 pt</span></td><td><span class="pts-pen">-3 pt</span></td></tr>
+                <tr><td>Lichte bui (0,15 – 0,8 mm)</td><td><span class="pts-pen">-28 pt (Geel/Rood)</span></td><td><span class="pts-pen">-18 pt (Geel)</span></td><td><span class="pts-pen">-8 pt (Groen)</span></td></tr>
+                <tr><td>Matige regenbui (0,8 – 2,0 mm)</td><td><span class="pts-pen">-38 pt</span></td><td><span class="pts-pen">-24 pt</span></td><td><span class="pts-pen">-15 pt</span></td></tr>
+                <tr><td>Stevige regen (2,0 – 3,5 mm)</td><td><span class="pts-pen">-50 pt (Rood)</span></td><td><span class="pts-pen">-35 pt (Rood)</span></td><td><span class="pts-pen">-25 pt (Geel)</span></td></tr>
+                <tr><td>Wolkbreuk (&gt;3,5 mm)</td><td colspan="3"><span class="pts-pen">-45 tot -60 pt (🚨 Instant No-Go)</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -1027,11 +1070,11 @@
               <span>💨</span>
               <div>
                 <div class="wiki-card-title">Pijler 2: Windkracht &amp; Zijwindstoten</div>
-                <div class="wiki-card-sub">Max. -50 punten aftrek</div>
+                <div class="wiki-card-sub">Max. -55 punten aftrek</div>
               </div>
             </div>
             <p class="wiki-card-body">
-              Motorfietsen zijn extreem gevoelig voor plotselinge windstoten bij open weilanden, bruggen, viaducten en het passeren van vrachtverkeer.
+              Motorfietsen zijn extreem gevoelig voor plotselinge windstoten bij open polders, dijken, bruggen en vrachtverkeer.
             </p>
             <table class="wiki-table">
               <thead>
@@ -1039,10 +1082,10 @@
               </thead>
               <tbody>
                 <tr><td>Vriendelijke wind</td><td>&lt; 40 km/u</td><td><span class="pts-neutral">0 pt</span></td></tr>
-                <tr><td>Merkbare snelwegwind</td><td>40 – 55 km/u</td><td><span class="pts-pen">-5 pt</span></td></tr>
-                <tr><td>Felle zijwind op open stukken</td><td>&gt; 55 km/u</td><td><span class="pts-pen">-15 pt</span></td></tr>
-                <tr><td>Boven jouw persoonlijke limiet</td><td>Instelbaar in menu</td><td><span class="pts-pen">-20 tot -35 pt</span></td></tr>
-                <tr><td>Gevaarlijke windstoten</td><td>&gt; 70 – 75 km/u</td><td><span class="pts-pen">-45 tot -50 pt</span></td></tr>
+                <tr><td>Merkbare snelwegwind</td><td>40 – 50 km/u</td><td><span class="pts-pen">-5 pt</span></td></tr>
+                <tr><td>Felle zijwind op open stukken</td><td>&gt; 50 km/u</td><td><span class="pts-pen">-12 tot -15 pt</span></td></tr>
+                <tr><td>Boven jouw persoonlijke limiet</td><td>Instelbaar in menu</td><td><span class="pts-pen">-20 tot -30 pt</span></td></tr>
+                <tr><td>Gevaarlijke stormstoten</td><td>&gt; 75 km/u</td><td><span class="pts-pen">-55 pt (🚨 Instant No-Go)</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -1052,22 +1095,25 @@
             <div class="wiki-card-header">
               <span>🌡️</span>
               <div>
-                <div class="wiki-card-title">Pijler 3: Temperatuur &amp; Gladheid</div>
-                <div class="wiki-card-sub">Max. -60 punten aftrek</div>
+                <div class="wiki-card-title">Pijler 3: Temperatuur, Grip &amp; Handschoenen</div>
+                <div class="wiki-card-sub">Fysieke grenzen, samengesteld risico &amp; uitrusting</div>
               </div>
             </div>
             <p class="wiki-card-body">
-              Kou verlaagt de flexibiliteit van motorbanden en vertraagt je spierreacties. Onder 3°C kan het wegdek op bruggen en schaduwplekken opvriezen.
+              Kou verlaagt de flexibiliteit van bandenrubber en verstijft je remvingers. Met verwarmde handschoenen vang je kou op, maar opvriezing en nat koud asfalt blijven natuurkundige wetten.
             </p>
             <table class="wiki-table">
               <thead>
-                <tr><th>Situatie</th><th>Temperatuur</th><th>Aftrek</th></tr>
+                <tr><th>Situatie</th><th>Conditie</th><th>Aftrek &amp; Veiligheid</th></tr>
               </thead>
               <tbody>
-                <tr><td>Behaaglijk &amp; warm asfalt</td><td>Boven jouw minimum</td><td><span class="pts-neutral">0 pt</span></td></tr>
-                <tr><td>Onder persoonlijke koudegrens</td><td>Instelbaar (standaard 8°C)</td><td><span class="pts-pen">-20 pt</span></td></tr>
-                <tr><td>Extreme warmte in vol motorpak</td><td>&gt; 30°C</td><td><span class="pts-pen">-20 pt</span></td></tr>
-                <tr><td>Kans op opvriezing of ijzel</td><td>&lt; 3°C</td><td><span class="pts-pen">-60 pt (Direct rood)</span></td></tr>
+                <tr><td>Behaaglijk &amp; warm asfalt</td><td>Boven jouw minimumtemperatuur</td><td><span class="pts-neutral">0 pt</span></td></tr>
+                <tr><td>Onder limiet (zonder verwarming)</td><td>&lt; gewenste temperatuur</td><td><span class="pts-pen">-20 pt</span></td></tr>
+                <tr><td>Verwarmde handschoenen actief 🧤</td><td>Onder limiet, tot 3°C</td><td><span class="pts-pen">Slechts -5 pt (comfortabel!)</span></td></tr>
+                <tr><td>Koud &amp; nat asfalt (&lt; 7°C met regen)</td><td>&le; 7°C en nat wegdek</td><td><span class="pts-pen">-22 pt (Compound risico / grip 50%)</span></td></tr>
+                <tr><td>Herfstbladerdek (sep t/m dec)</td><td>Natte weg of harde wind</td><td><span class="pts-pen">-8 pt (Glad als nat ijs)</span></td></tr>
+                <tr><td>Extreme warmte in motorpak</td><td>&gt; 30°C</td><td><span class="pts-pen">-20 pt</span></td></tr>
+                <tr><td>IJzel, vorst of sneeuw</td><td>&le; 1,5°C of winterse code</td><td><span class="pts-pen">-65 pt (🚨 Absolute No-Go)</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -1090,7 +1136,7 @@
               </thead>
               <tbody>
                 <tr><td>Geen onweersdreiging</td><td>Regulier weer</td><td><span class="pts-neutral">0 pt</span></td></tr>
-                <tr><td>Onweersbui of hagel</td><td>WMO 95, 96, 97, 99</td><td><span class="pts-pen">-60 pt (Koekblik Dag)</span></td></tr>
+                <tr><td>Onweersbui of hagel</td><td>WMO 95, 96, 97, 99</td><td><span class="pts-pen">-60 pt (🚨 Instant No-Go)</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -1104,6 +1150,48 @@
         <div class="faq-list">
           <div class="faq-item">
             <div class="faq-question">
+              <span>🧤</span>
+              <span>Wat doen verwarmde handschoenen met de ritscore en het advies?</span>
+            </div>
+            <div class="faq-answer">
+              Verwarmde handschoenen of handvatverwarming voorkomen dat je vingers verstijven en garanderen snelle remreacties. Schakel je deze optie in bij je ritvoorkeuren, dan wordt de koude-aftrek verlaagd van <strong>-20 punten naar slechts -5 punten</strong> zolang de temperatuur 3°C of hoger is. Het kledingadvies adviseert dan specifiek je verwarmde uitrusting. Onder 1,5°C grijpt echter het absolute vorst- en ijzelverbod in: verwarming verwarmt immers wel je handen, maar kan bevroren asfalt niet ontdooien!
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>⚠️</span>
+              <span>Waarom telt nat wegdek onder de 5 tot 7 graden extra zwaar?</span>
+            </div>
+            <div class="faq-answer">
+              Onder de 7°C verliest motorbandenrubber zijn natuurlijke elasticiteit en warmt het tijdens het rijden nauwelijks op. In combinatie met een nat wegdek keldert de remvertraging drastisch en kunnen stalen brugvoegen en viaducten ongemerkt aanvriezen. Het algoritme past daarom automatisch een <strong>samengesteld risico van -22 punten</strong> toe en schaalt de asfalthechting terug naar 50%.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>🍂</span>
+              <span>Hoe houdt het systeem rekening met het herfstseizoen en vallende bladeren?</span>
+            </div>
+            <div class="faq-answer">
+              Tijdens de herfstmaanden (september t/m december) vormen rottende, natte bladeren op de weg een beruchte valkuil voor motorrijders; een nat bladerdek heeft een wrijvingscoëfficiënt die vergelijkbaar is met nat ijs. Bij regen of stevige wind in deze periode brengt het systeem preventief een <strong>seizoensaftrek van -8 punten</strong> in rekening en waarschuwt het voor slipgevaar in bochten.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>🌧️</span>
+              <span>Wat is het verschil tussen de drie neerslagprofielen?</span>
+            </div>
+            <div class="faq-answer">
+              <strong>☀️ Droogrijder:</strong> Je rijdt uitsluitend voor je plezier of wilt absoluut droog blijven. Zodra er neerslag op je traject valt, kleurt het advies direct rood.<br />
+              <strong>🌦️ Flexibel (standaard):</strong> Een enkel buitje of motregen neem je voor lief (geel advies), maar bij aanhoudende of zware regen pak je liever de auto.<br />
+              <strong>🌧️ Doorrijder:</strong> Je beschikt over een hoogwaardig waterdicht textiel- of regenpak en een pinlock-vizier. Gewone regenbuien worden mild gewaardeerd; alleen wolkbreuken en noodweer houden je tegen.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
               <span>🏍️</span>
               <span>Waarom bepaalt de laagste ritscore het hele dagadvies?</span>
             </div>
@@ -1114,31 +1202,11 @@
 
           <div class="faq-item">
             <div class="faq-question">
-              <span>🌧️</span>
-              <span>Waarom betekent regen niet automatisch een rode status?</span>
-            </div>
-            <div class="faq-answer">
-              Regen is per motorrijder en uitrusting verschillend. Met een waterdicht motorpak, pinlock-vizier en all-season banden kan er prima en veilig gereden worden bij lichte regen of af en toe een bui. Daarom hanteert de app in <strong>All-weather modus</strong> een mildere aftrek (score ~68-78) met een geel advies ("Regenpak mee!"). Rijd je liever alleen droog? Vink dan in je ritvoorkeuren <strong>"Liever droog rijden"</strong> aan; dan kleurt elke regenbui de status direct rood (Koekblik Dag).
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <div class="faq-question">
               <span>🚨</span>
               <span>Wat zijn de "Instant No-Go's" waarbij er beslist niet gereden wordt?</span>
             </div>
             <div class="faq-answer">
-              Veiligheid staat voorop. Onvoorwaardelijke no-go's zijn: <strong>kans op ijzel, vorst of sneeuw (&lt;2°C op het asfalt)</strong>, <strong>gevaarlijke stormstoten (&gt;75 km/u)</strong>, <strong>onweer of hagel (WMO 95-99)</strong> en <strong>wolkbreuken (&gt;3,5 mm neerslag)</strong>. In deze situaties kleurt de app voor iedereen altijd direct rood met een <em>NO-GO</em> waarschuwing.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <div class="faq-question">
-              <span>🏍️</span>
-              <span>Hoe kan ik de score afstemmen op mijn eigen ervaring en motor?</span>
-            </div>
-            <div class="faq-answer">
-              Klik bovenin de navigatiebalk op je <strong>Motorrit (A ➔ B)</strong>. Daar kun je naast je vertrek- en aankomstpunt direct jouw <em>vaste rittijden</em>, je <em>minimale temperatuur</em> (bijv. 6°C voor doorgewinterde rijders of 12°C voor mooi-weer rijders), je <em>maximale windstootlimiet</em> en de optie <em>"Liever droog rijden"</em> instellen. Het algoritme past de aftrekpunten meteen aan op jouw persoonlijke toleranties.
+              Veiligheid staat voorop. Onvoorwaardelijke no-go's zijn: <strong>kans op ijzel, vorst of sneeuw (&le; 1,5°C op het asfalt of winterse neerslagcodes)</strong>, <strong>gevaarlijke stormstoten (&gt;75 km/u)</strong>, <strong>onweer of hagel (WMO 95-99)</strong> en <strong>wolkbreuken (&gt;3,5 mm neerslag)</strong>. In deze situaties kleurt de app voor iedereen altijd direct rood met een <em>NO-GO</em> waarschuwing.
             </div>
           </div>
 

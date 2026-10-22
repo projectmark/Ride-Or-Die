@@ -60,25 +60,33 @@ In plaats van een algemeen daggemiddelde analyseert het algoritme een specifiek 
 - **Temperatuur (`avgTemp`)**: Zowel gevoelstemperatuur als absolute temperatuur ten opzichte van jouw ingestelde minimumtemperatuur.
 - **Gevaarcodes (`worstCode`)**: WMO-weercodes voor onweer (95, 96, 99), hagel, dichte mist of sneeuw.
 
-#### 2. Het Cumulatieve 100-punts Aftreksysteem & Regenvoorkeur
-Elke rit start met een perfecte basis van **100/100 punten**. Omdat motorrijders verschillende uitrusting (zoals een waterdicht regenpak en pinlock-vizier) en voorkeuren hebben, kun je via het ritpaneel kiezen hoe regen meeweegt:
-- **🏍️ All-weather / Regen accepteren (Standaard)**: Lichte regen of een bui is prima te rijden met goede motorkleding. De aftrek is mild, waardoor je ritscore in het geel (65-78 pt) blijft met advies *"Regenpak mee"*. Regen leidt niet automatisch tot een rode status!
-- **👔 Liever droog rijden (Vink aan in menu)**: Je rijdt alleen droog. Bij een bui of aanhoudende neerslag weegt de aftrek zwaar mee en kleurt de status direct rood (*Koekblik Dag*).
-- **🚨 Instant No-Go's (Altijd Rood)**: Extreme storm, ijzel, vorst, sneeuw en onweer zijn te allen tijde onvoorwaardelijke no-go's.
+#### 2. Het Cumulatieve 100-punts Aftreksysteem & Persoonlijke Toleranties
+Elke rit start met een perfecte basis van **100/100 punten**. Het algoritme past de puntentelling dynamisch aan op jouw persoonlijke toleranties en uitrusting:
 
-| Risicofactor | Situatie / Drempel | All-weather | Droogrijder | Status & Reden in advies |
-| :--- | :--- | :--- | :--- | :--- |
-| **🚨 IJzel / Vorst / Sneeuw** | Temp < 2°C of wintercode | **-60 pt** | **-60 pt** | 🔴 **Instant No-Go**: *Levensgevaarlijk glad asfalt!* |
-| **🚨 Stormstoten** | Piekstoten > 75 km/u | **-55 pt** | **-55 pt** | 🔴 **Instant No-Go**: *Gevaarlijke stormstoten (>75 km/u)* |
-| **🚨 Onweer of hagel** | WMO-code 95, 96, 97, 99 | **-60 pt** | **-60 pt** | 🔴 **Instant No-Go**: *Onweer, valwinden en hagel* |
-| **🚨 Wolkbreuk / Stortvloed**| Neerslag > 3.5 mm | **-50 pt** | **-60 pt** | 🔴 **Instant No-Go**: *Zicht nihil en aquaplaninggevaar* |
-| **Stevige regenbui** | 2.0 – 3.5 mm neerslag | **-30 pt** | **-50 pt** | 🟡 Geel (All-weather) / 🔴 Rood (Droogrijder) |
-| **Matige regenbui** | 0.8 – 2.0 mm neerslag | **-20 pt** | **-38 pt** | 🟡 Geel: *Regenpak en pinlock aan* |
-| **Lichte bui / motregen** | 0.15 – 0.8 mm neerslag | **-12 pt** | **-28 pt** | 🟡 Geel (Prima te doen met motorkleding) |
-| **Enkel spatje neerslag** | 0.05 – 0.15 mm | **-5 pt** | **-10 pt** | 🟢 Groen: *Minimaal spatje, wegdek begaanbaar* |
-| **Boven persoonlijke windlimiet** | Stoten boven ingestelde limiet | **-20 tot -30 pt** | **-20 tot -30 pt** | 🟡 Geel: *Merkbare zijwind op open stukken* |
-| **Kou onder persoonlijke grens**| Temp < ingestelde minimum | **-20 pt** | **-20 pt** | 🟡 Geel: *Koud - thermokleding vereist* |
-| **Hitte in motorpak** | Temperatuur > 31°C | **-20 pt** | **-20 pt** | 🟡 Geel: *Erg warm in motorpak (>30°C)* |
+- **☀️ Droogrijder (`avoid`)**: Je rijdt puur voor je plezier of wilt absoluut droog blijven. Zodra er regen valt op jouw traject, daalt de score sterk (-28 tot -60 pt) en kleurt het advies direct rood (*Koekblik Dag*).
+- **🌦️ Flexibel (`flexible`, standaard)**: Een lichte bui of motregen (<0,8 mm) neem je voor lief met een geel advies (*"Regenpak mee!"*), maar aanhoudende of zware regenval wordt vermeden.
+- **🌧️ Doorrijder (`all_weather`)**: Je beschikt over een hoogwaardig waterdicht motorpak en pinlock-vizier. Regendumpingen worden milder gewaardeerd; alleen extreme hoosbuien en storm sturen je naar het ov.
+- **🧤 Verwarmde handschoenen / Handvatverwarming**: Schakel je verwarmde uitrusting in, dan wordt de koude-aftrek zolang de temperatuur $\ge 3^\circ\text{C}$ is verlaagd van **-20 punten naar slechts -5 punten**. Je behoudt soepele remvingers en het kledingadvies adviseert direct verwarmde handschoenen.
+- **⚠️ Koud & Nat wegdek (< 7°C Compound Risico)**: Onder 7°C verliest motorbandenrubber zijn elasticiteit en warmt het nauwelijks op. In combinatie met een nat wegdek geldt een **samengestelde aftrek van -22 punten** en halveert de asfaltgrip naar 50%.
+- **🍂 Herfstseizoen (September t/m December)**: Natte bladeren op het wegdek gedragen zich als nat ijs. Bij regen of harde wind in de herfst berekent het algoritme preventief **-8 punten aftrek** voor slipgevaar.
+- **🚨 Instant No-Go's (Onvoorwaardelijk Rood)**: Gladheid, ijzel, vorst of sneeuw ($\le 1{,}5^\circ\text{C}$ of wintercodes), zware stormstoten (>75 km/u), onweer (WMO 95-99) en wolkbreuken (>3,5 mm) leiden **altijd** direct tot een rode *Instant No-Go*, ongeacht jouw uitrusting of toleranties!
+
+| Risicofactor | Situatie / Drempel | Doorrijder | Flexibel | Droogrijder | Status & Veiligheidsreden |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **🚨 IJzel / Vorst / Sneeuw** | Temp $\le$ 1.5°C of wintercode | **-65 pt** | **-65 pt** | **-65 pt** | 🔴 **Instant No-Go**: *Levensgevaarlijk glad asfalt!* |
+| **🚨 Stormstoten** | Piekstoten > 75 km/u | **-55 pt** | **-55 pt** | **-55 pt** | 🔴 **Instant No-Go**: *Gevaarlijke stormstoten (>75 km/u)* |
+| **🚨 Onweer of hagel** | WMO-code 95, 96, 97, 99 | **-60 pt** | **-60 pt** | **-60 pt** | 🔴 **Instant No-Go**: *Onweer, valwinden en hagel* |
+| **🚨 Wolkbreuk / Stortvloed**| Neerslag > 3.5 mm | **-45 pt** | **-55 pt** | **-60 pt** | 🔴 **Instant No-Go**: *Zicht nihil en aquaplaninggevaar* |
+| **⚠️ Koud & nat wegdek** | Temp $\le$ 7°C én neerslag $\ge$ 0.15 mm | **-22 pt** | **-22 pt** | **-22 pt** | 🟡 **Compound risico**: *Bandenwarmte nihil & brugbevriezing* |
+| **🍂 Herfstbladerdek** | Sep-Dec én (nat asfalt of stoten $\ge$ 40) | **-8 pt** | **-8 pt** | **-8 pt** | 🟡 **Herfstfactor**: *Bladeren gedragen zich als nat ijs* |
+| **Stevige regenbui** | 2.0 – 3.5 mm neerslag | **-25 pt** | **-35 pt** | **-50 pt** | 🟡 Geel (Doorrijder) / 🔴 Rood (Droogrijder) |
+| **Matige regenbui** | 0.8 – 2.0 mm neerslag | **-15 pt** | **-24 pt** | **-38 pt** | 🟡 Geel: *Regenpak en pinlock aan* |
+| **Lichte bui / motregen** | 0.15 – 0.8 mm neerslag | **-8 pt** | **-18 pt** | **-28 pt** | 🟢 Groen (Doorrijder) / 🟡 Geel (Flexibel) / 🔴 Rood (Droog) |
+| **Enkel spatje neerslag** | 0.05 – 0.15 mm | **-3 pt** | **-6 pt** | **-10 pt** | 🟢 Groen: *Minimaal spatje, wegdek begaanbaar* |
+| **Boven persoonlijke windlimiet** | Stoten boven ingestelde limiet | **-20 tot -30 pt** | **-20 tot -30 pt** | **-20 tot -30 pt** | 🟡 Geel: *Merkbare zijwind op open stukken* |
+| **Kou (met verwarmde handschoenen 🧤)** | Temp < minTemp maar $\ge$ 3°C | **-5 pt** | **-5 pt** | **-5 pt** | 🟢/🟡 *Vingers blijven warm en soepel* |
+| **Kou (zonder verwarmde handschoenen)** | Temp < ingestelde minimum | **-20 pt** | **-20 pt** | **-20 pt** | 🟡 Geel: *Koud - thermokleding vereist* |
+| **Hitte in motorpak** | Temperatuur > 31°C | **-20 pt** | **-20 pt** | **-20 pt** | 🟡 Geel: *Erg warm in motorpak (>30°C)* |
 
 #### 3. Scoregrenzen & Verdicten
 - 🟢 **80 – 100 pt (🏍️ RIDE ON!)**: Ideale omstandigheden. Droog asfalt, kalme wind en veilige temperatuur.

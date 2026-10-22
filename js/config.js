@@ -37,7 +37,9 @@ const Config = {
     },
     TEMPERATURE: {
       DEFAULT_MIN: 8, // °C
-      ICE_RISK: 2,
+      ICE_RISK: 2, // Onder 2°C: direct levensgevaarlijk glad (ijzel/vorst)
+      COMPOUND_COLD_WET: 7, // Onder 7°C met regen: zware slipaftrek
+      HEATED_GLOVES_FLOOR: 3, // Met verwarmde handschoenen acceptabel tot 3°C
       COLD_RISK: 4,
       WARM_WARNING: 25,
       EXTREME_HEAT: 31
@@ -68,12 +70,16 @@ const Config = {
       eveningTime: '17:00',
       minTemp: 8,
       maxGusts: 55,
-      avoidRain: false,
+      rainTolerance: 'flexible', // 'avoid' (Droogrijder) | 'flexible' (Flexibel) | 'all_weather' (Doorrijder)
+      avoidRain: false, // backwards compatibility
+      heatedGloves: false, // true | false (Verwarmde handschoenen / handvatverwarming)
       MORNING_TIME: '08:00',
       EVENING_TIME: '17:00',
       MIN_TEMP: 8,
       MAX_GUSTS: 55,
-      AVOID_RAIN: false
+      AVOID_RAIN: false,
+      RAIN_TOLERANCE: 'flexible',
+      HEATED_GLOVES: false
     },
     LOCATION: {
       name: 'Utrecht',

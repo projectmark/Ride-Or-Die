@@ -101,7 +101,7 @@ const CommuteEngine = {
   /**
    * Berekent de ritscore en aftrekpunten voor een enkel tijdvak.
    */
-  scoreCommuteSlot(slot, userLimits = {}) {
+  scoreCommuteSlot(slot, userLimits = {}, activeDateStr = null) {
     let score = 100;
     const reasons = [];
     const deductions = [];
@@ -113,11 +113,62 @@ const CommuteEngine = {
 
     const maxGustsLimit = userLimits.maxGusts || W.DEFAULT_MAX_GUSTS;
     const minTempLimit = userLimits.minTemp !== undefined ? userLimits.minTemp : T.DEFAULT_MIN;
-    const avoidRain = !!userLimits.avoidRain;
+    const rainTolerance = userLimits.rainTolerance || (userLimits.avoidRain ? 'avoid' : 'flexible');
+    const avoidRain = (rainTolerance === 'avoid');
+    const heatedGloves = !!userLimits.heatedGloves;
 
-    // 1. Neerslagbeoordeling
-    if (avoidRain) {
-      // Strikte droogrijder modus
+    // 1. Absolute Zero-Tolerance: IJzel, sneeuw en bevroren wegdek
+    const winterWmoCodes = [48, 56, 57, 66, 67, 71, 73, 75, 77, 85, 86];
+    const isWinterCode = winterWmoCodes.includes(slot.worstCode);
+    const isFreezing = slot.avgTemp <= 1.5;
+
+    if (isFreezing || isWinterCode) {
+      score -= 65;
+      hasInstantNoGo = true;
+      deductions.push({
+        category: 'temp',
+        icon: '❄️',
+        points: -65,
+        isInstantNoGo: true,
+        title: 'Instant No-Go: Kans op gladheid, ijzel of sneeuw',
+        desc: `${I18n.formatters.celsius(slot.avgTemp)}. Asfalt bevriest of winterse neerslag. Twee wielen hebben nul grip: NIET rijden!`
+      });
+      reasons.push("Levensgevaarlijk glad asfalt door ijzel, vorst of sneeuw.");
+    }
+
+    // 2. Compound Risico: Koud asfalt (< 7°C) gecombineerd met nat wegdek
+    const isColdWet = !isFreezing && slot.avgTemp <= 7.0 && slot.totalPrecip >= 0.15;
+    if (isColdWet) {
+      score -= 22;
+      deductions.push({
+        category: 'cold_wet',
+        icon: '❄️💧',
+        points: -22,
+        title: 'Koud & Nat wegdek (< 7°C met regen)',
+        desc: `${I18n.formatters.celsius(slot.avgTemp)} met ${I18n.formatters.millimeters(slot.totalPrecip)} neerslag. Koude banden hebben fors minder grip en kans op opvriezing op viaducten.`
+      });
+      reasons.push("Verhoogd sliprisico: koud asfalt (< 7°C) met nat wegdek.");
+    }
+
+    // 3. Seizoenscontext: Herfst & nat bladerdek (september t/m december)
+    const dateObj = activeDateStr ? new Date(activeDateStr) : new Date();
+    const currentMonth = dateObj.getMonth();
+    const isAutumn = (currentMonth >= 8 && currentMonth <= 11);
+    if (isAutumn && !isFreezing && (slot.totalPrecip >= 0.05 || slot.maxGusts >= 40)) {
+      score -= 8;
+      deductions.push({
+        category: 'autumn',
+        icon: '🍂',
+        points: -8,
+        title: 'Herfst: Nat bladerdek op de weg',
+        desc: 'Natte bladeren vormen in de herfst een verraderlijke glijbaan in bochten en bij remacties.'
+      });
+      reasons.push("Herfstseizoen: pas extra op voor natte bladeren op het asfalt.");
+    }
+
+    // 4. Neerslagbeoordeling op basis van persoonlijke tolerantie
+    if (rainTolerance === 'avoid') {
+      // Droogrijder: regen weegt zwaar
       if (slot.totalPrecip > 3.5) {
         score -= 60;
         hasInstantNoGo = true;
@@ -125,56 +176,74 @@ const CommuteEngine = {
         reasons.push(`Wolkbreuk / zware stortregen (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
       } else if (slot.totalPrecip > R.SEVERE_MM || (slot.totalPrecip > R.HEAVY_MM && slot.maxPrecipProb > 75)) {
         score -= 50;
-        deductions.push({ category: 'rain', icon: '🌧️', points: -50, title: 'Stevige regenval (Droogrijder)', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag voorspeld` });
+        deductions.push({ category: 'rain', icon: '🌧️', points: -50, title: 'Stevige regenval (Droogrijder)', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag voorspeld.` });
         reasons.push(`Stevige regenval verwacht (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
       } else if (slot.totalPrecip > R.MODERATE_MM || (slot.totalPrecip > 0.3 && slot.maxPrecipProb > 60)) {
         score -= 38;
-        deductions.push({ category: 'rain', icon: '🌦️', points: -38, title: 'Kans op een bui (Droogrijder)', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag (kans ${slot.maxPrecipProb}%)` });
+        deductions.push({ category: 'rain', icon: '🌦️', points: -38, title: 'Kans op een bui (Droogrijder)', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag (kans ${slot.maxPrecipProb}%).` });
         reasons.push(`Kans op een bui (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
       } else if (slot.totalPrecip > R.LIGHT_MM) {
         score -= 28;
-        deductions.push({ category: 'rain', icon: '🌦️', points: -28, title: 'Lichte motregen / bui', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag` });
+        deductions.push({ category: 'rain', icon: '🌦️', points: -28, title: 'Lichte bui / motregen (Droogrijder)', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag.` });
         reasons.push(`Lichte bui of motregen (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
       } else if (slot.totalPrecip > R.TRACE_MM) {
         score -= 10;
-        deductions.push({ category: 'rain', icon: '💧', points: -10, title: 'Mogelijk spatje neerslag', desc: 'Minimale neerslaghoeveelheid' });
+        deductions.push({ category: 'rain', icon: '💧', points: -10, title: 'Mogelijk spatje neerslag', desc: 'Minimale neerslaghoeveelheid.' });
         reasons.push("Mogelijk een enkel spatje neerslag.");
       } else if (slot.maxPrecipProb > 65) {
         score -= 10;
-        deductions.push({ category: 'rain', icon: '💧', points: -10, title: 'Lichte buienkans', desc: `${slot.maxPrecipProb}% regenkans in de regio` });
+        deductions.push({ category: 'rain', icon: '💧', points: -10, title: 'Lichte buienkans', desc: `${slot.maxPrecipProb}% regenkans in de regio.` });
         reasons.push(`Overwegend droog, lichte buienkans in de regio (${slot.maxPrecipProb}%).`);
       }
-    } else {
-      // All-weather / Regen accepteren modus (milde aftrek voor doorrijders)
+    } else if (rainTolerance === 'all_weather') {
+      // Doorrijder: regenpak paraat, milde aftrek
       if (slot.totalPrecip > 3.5) {
         score -= 50;
         hasInstantNoGo = true;
-        deductions.push({ category: 'rain', icon: '🌧️', points: -50, isInstantNoGo: true, title: 'Instant No-Go: Wolkbreuk / Stortregen', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag. Zicht nihil en aquaplaning!` });
+        deductions.push({ category: 'rain', icon: '🌧️', points: -50, isInstantNoGo: true, title: 'Instant No-Go: Wolkbreuk / Stortregen', desc: `Gevaarlijk zware regenval (${I18n.formatters.millimeters(slot.totalPrecip)}). Zicht nihil en aquaplaning!` });
         reasons.push(`Gevaarlijke stortbui (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
       } else if (slot.totalPrecip > R.SEVERE_MM || (slot.totalPrecip > R.HEAVY_MM && slot.maxPrecipProb > 75)) {
-        score -= 32;
-        deductions.push({ category: 'rain', icon: '🌧️', points: -32, title: 'Stevige regenval', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag voorspeld. Pas snelheid aan.` });
+        score -= 30;
+        deductions.push({ category: 'rain', icon: '🌧️', points: -30, title: 'Stevige regenval (Doorrijder)', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag voorspeld. Pas snelheid aan.` });
         reasons.push(`Stevige regenval (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
       } else if (slot.totalPrecip > R.MODERATE_MM || (slot.totalPrecip > 0.3 && slot.maxPrecipProb > 60)) {
-        score -= 22;
-        deductions.push({ category: 'rain', icon: '🌦️', points: -22, title: 'Regenbui (Goed te rijden)', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag (kans ${slot.maxPrecipProb}%). Regenpak mee!` });
+        score -= 18;
+        deductions.push({ category: 'rain', icon: '🌦️', points: -18, title: 'Regenbui (Goed te rijden)', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag (kans ${slot.maxPrecipProb}%). Regenpak aan!` });
         reasons.push(`Kans op een bui (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
       } else if (slot.totalPrecip > R.LIGHT_MM) {
-        score -= 12;
-        deductions.push({ category: 'rain', icon: '🌦️', points: -12, title: 'Lichte motregen / bui', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag. Prima met motorkleding.` });
+        score -= 10;
+        deductions.push({ category: 'rain', icon: '🌦️', points: -10, title: 'Lichte motregen / bui', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag. Prima met all-weather kleding.` });
         reasons.push(`Lichte bui of motregen (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
       } else if (slot.totalPrecip > R.TRACE_MM) {
-        score -= 5;
-        deductions.push({ category: 'rain', icon: '💧', points: -5, title: 'Mogelijk enkel spatje', desc: 'Nauwelijks merkbare neerslag' });
-        reasons.push("Mogelijk een enkel spatje neerslag.");
-      } else if (slot.maxPrecipProb > 65) {
-        score -= 5;
-        deductions.push({ category: 'rain', icon: '💧', points: -5, title: 'Lichte buienkans', desc: `${slot.maxPrecipProb}% regenkans in de regio` });
-        reasons.push(`Overwegend droog, lichte buienkans in de regio (${slot.maxPrecipProb}%).`);
+        score -= 4;
+        deductions.push({ category: 'rain', icon: '💧', points: -4, title: 'Enkel spatje', desc: 'Nauwelijks merkbare neerslag.' });
+      }
+    } else {
+      // Flexibel (Standaard motorrijder)
+      if (slot.totalPrecip > 3.5) {
+        score -= 55;
+        hasInstantNoGo = true;
+        deductions.push({ category: 'rain', icon: '🌧️', points: -55, isInstantNoGo: true, title: 'Instant No-Go: Wolkbreuk / Stortregen', desc: `Piek van ${I18n.formatters.millimeters(slot.totalPrecip)}. Zicht nihil en aquaplaning!` });
+        reasons.push(`Wolkbreuk / stortregen (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
+      } else if (slot.totalPrecip > R.SEVERE_MM || (slot.totalPrecip > R.HEAVY_MM && slot.maxPrecipProb > 75)) {
+        score -= 40;
+        deductions.push({ category: 'rain', icon: '🌧️', points: -40, title: 'Stevige regenval', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag voorspeld.` });
+        reasons.push(`Stevige regenval (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
+      } else if (slot.totalPrecip > R.MODERATE_MM || (slot.totalPrecip > 0.3 && slot.maxPrecipProb > 60)) {
+        score -= 28;
+        deductions.push({ category: 'rain', icon: '🌦️', points: -28, title: 'Kans op een bui', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag (kans ${slot.maxPrecipProb}%).` });
+        reasons.push(`Kans op een bui (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
+      } else if (slot.totalPrecip > R.LIGHT_MM) {
+        score -= 18;
+        deductions.push({ category: 'rain', icon: '🌦️', points: -18, title: 'Lichte motregen / bui', desc: `${I18n.formatters.millimeters(slot.totalPrecip)} neerslag.` });
+        reasons.push(`Lichte bui of motregen (${I18n.formatters.millimeters(slot.totalPrecip)}).`);
+      } else if (slot.totalPrecip > R.TRACE_MM) {
+        score -= 8;
+        deductions.push({ category: 'rain', icon: '💧', points: -8, title: 'Mogelijk spatje neerslag', desc: 'Minimale neerslaghoeveelheid.' });
       }
     }
 
-    // 2. Wind- en stotenbeoordeling & Instant No-Go voor stormstoten
+    // 5. Wind- en stotenbeoordeling & Instant No-Go voor stormstoten
     if (slot.maxGusts > W.DANGEROUS_GUSTS) {
       score -= 55;
       hasInstantNoGo = true;
@@ -195,24 +264,38 @@ const CommuteEngine = {
       reasons.push(`Merkbare wind op de snelweg (${I18n.formatters.kmh(slot.maxGusts)}).`);
     }
 
-    // 3. Temperatuur- en gladheidsbeoordeling & Instant No-Go voor gladheid / ijzel / sneeuw
-    const isWinterCode = [66, 67, 71, 73, 75, 77, 85, 86].includes(slot.worstCode);
-    if (slot.avgTemp < T.ICE_RISK || isWinterCode) {
-      score -= 60;
-      hasInstantNoGo = true;
-      deductions.push({ category: 'temp', icon: '❄️', points: -60, isInstantNoGo: true, title: 'Instant No-Go: Kans op gladheid / ijzel / sneeuw', desc: `${I18n.formatters.celsius(slot.avgTemp)} (asfalt bevriest, gevaarlijk glad!)` });
-      reasons.push("Levensgevaarlijk glad asfalt door ijzel, vorst of sneeuw.");
-    } else if (slot.avgTemp < minTempLimit) {
-      score -= 20;
-      deductions.push({ category: 'temp', icon: '🧣', points: -20, title: 'Onder jouw minimumtemperatuur', desc: `${I18n.formatters.celsius(slot.avgTemp)} (jouw limiet: ${I18n.formatters.celsius(minTempLimit)})` });
-      reasons.push(`Koud (${I18n.formatters.celsius(slot.avgTemp)}), onder jouw limiet van ${I18n.formatters.celsius(minTempLimit)}.`);
-    } else if (slot.avgTemp > T.EXTREME_HEAT) {
-      score -= 20;
-      deductions.push({ category: 'temp', icon: '☀️', points: -20, title: 'Extreme warmte', desc: `${I18n.formatters.celsius(slot.avgTemp)} in motorpak` });
-      reasons.push(`Erg warm in motorpak (${I18n.formatters.celsius(slot.avgTemp)}).`);
+    // 6. Temperatuur & Verwarmde Handschoenen personalisatie
+    if (!isFreezing) {
+      if (slot.avgTemp < minTempLimit) {
+        if (heatedGloves && slot.avgTemp >= 3.0) {
+          score -= 5;
+          deductions.push({
+            category: 'temp',
+            icon: '🧤',
+            points: -5,
+            title: 'Fris weer • Verwarmde handschoenen actief',
+            desc: `${I18n.formatters.celsius(slot.avgTemp)} (onder jouw grens van ${I18n.formatters.celsius(minTempLimit)}), maar verwarmde handschoenen houden je vingers soepel en veilig.`
+          });
+          reasons.push(`Fris (${I18n.formatters.celsius(slot.avgTemp)}), maar verwarmde handschoenen compenseren de kou.`);
+        } else {
+          score -= 20;
+          deductions.push({
+            category: 'temp',
+            icon: '🧣',
+            points: -20,
+            title: 'Onder jouw minimumtemperatuur',
+            desc: `${I18n.formatters.celsius(slot.avgTemp)} (jouw limiet: ${I18n.formatters.celsius(minTempLimit)})`
+          });
+          reasons.push(`Koud (${I18n.formatters.celsius(slot.avgTemp)}), onder jouw limiet van ${I18n.formatters.celsius(minTempLimit)}.`);
+        }
+      } else if (slot.avgTemp > T.EXTREME_HEAT) {
+        score -= 20;
+        deductions.push({ category: 'temp', icon: '☀️', points: -20, title: 'Extreme warmte', desc: `${I18n.formatters.celsius(slot.avgTemp)} in motorpak` });
+        reasons.push(`Erg warm in motorpak (${I18n.formatters.celsius(slot.avgTemp)}).`);
+      }
     }
 
-    // 4. Onweerscodes (Instant No-Go)
+    // 7. Onweerscodes (Instant No-Go)
     if ([95, 96, 97, 99].includes(slot.worstCode)) {
       score -= 60;
       hasInstantNoGo = true;
@@ -221,16 +304,16 @@ const CommuteEngine = {
     }
 
     if (hasInstantNoGo) {
-      score = Math.min(score, 35);
+      score = Math.min(score, 30);
     }
     score = Math.max(0, Math.min(100, score));
 
     let verdict = "green";
     let badgeText = I18n.t.verdicts.greenBadge;
-    if (hasInstantNoGo || score < 50 || (avoidRain && slot.totalPrecip > R.MODERATE_MM)) {
+    if (hasInstantNoGo || score < 50 || (rainTolerance === 'avoid' && slot.totalPrecip > R.LIGHT_MM)) {
       verdict = "red";
       badgeText = hasInstantNoGo ? (I18n.t.verdicts.instantNoGoBadge || "🔴 NO-GO!") : I18n.t.verdicts.redBadge;
-    } else if (score < 80 || slot.totalPrecip > R.LIGHT_MM) {
+    } else if (score < 80 || isColdWet || (rainTolerance !== 'all_weather' && slot.totalPrecip > R.LIGHT_MM)) {
       verdict = "yellow";
       badgeText = I18n.t.verdicts.yellowBadge;
     }
@@ -241,23 +324,29 @@ const CommuteEngine = {
   /**
    * Berekent het kleding- en uitrustingsadvies op basis van minimumtemperatuur en neerslag.
    */
-  computeGearAdvice(minTemp, maxTemp, maxRain) {
+  computeGearAdvice(minTemp, maxTemp, maxRain, heatedGloves = false) {
     const pills = [];
     const G = I18n.t.gear;
 
-    if (minTemp < 7) {
-      pills.push(G.winterGloves);
-      pills.push(G.thermoLining);
-    } else if (minTemp < 15) {
-      pills.push(G.textileJacket);
-      pills.push(G.midGloves);
-    } else if (maxTemp > 24) {
-      pills.push(G.meshJacket);
-      pills.push(G.summerGloves);
-      pills.push(G.sunVisor);
+    if (heatedGloves && minTemp < 12) {
+      pills.push(G.heatedGloves || "🧤 Verwarmde handschoenen (Aan)");
+      if (minTemp < 8) pills.push(G.thermoLining);
+      pills.push(minTemp < 15 ? G.textileJacket : G.allroundGear);
     } else {
-      pills.push(G.allroundGear);
-      pills.push(G.allSeasonGloves);
+      if (minTemp < 7) {
+        pills.push(G.winterGloves);
+        pills.push(G.thermoLining);
+      } else if (minTemp < 15) {
+        pills.push(G.textileJacket);
+        pills.push(G.midGloves);
+      } else if (maxTemp > 24) {
+        pills.push(G.meshJacket);
+        pills.push(G.summerGloves);
+        pills.push(G.sunVisor);
+      } else {
+        pills.push(G.allroundGear);
+        pills.push(G.allSeasonGloves);
+      }
     }
 
     if (maxRain > Config.THRESHOLDS.RAIN.LIGHT_MM) {
@@ -285,8 +374,8 @@ const CommuteEngine = {
     const morningData = this.getCommuteSlice(weatherData.hourly, activeDateStr, morningHour);
     const eveningData = this.getCommuteSlice(weatherData.hourly, activeDateStr, eveningHour);
 
-    const morningScore = this.scoreCommuteSlot(morningData, userPreferences);
-    const eveningScore = this.scoreCommuteSlot(eveningData, userPreferences);
+    const morningScore = this.scoreCommuteSlot(morningData, userPreferences, activeDateStr);
+    const eveningScore = this.scoreCommuteSlot(eveningData, userPreferences, activeDateStr);
 
     let morningAnalysis = null;
     let eveningAnalysis = null;
@@ -347,7 +436,11 @@ const CommuteEngine = {
     const isMorningWet = mVerd !== 'green' || morningRainAmt >= Config.THRESHOLDS.RAIN.LIGHT_MM;
     const isEveningWet = eVerd !== 'green' || eveningRainAmt >= Config.THRESHOLDS.RAIN.LIGHT_MM;
 
-    const avoidRain = !!userPreferences.avoidRain;
+    const rainTolerance = userPreferences.rainTolerance || (userPreferences.avoidRain ? 'avoid' : 'flexible');
+    const isAvoidRain = rainTolerance === 'avoid';
+    const isAllWeather = rainTolerance === 'all_weather';
+    const heatedGloves = !!userPreferences.heatedGloves;
+
     let dayVerdict = "green";
     let dayPill = I18n.t.verdicts.greenBadge;
     let dayHeadline = "Groen licht: Heerlijk motorweer over jouw hele traject!";
@@ -360,12 +453,12 @@ const CommuteEngine = {
       dayExplanation = noGoDeduction
         ? `${noGoDeduction.desc} Laat de motor absoluut staan en kies voor de auto of het ov.`
         : `Onveilige condities door gladheid of storm tussen ${startName} en ${destName}.`;
-    } else if (minScore < 50 || mVerd === 'red' || eVerd === 'red') {
+    } else if (minScore < 50 || mVerd === 'red' || eVerd === 'red' || (isAvoidRain && (isMorningWet || isEveningWet))) {
       dayVerdict = "red";
       dayPill = I18n.t.verdicts.redBadge;
-      if (avoidRain && (isMorningWet || isEveningWet)) {
+      if (isAvoidRain && (isMorningWet || isEveningWet)) {
         dayHeadline = "Regen op je route: pak liever de auto of het ov.";
-        dayExplanation = `Omdat je hebt ingesteld dat je liever droog rijdt, kleurt het advies rood bij neerslag tussen ${startName} en ${destName}.`;
+        dayExplanation = `Omdat jouw voorkeur staat op 'Droogrijder' (regen vermijden), kleurt het advies rood bij neerslag tussen ${startName} en ${destName}.`;
       } else {
         dayHeadline = "Slecht weer op je route. Pak liever de auto of het ov.";
         dayExplanation = `Onveilige omstandigheden door weerfactoren tussen ${startName} en ${destName}.`;
@@ -380,7 +473,9 @@ const CommuteEngine = {
         dayHeadline = `Heenrit droog, maar bui verwacht bij de terugreis.`;
         dayExplanation = `Ochtendrit is droog en veilig. Bij de terugreis valt neerslag (${I18n.formatters.millimeters(eveningRainAmt)}). Regenpak mee!`;
       } else if (isMorningWet && isEveningWet) {
-        dayHeadline = "Wisselvallig weer: kans op buien tijdens beide ritten.";
+        dayHeadline = isAllWeather
+          ? "Buiig weer: goed te doen voor een all-weather doorrijder."
+          : "Wisselvallig weer: kans op buien tijdens beide ritten.";
         dayExplanation = "Houd rekening met nat asfalt en verminderde grip. Goed te doen met een waterdicht motorpak!";
       } else {
         dayHeadline = "Rijden kan prima, maar wees voorbereid op wisselvallig weer.";
@@ -407,8 +502,31 @@ const CommuteEngine = {
       ? Math.max(morningAnalysis.maxGustsOverall, eveningAnalysis.maxGustsOverall)
       : Math.max(morningData.maxGusts, eveningData.maxGusts);
 
-    const gripPercent = maxRouteRain > 2.0 ? 55 : maxRouteRain > 0.3 ? 75 : 100;
-    const gripStatus = gripPercent === 100 ? I18n.t.telemetry.optimal : gripPercent > 70 ? I18n.t.telemetry.damp : I18n.t.telemetry.slippery;
+    const isFreezingRisk = minDayTemp <= (Config.THRESHOLDS.TEMPERATURE.FREEZING || 1.5);
+    const isColdWetRisk = minDayTemp <= (Config.THRESHOLDS.TEMPERATURE.COMPOUND_COLD_WET || 7) && maxRouteRain >= Config.THRESHOLDS.RAIN.TRACE_MM;
+    const activeMonth = new Date(activeDateStr).getMonth(); // 8=Sep, 9=Okt, 10=Nov, 11=Dec
+    const isAutumnSeason = activeMonth >= 8 && activeMonth <= 11;
+    const isAutumnLeavesRisk = isAutumnSeason && (maxRouteRain >= Config.THRESHOLDS.RAIN.TRACE_MM || maxRouteGusts >= 40);
+
+    let gripPercent = 100;
+    let gripStatus = I18n.t.telemetry.optimal;
+
+    if (isFreezingRisk) {
+      gripPercent = 25;
+      gripStatus = I18n.t.telemetry.slippery;
+    } else if (isColdWetRisk) {
+      gripPercent = 50;
+      gripStatus = I18n.t.telemetry.coldWetSlippery || "Koud & spekglad (<7°C)";
+    } else if (maxRouteRain > 2.0) {
+      gripPercent = 55;
+      gripStatus = I18n.t.telemetry.slippery;
+    } else if (isAutumnLeavesRisk && maxRouteRain > 0) {
+      gripPercent = 65;
+      gripStatus = I18n.t.telemetry.autumnLeaves || "Nat bladerdek (Herfst)";
+    } else if (maxRouteRain > 0.3) {
+      gripPercent = 75;
+      gripStatus = I18n.t.telemetry.damp;
+    }
 
     return {
       morningData,
@@ -429,7 +547,7 @@ const CommuteEngine = {
       dayPill,
       dayExplanation,
       minScore,
-      gearPills: this.computeGearAdvice(minDayTemp, maxDayTemp, maxRouteRain),
+      gearPills: this.computeGearAdvice(minDayTemp, maxDayTemp, maxRouteRain, heatedGloves),
       isNextWorkday,
       activeDateStr,
       workdayConfig
@@ -445,7 +563,9 @@ const computeCommuteAdvise = (wData, tDateStr) => {
     eveningTime: AppState.commute.eveningTime,
     minTemp: AppState.commute.minTemp,
     maxGusts: AppState.commute.maxGusts,
-    avoidRain: AppState.commute.avoidRain
+    avoidRain: AppState.commute.avoidRain,
+    rainTolerance: AppState.commute.rainTolerance,
+    heatedGloves: AppState.commute.heatedGloves
   };
   return CommuteEngine.computeAdvice(wData, prefs, AppState.route);
 };
