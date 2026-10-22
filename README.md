@@ -122,19 +122,19 @@ Op basis van de extremen over de ritten adviseert de cockpit direct de juiste ui
 
 ## 📍 Snelle Locatiewissel & Instellingen
  
-- **📍 Gecentreerde Locatiekiezer in de Navigatiebalk**:
-  Midden in de navigatiebalk (op mobiel én desktop direct met de duim bereikbaar) staat jouw huidige locatie weergegeven als een duidelijke interactieve pill-knop. Eén klik opent direct het speciale **Locatiescherm**:
-  - Direct zoeken op elke Nederlandse plaatsnaam of postcode met realtime zoeksuggesties.
-  - Snelle knoppen voor populaire steden (*Utrecht, Amsterdam, Rotterdam, Den Haag, Eindhoven, Groningen, Arnhem, Zwolle, Maastricht, Middelburg, Texel*).
-  - Snelle GPS-knop om je actuele coördinaten direct over te nemen.
-  - Een klik op een plaats stelt deze direct in en sluit het venster automatisch.
-  - Ook het aantikken van de stadsnaam in het hoofdscherm opent direct deze locatiekiezer.
-- **⚙️ Instellingen & Reistijden (`#settings-modal`)**:
-  Klik op het tandwiel-icoon rechtsboven voor jouw persoonlijke motorvoorkeuren:
+- **📍 Gecentreerde Motorrit-, Locatie- & Voorkeurenkiezer in de Navigatiebalk (`#route-planner-modal`)**:
+  Midden in de navigatiebalk (op mobiel én desktop direct met de duim bereikbaar) staat jouw actieve motorroute als interactieve pill-knop (bijv. `Utrecht ➔ Amersfoort`). Eén klik opent direct het scherm voor **Motorrit, Locaties & Ritvoorkeuren**:
+  - **Motorrit (Van A naar B)**: Bepaal vertrek (A) en bestemming (B) via live zoeken, GPS of snelle stedenknoppen, met wisselknop (⇄) en automatische routecorridor-berekening (inclusief tussenstop en wegafstand).
+  - **Rijvoorkeuren & Toleranties**: Stel jouw gewenste minimumtemperatuur (0-18°C) en maximale windstoot-limiet (35-80 km/u) in.
+  - **🧤 Verwarmde handschoenen / Handvatverwarming**: Schakel in voor soepele vingers tot 3°C met gereduceerde koude-aftrek (-5 pt i.p.v. -20 pt).
+  - **🌧️ Neerslagtolerantie**: Kies jouw profiel uit **☀️ Droogrijder** (regen vermijden), **🌦️ Flexibel** (standaard) of **🌧️ Doorrijder** (all-weather kleding).
+  - **🕒 Woon-werk Vertrektijden**: Pas jouw vaste ochtendvertrek (heen) en avondvertrek (terug) aan met automatische uitwijkvenster-detectie.
+  - **Basislocatie (Weerstation)**: Bepaal jouw lokale weerstation voor het actuele weer, de 24-uurs trend en 7-daagse verwachting.
+  - Klik op "Rit & Voorkeuren Opslaan" om het advies en alle risicometers direct realtime opnieuw te berekenen.
+- **⚙️ Pagina-instellingen & Weergave (`#settings-modal`)**:
+  Klik op het tandwiel-icoon rechtsboven voor de algehele website- en dashboard-weergave:
   - **Themakeuze**: Wissel snel tussen Licht (standaard), Automatisch en Donker.
-  - **Woon-werk Vertrektijden**: Stel jouw ochtendvertrektijd (heen) en avondvertrektijd (terug) in.
-  - **Motorrijder Comfort & Toleranties**: Stel jouw minimale comforttemperatuur en maximale windstoot-limiet in.
-  - Klik op "Instellingen Opslaan" om het advies en de risicometers direct opnieuw te berekenen.
+  - **Dashboard-indeling**: Schakel tussen de Uitgebreide Cockpit en de Beknopte Widget.
 
 ---
 

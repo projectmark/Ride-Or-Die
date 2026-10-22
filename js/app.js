@@ -24,9 +24,11 @@ const App = {
     this._bindEvents();
     this._setupStateSubscribers();
 
-    // Initieel weer ophalen voor huidige locatie en route
-    await this.refreshWeather(false);
-    await this.analyzeCurrentRoute(false);
+    // Initieel weer ophalen voor huidige locatie en route (parallel voor minimale laadtijd)
+    await Promise.all([
+      this.refreshWeather(false),
+      this.analyzeCurrentRoute(false)
+    ]);
     this._startBackgroundPolling();
   },
 
@@ -303,17 +305,6 @@ const App = {
 
     const chkRain = document.getElementById('setting-avoid-rain');
     if (chkRain) chkRain.checked = (rainTol === 'avoid');
-    const vRain = document.getElementById('val-avoid-rain');
-    if (vRain) {
-      vRain.textContent = avoidR ? "Aan (Droogrijder)" : "Uit (All-weather)";
-      vRain.style.color = avoidR ? "#ef4444" : "#10b981";
-    }
-    const dRain = document.getElementById('desc-avoid-rain');
-    if (dRain) {
-      dRain.textContent = avoidR
-        ? "Strikte modus actief: Regen weegt zwaar. Bij noemenswaardige regen/buien kleurt het advies direct rood (advies: auto/ov)."
-        : "All-weather modus: Lichte regen of een korte bui is acceptabel met motorkleding (geel advies). Pas bij extreme storm, ijzel of wolkbreuk wordt het rood.";
-    }
   },
 
   _syncSettingsViewButtons() {
@@ -386,6 +377,7 @@ const App = {
       this.analyzeCurrentRoute(false);
     } else if (modalId === 'settings-modal') {
       UIRenderer.renderTheme(State.get('theme'), true);
+      this._syncPreferenceSlidersToDOM();
       this._syncSettingsViewButtons();
     } else if (modalId === 'score-breakdown-modal') {
       modal.querySelectorAll('.score-wiki-tab:not(.route-wiki-tab)').forEach(t => {
@@ -633,6 +625,14 @@ const App = {
         this.closeModal('route-planner-modal');
         this._renderCurrentData();
         UIRenderer.showToast(I18n.t.toasts.settingsSaved);
+      });
+    }
+
+    const switchToRoutePrefs = document.getElementById('switch-to-route-prefs-btn');
+    if (switchToRoutePrefs) {
+      switchToRoutePrefs.addEventListener('click', () => {
+        this.closeModal('settings-modal');
+        this.openModal('route-planner-modal');
       });
     }
 

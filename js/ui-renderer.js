@@ -17,7 +17,6 @@ const UIRenderer = {
         viewModeBtnText: document.getElementById('view-mode-btn-text'),
         viewModeBtnIcon: document.getElementById('view-mode-btn-icon'),
         viewModeToggleBtn: document.getElementById('view-mode-toggle-btn'),
-        themeBtnIcon: document.getElementById('theme-btn-icon'),
         metaTheme: document.querySelector('meta[name="theme-color"]'),
         navLocationLabel: document.getElementById('nav-location-label'),
         navRouteNames: document.getElementById('nav-route-names'),
@@ -106,6 +105,7 @@ const UIRenderer = {
         // Single Widget
         singleWidgetCard: document.getElementById('single-widget-card'),
         widgetRouteText: document.getElementById('widget-route-text'),
+        widgetDateTime: document.getElementById('widget-date-time'),
         widgetHeroTemp: document.getElementById('widget-hero-temp'),
         widgetHeroIcon: document.getElementById('widget-hero-icon'),
         widgetVerdictBanner: document.getElementById('widget-verdict-banner'),
@@ -565,8 +565,9 @@ const UIRenderer = {
     }
 
     // --- 5. LIVE WEER & 6 SPECIFICATIES ---
-    if (els.heroCityName) els.heroCityName.textContent = state.location.name || 'Ameide';
-    if (els.dailyCityName) els.dailyCityName.textContent = state.location.name || 'Utrecht';
+    const defaultCity = (typeof Config !== 'undefined' && Config.DEFAULTS && Config.DEFAULTS.LOCATION && Config.DEFAULTS.LOCATION.name) || 'Utrecht';
+    if (els.heroCityName) els.heroCityName.textContent = state.location.name || defaultCity;
+    if (els.dailyCityName) els.dailyCityName.textContent = state.location.name || defaultCity;
 
     let dayIdx = 0;
     if (daily && daily.time) {
@@ -649,34 +650,64 @@ const UIRenderer = {
     if (els.widgetRouteText && state.route) {
       els.widgetRouteText.textContent = `${state.route.start.name} ➔ ${state.route.dest.name}`;
     }
-    if (els.widgetHeroTemp) els.widgetHeroTemp.textContent = `${Math.round(current.temperature_2m)}°`;
+    if (els.widgetDateTime) {
+      els.widgetDateTime.textContent = isNextWorkday ? `${workdayConfig.nextWorkday.fullLabel} • KNMI Harmonie` : `Vandaag • KNMI Harmonie`;
+    }
+    const widgetTemp = isNextWorkday && daily && daily.time
+      ? Math.round((daily.temperature_2m_max[dayIdx] + daily.temperature_2m_min[dayIdx]) / 2)
+      : Math.round(current.temperature_2m);
+    if (els.widgetHeroTemp) els.widgetHeroTemp.textContent = `${widgetTemp}°`;
     if (els.widgetHeroIcon) {
-      const code = current.weather_code || 0;
+      const code = isNextWorkday && daily && daily.time ? (daily.weather_code[dayIdx] || 0) : (current.weather_code || 0);
       const wmo = I18n.weatherCodes[code] || { icon: "sun" };
-      els.widgetHeroIcon.innerHTML = this.getWeatherSvg(wmo.icon, current.is_day === 0);
+      els.widgetHeroIcon.innerHTML = this.getWeatherSvg(wmo.icon, !isNextWorkday && current.is_day === 0);
     }
     if (els.widgetVerdictBanner) els.widgetVerdictBanner.dataset.verdict = advice.dayVerdict;
     if (els.widgetVerdictPill) els.widgetVerdictPill.textContent = advice.dayPill;
     if (els.widgetVerdictScore) els.widgetVerdictScore.innerHTML = `Score: ${advice.minScore}/100 <span class="score-info-icon">ℹ️</span>`;
     if (els.widgetVerdictSummary) els.widgetVerdictSummary.textContent = advice.dayHeadline;
 
+    // Ochtendrit in widget (gebaseerd op corridor-analyse indien beschikbaar)
+    const mVerd = advice.morningAnalysis ? advice.morningAnalysis.verdict : advice.morningScore.verdict;
+    const mBadgeRaw = advice.morningAnalysis ? advice.morningAnalysis.badgeText : advice.morningScore.badgeText;
+    const mBadgeClean = mBadgeRaw.replace(/^[🟢🟡🔴⚠️]\s*/, '');
+    const mTemp = advice.morningAnalysis ? advice.morningAnalysis.startWeather.temp : advice.morningData.avgTemp;
+    const mRain = advice.morningAnalysis ? advice.morningAnalysis.maxRainOverall : advice.morningData.totalPrecip;
+    const mGusts = advice.morningAnalysis ? advice.morningAnalysis.maxGustsOverall : advice.morningData.maxGusts;
+    const mColor = mVerd === 'green' ? '#10b981' : mVerd === 'yellow' ? '#f59e0b' : '#ef4444';
+
     if (els.widgetMorningTitle) {
       const mTime = (state.commute.morningTime || '08:00').replace(':', '.');
-      els.widgetMorningTitle.textContent = `🌅 Ochtendrit (${mTime} uur)`;
+      els.widgetMorningTitle.textContent = `🌅 ${prefixSlot}Ochtendrit (${mTime} uur)`;
     }
-    if (els.widgetMorningBadge) els.widgetMorningBadge.textContent = advice.morningScore.badgeText.replace(/^[🟢🟡🔴⚠️]\s*/, '');
-    if (els.widgetMorningTemp) els.widgetMorningTemp.textContent = I18n.formatters.celsius(advice.morningData.avgTemp);
-    if (els.widgetMorningRain) els.widgetMorningRain.textContent = I18n.formatters.millimeters(advice.morningData.totalPrecip);
-    if (els.widgetMorningGusts) els.widgetMorningGusts.textContent = I18n.formatters.kmh(advice.morningData.maxGusts);
+    if (els.widgetMorningBadge) {
+      els.widgetMorningBadge.textContent = mBadgeClean;
+      els.widgetMorningBadge.style.color = mColor;
+    }
+    if (els.widgetMorningTemp) els.widgetMorningTemp.textContent = I18n.formatters.celsius(mTemp);
+    if (els.widgetMorningRain) els.widgetMorningRain.textContent = I18n.formatters.millimeters(mRain);
+    if (els.widgetMorningGusts) els.widgetMorningGusts.textContent = I18n.formatters.kmh(mGusts);
+
+    // Avondrit in widget (gebaseerd op corridor-analyse indien beschikbaar)
+    const eVerd = advice.eveningAnalysis ? advice.eveningAnalysis.verdict : advice.eveningScore.verdict;
+    const eBadgeRaw = advice.eveningAnalysis ? advice.eveningAnalysis.badgeText : advice.eveningScore.badgeText;
+    const eBadgeClean = eBadgeRaw.replace(/^[🟢🟡🔴⚠️]\s*/, '');
+    const eTemp = advice.eveningAnalysis ? advice.eveningAnalysis.startWeather.temp : advice.eveningData.avgTemp;
+    const eRain = advice.eveningAnalysis ? advice.eveningAnalysis.maxRainOverall : advice.eveningData.totalPrecip;
+    const eGusts = advice.eveningAnalysis ? advice.eveningAnalysis.maxGustsOverall : advice.eveningData.maxGusts;
+    const eColor = eVerd === 'green' ? '#10b981' : eVerd === 'yellow' ? '#f59e0b' : '#ef4444';
 
     if (els.widgetEveningTitle) {
       const eTime = (state.commute.eveningTime || '17:00').replace(':', '.');
-      els.widgetEveningTitle.textContent = `🌇 Avondrit (${eTime} uur)`;
+      els.widgetEveningTitle.textContent = `🌇 ${prefixSlot}Avondrit (${eTime} uur)`;
     }
-    if (els.widgetEveningBadge) els.widgetEveningBadge.textContent = advice.eveningScore.badgeText.replace(/^[🟢🟡🔴⚠️]\s*/, '');
-    if (els.widgetEveningTemp) els.widgetEveningTemp.textContent = I18n.formatters.celsius(advice.eveningData.avgTemp);
-    if (els.widgetEveningRain) els.widgetEveningRain.textContent = I18n.formatters.millimeters(advice.eveningData.totalPrecip);
-    if (els.widgetEveningGusts) els.widgetEveningGusts.textContent = I18n.formatters.kmh(advice.eveningData.maxGusts);
+    if (els.widgetEveningBadge) {
+      els.widgetEveningBadge.textContent = eBadgeClean;
+      els.widgetEveningBadge.style.color = eColor;
+    }
+    if (els.widgetEveningTemp) els.widgetEveningTemp.textContent = I18n.formatters.celsius(eTemp);
+    if (els.widgetEveningRain) els.widgetEveningRain.textContent = I18n.formatters.millimeters(eRain);
+    if (els.widgetEveningGusts) els.widgetEveningGusts.textContent = I18n.formatters.kmh(eGusts);
 
     if (els.widgetGearChips && advice.gearPills) {
       els.widgetGearChips.innerHTML = advice.gearPills.map(p => `<span class="gear-chip-pill" style="font-size:0.75rem;padding:4px 10px;">${p}</span>`).join('');

@@ -145,8 +145,8 @@
           </svg>
         </button>
 
-        <!-- Settings (Thema, Reistijden & Voorkeuren) -->
-        <button class="m3-icon-btn" id="open-settings-btn" title="Instellingen, thema (licht/donker) en voorkeuren" aria-label="Instellingen">
+        <!-- Pagina-instellingen (Thema & Weergave) -->
+        <button class="m3-icon-btn" id="open-settings-btn" title="Pagina-instellingen en thema (licht/donker)" aria-label="Pagina-instellingen">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -541,7 +541,7 @@
   </div>
 
   <!-- ==========================================================================
-       MODAL 1: PAGINA-INSTELLINGEN & WEERGAVE (Wiki-kaart Stijl)
+       MODAL 1: PAGINA-INSTELLINGEN & WEERGAVE (Website-instellingen)
        ========================================================================== -->
   <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
     <div class="m3-modal-sheet score-modal-sheet" style="max-width: 720px;">
@@ -607,6 +607,21 @@
         </div>
       </div>
 
+      <!-- Duidelijke Verwijzing naar Ritinstellingen -->
+      <div class="wiki-card" style="border: 1px dashed var(--border-subtle); background: rgba(2, 132, 199, 0.04);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-weight:800;font-size:0.84rem;color:var(--text-main);">🏍️ Rit- en weervoorkeuren aanpassen?</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">
+              Koudegrens, verwarmde handschoenen, windlimiet, neerslagprofiel en rittijden zijn gekoppeld aan je <strong>Ritinstellingen</strong>.
+            </div>
+          </div>
+          <button type="button" class="city-chip" id="switch-to-route-prefs-btn" style="font-weight:800;padding:6px 14px;height:auto;cursor:pointer;">
+            Naar Ritinstellingen ➔
+          </button>
+        </div>
+      </div>
+
       <button type="button" class="modal-primary-btn" id="save-settings-btn">
         Sluiten
       </button>
@@ -614,7 +629,7 @@
   </div>
 
   <!-- ==========================================================================
-       MODAL 2: MOTORRIT (A ➔ B), GPS, TIJDEN, VOORKEUREN & BASISLOCATIE (Wiki-stijl)
+       MODAL 2: MOTORRIT (A ➔ B), GPS, TIJDEN, VOORKEUREN & BASISLOCATIE (Ritinstellingen)
        ========================================================================== -->
   <div class="modal-backdrop" id="route-planner-modal" role="dialog" aria-modal="true" aria-labelledby="route-modal-title">
     <div class="m3-modal-sheet score-modal-sheet">
@@ -722,7 +737,7 @@
           </div>
         </div>
 
-        <!-- De 2 Tegels: 1. Rijvoorkeuren & Toleranties (Links) & 2. Vaste Woon-Werktijden (Rechts) -->
+        <!-- De 2 Zuilen: 1. Rijvoorkeuren & Toleranties (Links) & 2. Vaste Woon-Werktijden (Rechts) -->
         <div class="wiki-pillars-grid">
           <!-- Tegel 1: Rijvoorkeuren & Toleranties -->
           <div class="wiki-card">
