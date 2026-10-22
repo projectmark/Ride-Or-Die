@@ -722,68 +722,9 @@
           </div>
         </div>
 
-        <!-- De 2 Tegels: 1. Vaste Woon-Werktijden & 2. Gewenste Temp & Windlimiet -->
+        <!-- De 2 Tegels: 1. Rijvoorkeuren & Toleranties (Links) & 2. Vaste Woon-Werktijden (Rechts) -->
         <div class="wiki-pillars-grid">
-          <!-- Tegel 1: Vaste Woon-Werktijden -->
-          <div class="wiki-card">
-            <div class="wiki-card-header">
-              <span>🕒</span>
-              <div>
-                <div class="wiki-card-title">Vaste Woon-Werktijden</div>
-                <div class="wiki-card-sub">Standaard tijdvakken voor Heen &amp; Terug</div>
-              </div>
-            </div>
-            <p class="wiki-card-body">
-              Het KNMI Harmonie-model evalueert je motorroute standaard op deze twee dagelijkse vertrektijden.
-            </p>
-            <div class="pref-slider-group">
-              <div class="pref-slider-header">
-                <span>🌅 Ochtendrit (Heen)</span>
-                <span class="pref-val-pill" id="val-morning-time">08.00 uur</span>
-              </div>
-              <select class="m3-select-input" id="setting-morning-time">
-                <option value="06:00">06.00 uur</option>
-                <option value="06:30">06.30 uur</option>
-                <option value="07:00">07.00 uur</option>
-                <option value="07:30">07.30 uur</option>
-                <option value="08:00" selected>08.00 uur</option>
-                <option value="08:30">08.30 uur</option>
-                <option value="09:00">09.00 uur</option>
-                <option value="09:30">09.30 uur</option>
-                <option value="10:00">10.00 uur</option>
-              </select>
-              <div class="pref-slider-hint">Standaard vertrektijd vanaf huis naar je werk of bestemming.</div>
-            </div>
-            <div class="pref-slider-group">
-              <div class="pref-slider-header">
-                <span>🌇 Avondrit (Terug)</span>
-                <span class="pref-val-pill" id="val-evening-time">17.00 uur</span>
-              </div>
-              <select class="m3-select-input" id="setting-evening-time">
-                <option value="15:00">15.00 uur</option>
-                <option value="15:30">15.30 uur</option>
-                <option value="16:00">16.00 uur</option>
-                <option value="16:30">16.30 uur</option>
-                <option value="17:00" selected>17.00 uur</option>
-                <option value="17:30">17.30 uur</option>
-                <option value="18:00">18.00 uur</option>
-                <option value="18:30">18.30 uur</option>
-                <option value="19:00">19.00 uur</option>
-              </select>
-              <div class="pref-slider-hint">Standaard vertrektijd voor de terugreis naar huis.</div>
-            </div>
-            <div class="pref-slider-group">
-              <div class="pref-slider-header">
-                <span>⏱️ Slim Uitwijkvenster</span>
-                <span class="pref-val-pill">Actief</span>
-              </div>
-              <div class="pref-slider-hint" style="line-height:1.45;">
-                Het Harmonie-model scant automatisch van <strong>-30 min</strong> tot <strong>+90 min</strong> rond jouw vertrektijd en signaleert wanneer eerder of later rijden droger is.
-              </div>
-            </div>
-          </div>
-
-          <!-- Tegel 2: Gewenste Temp, Wind & Regenvoorkeur -->
+          <!-- Tegel 1: Rijvoorkeuren & Toleranties -->
           <div class="wiki-card">
             <div class="wiki-card-header">
               <span>🎛️</span>
@@ -867,6 +808,65 @@
                 <div>• <strong>IJzel, vorst of sneeuw (&le; 1,5°C):</strong> Onvoorwaardelijke <em>Instant No-Go</em>. Twee wielen hebben nul marge bij opvriezing.</div>
                 <div>• <strong>Koud &amp; nat asfalt (&lt; 7°C):</strong> Rubber warmt nauwelijks op en bruggen koelen snel af (-22 pt compound risico).</div>
                 <div>• <strong>Herfstbladerdek (sep t/m dec):</strong> Natte bladeren gedragen zich als zeep op het wegdek (-8 pt bij nat/winderig weer).</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tegel 2: Vaste Woon-Werktijden -->
+          <div class="wiki-card">
+            <div class="wiki-card-header">
+              <span>🕒</span>
+              <div>
+                <div class="wiki-card-title">Vaste Woon-Werktijden</div>
+                <div class="wiki-card-sub">Standaard tijdvakken voor Heen &amp; Terug</div>
+              </div>
+            </div>
+            <p class="wiki-card-body">
+              Het KNMI Harmonie-model evalueert je motorroute standaard op deze twee dagelijkse vertrektijden.
+            </p>
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>🌅 Ochtendrit (Heen)</span>
+                <span class="pref-val-pill" id="val-morning-time">08.00 uur</span>
+              </div>
+              <select class="m3-select-input" id="setting-morning-time">
+                <option value="06:00">06.00 uur</option>
+                <option value="06:30">06.30 uur</option>
+                <option value="07:00">07.00 uur</option>
+                <option value="07:30">07.30 uur</option>
+                <option value="08:00" selected>08.00 uur</option>
+                <option value="08:30">08.30 uur</option>
+                <option value="09:00">09.00 uur</option>
+                <option value="09:30">09.30 uur</option>
+                <option value="10:00">10.00 uur</option>
+              </select>
+              <div class="pref-slider-hint">Standaard vertrektijd vanaf huis naar je werk of bestemming.</div>
+            </div>
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>🌇 Avondrit (Terug)</span>
+                <span class="pref-val-pill" id="val-evening-time">17.00 uur</span>
+              </div>
+              <select class="m3-select-input" id="setting-evening-time">
+                <option value="15:00">15.00 uur</option>
+                <option value="15:30">15.30 uur</option>
+                <option value="16:00">16.00 uur</option>
+                <option value="16:30">16.30 uur</option>
+                <option value="17:00" selected>17.00 uur</option>
+                <option value="17:30">17.30 uur</option>
+                <option value="18:00">18.00 uur</option>
+                <option value="18:30">18.30 uur</option>
+                <option value="19:00">19.00 uur</option>
+              </select>
+              <div class="pref-slider-hint">Standaard vertrektijd voor de terugreis naar huis.</div>
+            </div>
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>⏱️ Slim Uitwijkvenster</span>
+                <span class="pref-val-pill">Actief</span>
+              </div>
+              <div class="pref-slider-hint" style="line-height:1.45;">
+                Het Harmonie-model scant automatisch van <strong>-30 min</strong> tot <strong>+90 min</strong> rond jouw vertrektijd en signaleert wanneer eerder of later rijden droger is.
               </div>
             </div>
           </div>
