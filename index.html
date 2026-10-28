@@ -486,10 +486,10 @@
                         <!-- Prijsbron Kiezer (CBS vs. Actuele Dagprijs) -->
             <div class="fuel-price-source-row">
               <div class="fuel-segmented-group" id="fuel-mode-group" role="radiogroup" aria-label="Prijsbron">
-                <button type="button" class="fuel-seg-btn active" data-mode="cbs" id="btn-fuel-mode-cbs" title="Wekelijks gewogen gemiddelde via CBS">
+                <button type="button" class="fuel-seg-btn" data-mode="cbs" id="btn-fuel-mode-cbs" title="Wekelijks gewogen gemiddelde via CBS">
                   &#x1F3DB;&#xFE0F; CBS Gemiddelde
                 </button>
-                <button type="button" class="fuel-seg-btn" data-mode="custom" id="btn-fuel-mode-custom" title="Reken met de actuele dagkoers van vandaag of eigen pompprijs">
+                <button type="button" class="fuel-seg-btn active" data-mode="custom" id="btn-fuel-mode-custom" title="Reken met de actuele dagkoers van vandaag of eigen pompprijs">
                   &#x26A1; Actuele Dagprijs (&euro; 2,27)
                 </button>
               </div>
@@ -501,7 +501,7 @@
                 <span class="fuel-currency">&euro;</span>
                 <span class="fuel-price-large" id="fuel-price-val">--</span>
                 <span class="fuel-unit">/ liter</span>
-                <span class="fuel-custom-tag" id="fuel-custom-tag" style="display: none;">Actuele koers</span>
+                <span class="fuel-custom-tag" id="fuel-custom-tag">Actuele koers</span>
               </div>
               <div class="fuel-trend-wrap">
                 <div class="fuel-trend-pill" id="fuel-trend-pill">
@@ -1082,23 +1082,23 @@
                 <span class="pref-val-pill" id="val-fuel-price-pill">&euro; 2,274 / L</span>
               </div>
               <div class="fuel-segmented-group" id="modal-fuel-mode-group" role="radiogroup" aria-label="Prijsmodus" style="width: 100%; display: flex; margin-bottom: 8px;">
-                <button type="button" class="fuel-seg-btn active" data-mode="cbs" id="modal-btn-mode-cbs" style="flex: 1; text-align: center;">
+                <button type="button" class="fuel-seg-btn" data-mode="cbs" id="modal-btn-mode-cbs" style="flex: 1; text-align: center;">
                   CBS Gemiddelde (19 okt: &euro; 2,391)
                 </button>
-                <button type="button" class="fuel-seg-btn" data-mode="custom" id="modal-btn-mode-custom" style="flex: 1; text-align: center;">
+                <button type="button" class="fuel-seg-btn active" data-mode="custom" id="modal-btn-mode-custom" style="flex: 1; text-align: center;">
                   Actuele Dagprijs / Eigen Pomp
                 </button>
               </div>
 
               <!-- Snelle Koers Chips -->
-              <div class="fuel-quick-price-chips" id="fuel-quick-price-chips" style="display: none; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+              <div class="fuel-quick-price-chips" id="fuel-quick-price-chips" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
                 <button type="button" class="city-chip quick-price-btn" data-price="2.274">&#x26A1; Vandaag dagprijs (&euro; 2,27)</button>
                 <button type="button" class="city-chip quick-price-btn" data-price="2.189">&#x26FD; Onbemand / TinQ (&euro; 2,19)</button>
                 <button type="button" class="city-chip quick-price-btn" data-price="2.459">&#x1F3EA; Snelweg (&euro; 2,46)</button>
               </div>
 
               <!-- Custom Price Slider -->
-              <div id="custom-price-slider-wrap" style="display: none;">
+              <div id="custom-price-slider-wrap" style="display: block;">
                 <input type="range" min="1.50" max="3.00" step="0.01" value="2.274" class="m3-range-slider" id="setting-custom-fuel-price" />
                 <div class="pref-slider-hint">
                   Schuif voor jouw specifieke pompprijs. Het dashboard berekent direct alle rit- en tankkosten met dit bedrag.

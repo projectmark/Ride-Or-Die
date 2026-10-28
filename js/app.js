@@ -158,7 +158,7 @@ const App = {
     const cons = State.state.fuel?.consumptionL100km || 5.6;
     const records = State.get('fuelData');
     const fuelType = State.state.fuel?.fuelType || 'BenzineEuro95_1';
-    const stats = records ? FuelService.getStats(records, fuelType, '30D') : null;
+    const stats = records ? FuelService.getStats(records, fuelType, '30D', State.state.fuel) : null;
     const price = FuelService.getEffectivePrice(stats, State.state.fuel);
     const trip = FuelService.calculateTripCost(roadKm, cons, price);
     const costStr = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
@@ -425,7 +425,7 @@ const App = {
         vPricePill.textContent = `\u20AC ${customPrice.toFixed(3).replace('.', ',')} / L (Aangepast)`;
       } else {
         const records = State.get('fuelData');
-        const stats = records ? FuelService.getStats(records, fuel.fuelType || 'BenzineEuro95_1', '30D') : null;
+        const stats = records ? FuelService.getStats(records, fuel.fuelType || 'BenzineEuro95_1', '30D', { priceMode: 'cbs' }) : null;
         const cbsP = stats ? stats.latestPrice : 2.274;
         vPricePill.textContent = `\u20AC ${cbsP.toFixed(3).replace('.', ',')} / L (CBS)`;
       }

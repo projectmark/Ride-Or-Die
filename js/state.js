@@ -55,7 +55,7 @@ class StateStore {
           fuelType: 'BenzineEuro95_1',
           timeRange: '30D',
           carConsumptionL100km: 6.5,
-          priceMode: 'cbs',
+          priceMode: 'custom',
           customPricePerLiter: 2.274
         })
       },
@@ -174,7 +174,7 @@ class StateStore {
               carConsumptionL100km: typeof parsedFuel.carConsumptionL100km === 'number' && !isNaN(parsedFuel.carConsumptionL100km)
                 ? parsedFuel.carConsumptionL100km
                 : (dFuel.carConsumptionL100km || 6.5),
-              priceMode: ['cbs', 'custom'].includes(parsedFuel.priceMode) ? parsedFuel.priceMode : (dFuel.priceMode || 'cbs'),
+              priceMode: ['cbs', 'custom'].includes(parsedFuel.priceMode) ? parsedFuel.priceMode : (dFuel.priceMode || 'custom'),
               customPricePerLiter: typeof parsedFuel.customPricePerLiter === 'number' && !isNaN(parsedFuel.customPricePerLiter)
                 ? Math.max(fCfg.PRICE_MIN || 1.0, Math.min(fCfg.PRICE_MAX || 4.0, parsedFuel.customPricePerLiter))
                 : (dFuel.customPricePerLiter || 2.274)

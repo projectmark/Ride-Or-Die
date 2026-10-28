@@ -903,7 +903,7 @@ const UIRenderer = {
       carConsumptionL100km: dFuel.carConsumptionL100km || 6.5
     };
 
-    const stats = FuelService.getStats(fuelRecords, fuelState.fuelType, fuelState.timeRange);
+    const stats = FuelService.getStats(fuelRecords, fuelState.fuelType, fuelState.timeRange, fuelState);
     if (!stats) return;
 
     // 1. Prijs & Trend Banner
@@ -945,7 +945,9 @@ const UIRenderer = {
     if (els.fuelDateSub) {
       const sched = FuelService.getCbsScheduleInfo(stats.latestPeriod);
       els.fuelDateSub.textContent = isCustomMode
-        ? ((typeof I18n !== 'undefined' && I18n.t?.fuel?.usingCustomPriceNotice) ? I18n.t.fuel.usingCustomPriceNotice(I18n.formatters.fuelPrice(effectivePrice)) : `Rekent met actuele dagprijs: \u20AC ${effectivePrice.toFixed(3)}/L`)
+        ? ((typeof I18n !== 'undefined' && I18n.t?.fuel?.usingDailyPriceNotice)
+            ? I18n.t.fuel.usingDailyPriceNotice(stats.latestDateStr, `\u20AC ${((typeof I18n !== 'undefined' && I18n.formatters?.fuelPrice) ? I18n.formatters.fuelPrice(effectivePrice) : effectivePrice.toFixed(3).replace('.', ','))}`)
+            : `Actuele dagkoers: ${stats.latestDateStr} (\u20AC ${((typeof I18n !== 'undefined' && I18n.formatters?.fuelPrice) ? I18n.formatters.fuelPrice(effectivePrice) : effectivePrice.toFixed(3).replace('.', ','))}/L) \u2022 Bron: Dagmeting`)
         : ((typeof I18n !== 'undefined' && I18n.t?.fuel?.cbsDateWithNext) ? I18n.t.fuel.cbsDateWithNext(stats.latestDateStr, sched.relativeLabel) : `Laatste CBS meting: ${stats.latestDateStr} \u2022 Volgende: ${sched.relativeLabel}`);
 
 

@@ -310,6 +310,7 @@ const I18n = {
       priceModeCustom: "Actuele Dagprijs",
       customPriceActive: "Actuele dagprijs actief",
       usingCustomPriceNotice: (priceStr) => `Rekent met actuele dagprijs: ${priceStr}/L`,
+      usingDailyPriceNotice: (dateStr, priceStr) => `Actuele dagkoers: ${dateStr} (${priceStr}/L) • Bron: Dagmeting`,
       customPriceLabel: "Eigen literprijs (€ / liter)",
       rangeEstimate: (km) => `ca. ${km} km bereik`,
       tripEstimateNotice: (km, costStr, litersStr) => `Schatting voor jouw rit (${km} km): ca. ${costStr} per enkele reis (${litersStr})`

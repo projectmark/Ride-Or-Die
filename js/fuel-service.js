@@ -168,12 +168,58 @@ const FuelService = {
 
   /**
    * Berekent statistieken en trends voor de gekozen brandstof en periode.
+   * Breidt de reeks naadloos uit met de actuele dagkoersbrug indien actuele dagprijs-modus actief is.
    */
-  getStats(records, fuelType = 'BenzineEuro95_1', range = '30D') {
+  getStats(records, fuelType = 'BenzineEuro95_1', range = '30D', fuelState = null) {
     if (!Array.isArray(records) || records.length === 0) return null;
 
+    let allRecords = records;
+    const isCustomMode = !fuelState || fuelState.priceMode !== 'cbs'; // Standaard: actuele dagprijs
+
+    if (isCustomMode && Config.FUEL?.DAILY_BRIDGE && Config.FUEL.DAILY_BRIDGE.length > 0) {
+      const lastRec = records[records.length - 1];
+      const lastIso = lastRec ? lastRec.isoDate : '2000-01-01';
+      const superSurcharge = Config.FUEL?.SUPER98_SURCHARGE || 0.19;
+
+      const bridgeRecords = Config.FUEL.DAILY_BRIDGE
+        .filter(b => b.date > lastIso)
+        .map(b => {
+          const parts = b.date.split('-');
+          const dObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          const p = b.date.replace(/-/g, '');
+          const benzine = b.BenzineEuro95_1;
+          const diesel = b.Diesel_2;
+          const lpg = b.Lpg_3 || 0.984;
+          const super98 = benzine !== null ? parseFloat((benzine + superSurcharge).toFixed(3)) : null;
+
+          return {
+            period: p,
+            timestamp: dObj.getTime(),
+            dateStr: (typeof I18n !== 'undefined' && I18n.formatters?.shortDate)
+              ? I18n.formatters.shortDate(dObj)
+              : `${dObj.getDate()} okt`,
+            isoDate: b.date,
+            BenzineEuro95_1: benzine,
+            SuperPlus98: super98,
+            Diesel_2: diesel,
+            Lpg_3: lpg,
+            isBridge: true
+          };
+        });
+
+      if (bridgeRecords.length > 0) {
+        if (fuelState && typeof fuelState.customPricePerLiter === 'number' && fuelState.customPricePerLiter > 0) {
+          const lastBridge = bridgeRecords[bridgeRecords.length - 1];
+          if (fuelType === 'BenzineEuro95_1') lastBridge.BenzineEuro95_1 = fuelState.customPricePerLiter;
+          else if (fuelType === 'Diesel_2') lastBridge.Diesel_2 = fuelState.customPricePerLiter;
+          else if (fuelType === 'SuperPlus98') lastBridge.SuperPlus98 = fuelState.customPricePerLiter;
+        }
+        allRecords = records.concat(bridgeRecords);
+      }
+    }
+
     const daysCount = range === '90D' ? 90 : 30;
-    const validRecords = records.filter(r => typeof r[fuelType] === 'number');
+    const validRecords = allRecords.filter(r => typeof r[fuelType] === 'number');
     if (validRecords.length === 0) return null;
 
     const slice = validRecords.slice(-daysCount);
@@ -203,6 +249,7 @@ const FuelService = {
     return {
       fuelType,
       range,
+      isCustomMode,
       latestPrice,
       latestDateStr: latest.dateStr,
       latestPeriod: latest.period,

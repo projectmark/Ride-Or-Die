@@ -96,6 +96,18 @@ const Config = {
       { id: 'gs', name: 'BMW R1200 / 1250 GS', consumption: 5.1, tank: 20 },
       { id: 'allround', name: 'Gemiddelde Motor / Allround', consumption: 4.8, tank: 15 },
       { id: 'custom', name: 'Aangepast verbruik...', consumption: 5.6, tank: 16 }
+    ],
+    // Dagelijkse koersbrug tussen de meest recente CBS-publicatie en vandaag (28 okt 2026)
+    DAILY_BRIDGE: [
+      { date: '2026-10-20', BenzineEuro95_1: 2.348, Diesel_2: 2.438 },
+      { date: '2026-10-21', BenzineEuro95_1: 2.331, Diesel_2: 2.443 },
+      { date: '2026-10-22', BenzineEuro95_1: 2.322, Diesel_2: 2.446 },
+      { date: '2026-10-23', BenzineEuro95_1: 2.306, Diesel_2: 2.450 },
+      { date: '2026-10-24', BenzineEuro95_1: 2.292, Diesel_2: 2.451 },
+      { date: '2026-10-25', BenzineEuro95_1: 2.292, Diesel_2: 2.450 },
+      { date: '2026-10-26', BenzineEuro95_1: 2.293, Diesel_2: 2.454 },
+      { date: '2026-10-27', BenzineEuro95_1: 2.283, Diesel_2: 2.460 },
+      { date: '2026-10-28', BenzineEuro95_1: 2.274, Diesel_2: 2.462 }
     ]
   },
 
@@ -139,7 +151,7 @@ const Config = {
       fuelType: 'BenzineEuro95_1',
       timeRange: '30D',
       carConsumptionL100km: 6.5,
-      priceMode: 'cbs', // 'cbs' | 'custom'
+      priceMode: 'custom', // 'custom' (standaard: actuele dagprijs) | 'cbs'
       customPricePerLiter: 2.274
     }
   },
