@@ -47,6 +47,17 @@ class StateStore {
         morningAnalysis: null,
         eveningAnalysis: null
       },
+      fuel: {
+        ...(d.FUEL || {
+          consumptionL100km: 5.6,
+          tankCapacityL: 16,
+          presetId: 'hornet',
+          fuelType: 'BenzineEuro95_1',
+          timeRange: '30D',
+          carConsumptionL100km: 6.5
+        })
+      },
+      fuelData: null,
       weatherData: null,
       isLoading: false
     };
@@ -140,6 +151,34 @@ class StateStore {
         };
       }
 
+      const fuelRaw = localStorage.getItem('rideordie_fuel');
+      if (fuelRaw) {
+        try {
+          const parsedFuel = JSON.parse(fuelRaw);
+          if (parsedFuel && typeof parsedFuel === 'object') {
+            const fCfg = Config.FUEL || {};
+            const dFuel = Config.DEFAULTS?.FUEL || {};
+            this.state.fuel = {
+              ...this.state.fuel,
+              consumptionL100km: typeof parsedFuel.consumptionL100km === 'number' && !isNaN(parsedFuel.consumptionL100km)
+                ? Math.max(fCfg.CONSUMPTION_MIN || 1.5, Math.min(fCfg.CONSUMPTION_MAX || 15, parsedFuel.consumptionL100km))
+                : (dFuel.consumptionL100km || 5.6),
+              tankCapacityL: typeof parsedFuel.tankCapacityL === 'number' && !isNaN(parsedFuel.tankCapacityL)
+                ? Math.max(fCfg.TANK_MIN || 5, Math.min(fCfg.TANK_MAX || 50, parsedFuel.tankCapacityL))
+                : (dFuel.tankCapacityL || 16),
+              presetId: typeof parsedFuel.presetId === 'string' ? parsedFuel.presetId : (dFuel.presetId || 'hornet'),
+              fuelType: ['BenzineEuro95_1', 'SuperPlus98', 'Diesel_2'].includes(parsedFuel.fuelType) ? parsedFuel.fuelType : (dFuel.fuelType || 'BenzineEuro95_1'),
+              timeRange: ['30D', '90D'].includes(parsedFuel.timeRange) ? parsedFuel.timeRange : (dFuel.timeRange || '30D'),
+              carConsumptionL100km: typeof parsedFuel.carConsumptionL100km === 'number' && !isNaN(parsedFuel.carConsumptionL100km)
+                ? parsedFuel.carConsumptionL100km
+                : (dFuel.carConsumptionL100km || 6.5)
+            };
+          }
+        } catch (e) {
+          console.warn('Fout bij parsen van opgeslagen brandstofdata:', e);
+        }
+      }
+
       const isUserConfigured = localStorage.getItem('rideordie_user_configured') === 'true';
       this.state.userConfiguredLocation = isUserConfigured;
 
@@ -178,6 +217,7 @@ class StateStore {
       localStorage.setItem('rideordie_view_mode', this.state.viewMode);
       localStorage.setItem('rideordie_selected_day', this.state.selectedDay);
       localStorage.setItem('rideordie_commute', JSON.stringify(this.state.commute));
+      localStorage.setItem('rideordie_fuel', JSON.stringify(this.state.fuel));
       if (this.state.userConfiguredLocation) {
         localStorage.setItem('rideordie_loc', JSON.stringify(this.state.location));
         localStorage.setItem('rideordie_route', JSON.stringify({

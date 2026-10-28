@@ -17,6 +17,7 @@ const App = {
     UIRenderer.renderTheme(State.get('theme'), true);
     UIRenderer.renderViewMode(State.get('viewMode'));
     UIRenderer.updateNavbar(State.state);
+    UIRenderer.populateFuelPresets(State.state.fuel?.presetId);
 
     const workdayConfig = CommuteEngine.getWorkdayConfig();
     UIRenderer.renderDayToggle(State.get('selectedDay'), workdayConfig);
@@ -27,7 +28,8 @@ const App = {
     // Initieel weer ophalen voor huidige locatie en route (parallel voor minimale laadtijd)
     await Promise.all([
       this.refreshWeather(false),
-      this.analyzeCurrentRoute(false)
+      this.analyzeCurrentRoute(false),
+      this.refreshFuelData(false)
     ]);
     this._startBackgroundPolling();
   },
@@ -59,6 +61,18 @@ const App = {
 
     State.subscribe('route', () => {
       UIRenderer.updateNavbar(State.state);
+      const fuelRecords = State.get('fuelData');
+      if (fuelRecords) {
+        UIRenderer.renderFuelCard(fuelRecords, State.state);
+      }
+    });
+
+    State.subscribe('fuel', () => {
+      const fuelRecords = State.get('fuelData');
+      if (fuelRecords) {
+        UIRenderer.renderFuelCard(fuelRecords, State.state);
+      }
+      this._syncPreferenceSlidersToDOM();
     });
   },
 
@@ -81,6 +95,11 @@ const App = {
     }, State.state.route);
 
     UIRenderer.renderDashboard(data, advice, State.state);
+
+    const fuelRecords = State.get('fuelData');
+    if (fuelRecords) {
+      UIRenderer.renderFuelCard(fuelRecords, State.state);
+    }
   },
 
   /**
@@ -119,8 +138,65 @@ const App = {
   },
 
   /**
-   * Analyseert het actuele traject over start, tussenstop en bestemming.
+   * Haalt actuele en historische brandstofprijzen op via FuelService (CBS).
    */
+  async refreshFuelData(force = false) {
+    try {
+      const records = await FuelService.fetchFuelData(force);
+      State.set('fuelData', records, false);
+      UIRenderer.renderFuelCard(records, State.state);
+      this._updateFuelPrefPreview();
+    } catch (e) {
+      console.warn('[App] Kon brandstofdata niet laden:', e);
+    }
+  },
+
+  _updateFuelPrefPreview() {
+    const previewEl = document.getElementById('fuel-pref-preview-text');
+    if (!previewEl) return;
+    const roadKm = State.state.route?.roadKm || 36;
+    const cons = State.state.fuel?.consumptionL100km || 5.6;
+    const records = State.get('fuelData');
+    const fuelType = State.state.fuel?.fuelType || 'BenzineEuro95_1';
+    const stats = records ? FuelService.getStats(records, fuelType, '30D') : null;
+    const price = stats ? stats.latestPrice : 2.05;
+    const trip = FuelService.calculateTripCost(roadKm, cons, price);
+    const costStr = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
+      ? I18n.formatters.currency(trip.cost)
+      : `€ ${trip.cost.toFixed(2)}`;
+    const litersStr = (typeof I18n !== 'undefined' && I18n.formatters?.liters)
+      ? I18n.formatters.liters(trip.liters)
+      : `${trip.liters.toFixed(1)} L`;
+
+    if (typeof I18n !== 'undefined' && I18n.t?.fuel?.tripEstimateNotice) {
+      previewEl.textContent = I18n.t.fuel.tripEstimateNotice(roadKm, costStr, litersStr);
+    } else {
+      previewEl.textContent = `Schatting voor jouw rit (${roadKm} km): ca. ${costStr} per enkele reis (${litersStr})`;
+    }
+  },
+
+  _applyBikePreset(presetId) {
+    const presets = Config.FUEL?.PRESETS || [];
+    const found = presets.find(p => p.id === presetId);
+    if (!found) return;
+
+    State.state.fuel.presetId = presetId;
+    if (presetId !== 'custom') {
+      State.state.fuel.consumptionL100km = found.consumption;
+      if (found.tank) State.state.fuel.tankCapacityL = found.tank;
+    }
+    State.save();
+
+    this._syncPreferenceSlidersToDOM();
+    const records = State.get('fuelData');
+    if (records) UIRenderer.renderFuelCard(records, State.state);
+    const shortName = found.name.split('—')[0].trim();
+    const toastMsg = (typeof I18n !== 'undefined' && I18n.t?.toasts?.bikeProfileUpdated)
+      ? I18n.t.toasts.bikeProfileUpdated(shortName)
+      : `Motorfiets: ${shortName}`;
+    UIRenderer.showToast(toastMsg);
+  },
+
   async analyzeCurrentRoute(force = false) {
     const route = State.state.route;
     if (!route || !route.start || !route.dest) return;
@@ -303,6 +379,35 @@ const App = {
       }
     }
 
+    // Brandstof & Motorfiets sync
+    const fuel = State.state.fuel || { consumptionL100km: 5.6, tankCapacityL: 16, presetId: 'hornet' };
+    const selPreset = document.getElementById('setting-bike-preset');
+    if (selPreset) selPreset.value = fuel.presetId || 'custom';
+
+    const vPreset = document.getElementById('modal-val-bike-preset');
+    if (vPreset && selPreset) {
+      const opt = selPreset.options[selPreset.selectedIndex];
+      vPreset.textContent = opt ? opt.text.split('—')[0].trim() : 'Aangepast';
+    }
+
+    const rCons = document.getElementById('setting-fuel-consumption');
+    if (rCons) rCons.value = fuel.consumptionL100km || 5.6;
+
+    const vCons = document.getElementById('val-fuel-consumption');
+    if (vCons) {
+      const consVal = Number(fuel.consumptionL100km || 5.6);
+      const ratio = consVal > 0 ? (100 / consVal).toFixed(1) : '20,0';
+      vCons.textContent = `${consVal.toFixed(1).replace('.', ',')} L / 100 km (1 op ${ratio.replace('.', ',')})`;
+    }
+
+    const rTank = document.getElementById('setting-tank-capacity');
+    if (rTank) rTank.value = fuel.tankCapacityL || 16;
+
+    const vTank = document.getElementById('val-tank-capacity');
+    if (vTank) vTank.textContent = `${fuel.tankCapacityL || 16} Liter`;
+
+    this._updateFuelPrefPreview();
+
     const chkRain = document.getElementById('setting-avoid-rain');
     if (chkRain) chkRain.checked = (rainTol === 'avoid');
   },
@@ -375,6 +480,7 @@ const App = {
       this._renderRouteChips();
       this._renderLocationChips();
       this.analyzeCurrentRoute(false);
+      this.refreshFuelData(false);
     } else if (modalId === 'settings-modal') {
       UIRenderer.renderTheme(State.get('theme'), true);
       this._syncPreferenceSlidersToDOM();
@@ -820,6 +926,104 @@ const App = {
       });
     });
 
+    // 7. Brandstof & Verbruik Events
+    document.querySelectorAll('#fuel-type-group .fuel-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const fuelType = btn.getAttribute('data-fuel');
+        if (fuelType) {
+          State.state.fuel.fuelType = fuelType;
+          State.save();
+          const records = State.get('fuelData');
+          if (records) UIRenderer.renderFuelCard(records, State.state);
+        }
+      });
+    });
+
+    document.querySelectorAll('#fuel-range-group .fuel-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const range = btn.getAttribute('data-range');
+        if (range) {
+          State.state.fuel.timeRange = range;
+          State.save();
+          const records = State.get('fuelData');
+          if (records) UIRenderer.renderFuelCard(records, State.state);
+        }
+      });
+    });
+
+    const quickPreset = document.getElementById('fuel-quick-preset-select');
+    if (quickPreset) {
+      quickPreset.addEventListener('change', (e) => {
+        this._applyBikePreset(e.target.value);
+      });
+    }
+
+    const modalPreset = document.getElementById('setting-bike-preset');
+    if (modalPreset) {
+      modalPreset.addEventListener('change', (e) => {
+        this._applyBikePreset(e.target.value);
+      });
+    }
+
+    const consSlider = document.getElementById('setting-fuel-consumption');
+    if (consSlider) {
+      consSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        State.state.fuel.consumptionL100km = val;
+        State.state.fuel.presetId = 'custom';
+        const vCons = document.getElementById('val-fuel-consumption');
+        if (vCons) {
+          const ratio = (100 / val).toFixed(1);
+          vCons.textContent = val.toFixed(1).replace('.', ',') + ' L / 100 km (1 op ' + ratio.replace('.', ',') + ')';
+        }
+        const selM = document.getElementById('setting-bike-preset');
+        if (selM) selM.value = 'custom';
+        const vP = document.getElementById('modal-val-bike-preset');
+        if (vP) vP.textContent = 'Aangepast';
+        const quickP = document.getElementById('fuel-quick-preset-select');
+        if (quickP) quickP.value = 'custom';
+        State.save();
+        const records = State.get('fuelData');
+        if (records) UIRenderer.renderFuelCard(records, State.state);
+        this._updateFuelPrefPreview();
+      });
+    }
+
+    const tankSlider = document.getElementById('setting-tank-capacity');
+    if (tankSlider) {
+      tankSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        State.state.fuel.tankCapacityL = val;
+        const vTank = document.getElementById('val-tank-capacity');
+        if (vTank) vTank.textContent = val + ' Liter';
+        State.save();
+        const records = State.get('fuelData');
+        if (records) UIRenderer.renderFuelCard(records, State.state);
+      });
+    }
+
+    const openFuelPrefsBtn = document.getElementById('fuel-open-prefs-btn');
+    if (openFuelPrefsBtn) {
+      openFuelPrefsBtn.addEventListener('click', () => {
+        this.openModal('route-planner-modal');
+        this._switchRouteModalTab('corridor');
+        setTimeout(() => {
+          const tegel3 = document.querySelector('#route-planner-modal .wiki-card[style*="grid-column"]');
+          if (tegel3) tegel3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 150);
+      });
+    }
+
+    const widgetFuelBar = document.getElementById('widget-fuel-bar');
+    if (widgetFuelBar) {
+      widgetFuelBar.addEventListener('click', () => {
+        State.set('viewMode', 'cockpit');
+        setTimeout(() => {
+          const card = document.getElementById('fuel-card');
+          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 120);
+      });
+    }
     const chkRain = document.getElementById('setting-avoid-rain');
     if (chkRain) {
       chkRain.addEventListener('change', (e) => {

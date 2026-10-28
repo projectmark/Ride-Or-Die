@@ -53,6 +53,48 @@ const I18n = {
       return `~${this.decimal(km, 0)} km`;
     },
 
+    // Geldbedrag in Euro's met Nederlandse komma
+    currency(num, decimals = 2) {
+      if (num === null || num === undefined || isNaN(num)) return '€ --';
+      const formatted = Number(num).toLocaleString('nl-NL', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+      return `€ ${formatted}`;
+    },
+
+    // Brandstofprijs per liter (standaard 3 decimalen, bijv. 2,391)
+    fuelPrice(num) {
+      if (num === null || num === undefined || isNaN(num)) return '--';
+      return this.decimal(num, 3);
+    },
+
+    // Volume in liters met komma
+    liters(val, decimals = 1) {
+      if (val === null || val === undefined || isNaN(val)) return '-- L';
+      return `${this.decimal(val, decimals)} L`;
+    },
+
+    // Verbruiksverhouding (bijv. "1 op 17,9")
+    consumptionRatio(l100km) {
+      const val = Number(l100km);
+      if (!val || val <= 0) return '1 op --';
+      const ratio = (100 / val).toFixed(1);
+      return `1 op ${this.decimal(ratio, 1)}`;
+    },
+
+    // Uitgebreid verbruikslabel
+    consumptionLabel(l100km) {
+      return `${this.decimal(l100km, 1)} L / 100 km (${this.consumptionRatio(l100km)})`;
+    },
+
+    // Korte datum (bijv. "19 okt")
+    shortDate(date) {
+      if (!date) return '';
+      const d = (date instanceof Date) ? date : new Date(date);
+      return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
+    },
+
     // Reistijd in minuten
     minutes(mins) {
       return `~${Math.round(mins)} min`;
@@ -241,6 +283,32 @@ const I18n = {
       noResults: "Geen plaatsen gevonden in Nederland"
     },
 
+    // Brandstofprijzen & Ritkostencalculator
+    fuel: {
+      title: "Actuele Brandstofprijzen Nederland",
+      calculatorTitle: "Rit- & Tankkostencalculator",
+      cbsSource: "CBS StatLine",
+      cbsDisclaimer: "Bron: Centraal Bureau voor de Statistiek (Tabel 80416NED) • Gewogen pompprijzen incl. accijns & btw",
+      singleTrip: "Enkele Rit",
+      dailyCommute: "Dagretour (Heen & Terug)",
+      fullTank: (liters) => `Volle Tank (${liters} L)`,
+      carSavings: "Besparing t.o.v. Auto",
+      savingsPerDay: "per werkdag bespaard 🟢",
+      perLiter: "/ liter",
+      fuelTypes: {
+        BenzineEuro95_1: "Euro 95 (E10)",
+        SuperPlus98: "Super 98 (E5)",
+        Diesel_2: "Diesel"
+      },
+      periods: {
+        '30D': "30 Dagen",
+        '90D': "90 Dagen"
+      },
+      latestCbsDate: (dateStr) => `Laatste CBS meting: ${dateStr}`,
+      rangeEstimate: (km) => `ca. ${km} km bereik`,
+      tripEstimateNotice: (km, costStr, litersStr) => `Schatting voor jouw rit (${km} km): ca. ${costStr} per enkele reis (${litersStr})`
+    },
+
     // Instellingen
     settings: {
       title: "Instellingen en persoonlijke limieten",
@@ -270,7 +338,9 @@ const I18n = {
       fullscreenOn: "Schermvullende weergave geactiveerd",
       fullscreenOff: "Standaardweergave hersteld",
       widgetModeActive: "Beknopte weergave ingeschakeld",
-      cockpitModeActive: "Uitgebreid dashboard ingeschakeld"
+      cockpitModeActive: "Uitgebreid dashboard ingeschakeld",
+      bikeProfileUpdated: (name) => `Motorfiets: ${name}`,
+      fuelRefreshed: "Brandstofprijzen bijgewerkt via CBS"
     }
   }
 };

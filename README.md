@@ -22,6 +22,8 @@
   Begint exact bij de afgelopen 2 uur voor het actuele moment voor directe trendcontext en toont wat er aankomt over de komende 24 uur, met visuele highlights voor het actuele uur en jouw rittijden.
 - **📱 100% Schaalbaar & Responsief**:
   Volledig geoptimaliseerd tegen tekstoverlap en afsnijden. Schaalt vloeiend van compacte 7-8 inch cockpit-schermen en desktop breedbeeld tot smartphones (met gecentreerde mobiele navigatie).
+- **⛽ Brandstofprijzen & Ritkostencalculator (CBS Open Data)**:
+  Toont actuele gewogen pompprijzen (Euro 95 E10, Super Plus 98, Diesel) rechtstreeks via de officiële CBS StatLine Open Data API (Tabel 80416NED) inclusief een vlijmscherpe interactieve SVG-trendgrafiek (30D & 90D). Berekent realtime de brandstofkosten van je motorrit (enkele rit & dagretour), volle tankbeurt en dagelijkse besparing t.o.v. de auto op basis van jouw persoonlijke motorfietsverbruik (bijv. Honda Hornet @ 5,6 L/100km of KTM Duke @ 3,8 L/100km).
 - **🚀 100% Modulair, Standalone & Serverless**:
   Overzichtelijk opgebouwd in gescheiden modules (`index.html`, `css/style.css`, `js/config.js`, `js/commute-engine.js`, `js/weather-service.js` en `js/app.js`). Geen build tools, geen Node.js, geen externe server en **geen Python** vereist. Werkt direct in elke moderne webbrowser via dubbelklik.
 

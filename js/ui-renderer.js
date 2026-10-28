@@ -137,6 +137,34 @@ const UIRenderer = {
         scoreSlotsComparison: document.getElementById('score-slots-comparison'),
         scoreFactorsList: document.getElementById('score-factors-list'),
 
+        // Fuel Widget Elements
+        fuelCard: document.getElementById('fuel-card'),
+        fuelPriceVal: document.getElementById('fuel-price-val'),
+        fuelTrendPill: document.getElementById('fuel-trend-pill'),
+        fuelTrendIcon: document.getElementById('fuel-trend-icon'),
+        fuelTrendText: document.getElementById('fuel-trend-text'),
+        fuelDateSub: document.getElementById('fuel-date-sub'),
+        fuelChartContainer: document.getElementById('fuel-chart-container'),
+        fuelTypeButtons: document.querySelectorAll('#fuel-type-group .fuel-seg-btn'),
+        fuelRangeButtons: document.querySelectorAll('#fuel-range-group .fuel-seg-btn'),
+        fuelCalcRouteName: document.getElementById('fuel-calc-route-name'),
+        fuelCalcKm: document.getElementById('fuel-calc-km'),
+        fuelCalcBikeName: document.getElementById('fuel-calc-bike-name'),
+        fuelCostSingle: document.getElementById('fuel-cost-single'),
+        fuelLitersSingle: document.getElementById('fuel-liters-single'),
+        fuelCostCommute: document.getElementById('fuel-cost-commute'),
+        fuelLitersCommute: document.getElementById('fuel-liters-commute'),
+        fuelCostTank: document.getElementById('fuel-cost-tank'),
+        fuelLblTank: document.getElementById('fuel-lbl-tank'),
+        fuelRangeTank: document.getElementById('fuel-range-tank'),
+        fuelCarSavings: document.getElementById('fuel-car-savings'),
+        fuelQuickPresetSelect: document.getElementById('fuel-quick-preset-select'),
+
+        // Widget view fuel
+        widgetFuelPriceLbl: document.getElementById('widget-fuel-price-lbl'),
+        widgetFuelTripCost: document.getElementById('widget-fuel-trip-cost'),
+        widgetFuelConsumptionLbl: document.getElementById('widget-fuel-consumption-lbl'),
+
         refreshIcon: document.getElementById('refresh-icon')
       };
     }
@@ -718,8 +746,261 @@ const UIRenderer = {
   },
 
   /**
-   * Rendert de horizontale scrollstrip voor de komende 24 uur.
+   * Vult de motormodel-keuzelijsten dynamisch vanuit Config.FUEL.PRESETS (DRY).
    */
+  populateFuelPresets(activePresetId = 'hornet') {
+    const presets = Config.FUEL?.PRESETS || [];
+    const els = this._getElements();
+
+    const renderOptions = (includeRatio = false) => {
+      return presets.map(p => {
+        const isCustom = p.id === 'custom';
+        const ratioStr = (!isCustom && typeof I18n !== 'undefined' && I18n.formatters?.consumptionRatio)
+          ? ` (${I18n.formatters.consumptionRatio(p.consumption)})`
+          : '';
+        const consStr = !isCustom ? ` \u2014 ${I18n.formatters.decimal(p.consumption, 1)} L / 100 km` : '';
+        const label = includeRatio ? `${p.name}${consStr}${ratioStr}` : `${p.name}${consStr}`;
+        const selected = p.id === activePresetId ? ' selected' : '';
+        return `<option value="${p.id}"${selected}>${label}</option>`;
+      }).join('');
+    };
+
+    if (els.fuelQuickPresetSelect) {
+      els.fuelQuickPresetSelect.innerHTML = renderOptions(false);
+    }
+    const modalSelect = document.getElementById('setting-bike-preset');
+    if (modalSelect) {
+      modalSelect.innerHTML = renderOptions(true);
+    }
+  },
+
+  /**
+   * Genereert een responsive vector SVG Trendgrafiek voor brandstofprijzen.
+   */
+  renderFuelSvgChart(stats, width = 540, height = 180) {
+    if (!stats || !Array.isArray(stats.history) || stats.history.length < 2) {
+      return `
+        <div class="fuel-chart-loading">
+          Geen historische koersdata beschikbaar
+        </div>`;
+    }
+
+    const history = stats.history;
+    const padding = { top: 22, right: 28, bottom: 32, left: 54 };
+    const chartW = width - padding.left - padding.right;
+    const chartH = height - padding.top - padding.bottom;
+
+    let minY = stats.min;
+    let maxY = stats.max;
+    if (minY === maxY) {
+      minY -= 0.05;
+      maxY += 0.05;
+    } else {
+      const spread = maxY - minY;
+      minY -= spread * 0.12;
+      maxY += spread * 0.14;
+    }
+
+    const getX = (index) => padding.left + (index / (history.length - 1)) * chartW;
+    const getY = (val) => padding.top + chartH - ((val - minY) / (maxY - minY)) * chartH;
+
+    const points = history.map((pt, idx) => ({
+      x: getX(idx),
+      y: getY(pt.price),
+      price: pt.price,
+      dateStr: pt.dateStr
+    }));
+
+    let pathD = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1];
+      const cur = points[i];
+      const cx = ((prev.x + cur.x) / 2).toFixed(1);
+      pathD += ` C ${cx} ${prev.y.toFixed(1)}, ${cx} ${cur.y.toFixed(1)}, ${cur.x.toFixed(1)} ${cur.y.toFixed(1)}`;
+    }
+
+    const fillD = `${pathD} L ${points[points.length - 1].x.toFixed(1)} ${(padding.top + chartH).toFixed(1)} L ${points[0].x.toFixed(1)} ${(padding.top + chartH).toFixed(1)} Z`;
+
+    const isDropping = stats.diff7d <= 0;
+    const strokeColor = isDropping ? '#10b981' : '#f59e0b';
+    const gradientTop = isDropping ? 'rgba(16, 185, 129, 0.35)' : 'rgba(245, 158, 11, 0.35)';
+    const gradientBottom = isDropping ? 'rgba(16, 185, 129, 0.02)' : 'rgba(245, 158, 11, 0.02)';
+
+    const midVal = (stats.min + stats.max) / 2;
+    const gridYMin = getY(stats.min);
+    const gridYMid = getY(midVal);
+    const gridYMax = getY(stats.max);
+
+    const firstDate = history[0].dateStr;
+    const midDate = history[Math.floor(history.length / 2)].dateStr;
+    const lastDate = history[history.length - 1].dateStr;
+    const lastPoint = points[points.length - 1];
+
+    const fmt = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
+      ? (val) => I18n.formatters.currency(val, 2)
+      : (val) => `\u20AC ${val.toFixed(2)}`;
+
+    return `
+      <svg viewBox="0 0 ${width} ${height}" class="fuel-svg-chart" preserveAspectRatio="xMidYMid meet" aria-label="Brandstofprijs trendgrafiek">
+        <defs>
+          <linearGradient id="fuelFillGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${gradientTop}"/>
+            <stop offset="100%" stop-color="${gradientBottom}"/>
+          </linearGradient>
+          <filter id="fuelGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="${strokeColor}" flood-opacity="0.35"/>
+          </filter>
+        </defs>
+
+        <g class="fuel-chart-grid" stroke="var(--border-subtle)" stroke-dasharray="3,3" stroke-width="1">
+          <line x1="${padding.left}" y1="${gridYMax.toFixed(1)}" x2="${(width - padding.right)}" y2="${gridYMax.toFixed(1)}" />
+          <line x1="${padding.left}" y1="${gridYMid.toFixed(1)}" x2="${(width - padding.right)}" y2="${gridYMid.toFixed(1)}" />
+          <line x1="${padding.left}" y1="${gridYMin.toFixed(1)}" x2="${(width - padding.right)}" y2="${gridYMin.toFixed(1)}" />
+        </g>
+
+        <g class="fuel-chart-labels" fill="var(--text-subtle)" font-size="10" font-weight="600" text-anchor="end">
+          <text x="${padding.left - 8}" y="${(gridYMax + 3).toFixed(1)}">${fmt(stats.max)}</text>
+          <text x="${padding.left - 8}" y="${(gridYMid + 3).toFixed(1)}">${fmt(midVal)}</text>
+          <text x="${padding.left - 8}" y="${(gridYMin + 3).toFixed(1)}">${fmt(stats.min)}</text>
+        </g>
+
+        <path d="${fillD}" fill="url(#fuelFillGrad)" />
+        <path d="${pathD}" fill="none" stroke="${strokeColor}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#fuelGlow)" />
+
+        <g class="fuel-chart-x-labels" fill="var(--text-subtle)" font-size="10.5" font-weight="600">
+          <text x="${padding.left}" y="${height - 8}" text-anchor="start">${firstDate}</text>
+          <text x="${(width / 2).toFixed(1)}" y="${height - 8}" text-anchor="middle">${midDate}</text>
+          <text x="${(width - padding.right)}" y="${height - 8}" text-anchor="end">${lastDate}</text>
+        </g>
+
+        <circle cx="${lastPoint.x.toFixed(1)}" cy="${lastPoint.y.toFixed(1)}" r="7" fill="${strokeColor}" opacity="0.25" class="fuel-pulse-circle" />
+        <circle cx="${lastPoint.x.toFixed(1)}" cy="${lastPoint.y.toFixed(1)}" r="4.2" fill="#ffffff" stroke="${strokeColor}" stroke-width="2.5" />
+      </svg>`;
+  },
+
+  /**
+   * Rendert de Brandstof & Ritkosten kaart en de interactieve trendgrafiek.
+   */
+  renderFuelCard(fuelRecords, state) {
+    const els = this._getElements();
+    if (!els.fuelCard) return;
+
+    const dFuel = Config.DEFAULTS?.FUEL || {};
+    const fuelState = state.fuel || {
+      fuelType: dFuel.fuelType || 'BenzineEuro95_1',
+      timeRange: dFuel.timeRange || '30D',
+      consumptionL100km: dFuel.consumptionL100km || 5.6,
+      tankCapacityL: dFuel.tankCapacityL || 16,
+      presetId: dFuel.presetId || 'hornet',
+      carConsumptionL100km: dFuel.carConsumptionL100km || 6.5
+    };
+
+    const stats = FuelService.getStats(fuelRecords, fuelState.fuelType, fuelState.timeRange);
+    if (!stats) return;
+
+    // 1. Prijs & Trend Banner
+    if (els.fuelPriceVal) {
+      els.fuelPriceVal.textContent = (typeof I18n !== 'undefined' && I18n.formatters?.fuelPrice)
+        ? I18n.formatters.fuelPrice(stats.latestPrice)
+        : stats.latestPrice.toFixed(3).replace('.', ',');
+    }
+
+    if (els.fuelTrendPill && els.fuelTrendText && els.fuelTrendIcon) {
+      const isDown = stats.diff7d <= 0;
+      const absDiff = Math.abs(parseFloat(stats.diff7dCents));
+      const icon = isDown ? '\u25BC' : '\u25B2';
+      const sign = isDown ? '-' : '+';
+      els.fuelTrendIcon.textContent = icon;
+      els.fuelTrendText.textContent = `${sign}${absDiff.toFixed(1)} ct (7d)`;
+      els.fuelTrendPill.className = `fuel-trend-pill ${isDown ? 'down' : 'up'}`;
+    }
+
+    if (els.fuelDateSub) {
+      els.fuelDateSub.textContent = (typeof I18n !== 'undefined' && I18n.t?.fuel?.latestCbsDate)
+        ? I18n.t.fuel.latestCbsDate(stats.latestDateStr)
+        : `Laatste CBS meting: ${stats.latestDateStr}`;
+    }
+
+    // 2. Active buttons sync
+    if (els.fuelTypeButtons) {
+      els.fuelTypeButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-fuel') === fuelState.fuelType);
+      });
+    }
+    if (els.fuelRangeButtons) {
+      els.fuelRangeButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-range') === fuelState.timeRange);
+      });
+    }
+
+    // 3. SVG Grafiek renderen via UIRenderer
+    if (els.fuelChartContainer) {
+      els.fuelChartContainer.innerHTML = this.renderFuelSvgChart(stats);
+    }
+
+    // 4. Rit- en Tankkostencalculator
+    const roadKm = (state.route && state.route.roadKm) ? state.route.roadKm : 36;
+    const startName = state.route?.start?.name || 'Start';
+    const destName = state.route?.dest?.name || 'Bestemming';
+
+    if (els.fuelCalcRouteName) {
+      els.fuelCalcRouteName.textContent = `${startName} \u2794 ${destName}`;
+    }
+    if (els.fuelCalcKm) {
+      els.fuelCalcKm.textContent = `${roadKm} km`;
+    }
+
+    // Motorbadge naam
+    const presets = Config.FUEL?.PRESETS || [];
+    const activePreset = presets.find(p => p.id === fuelState.presetId) || presets.find(p => p.consumption === fuelState.consumptionL100km);
+    const bikeName = activePreset
+      ? activePreset.name
+      : `Motorfiets (${I18n.formatters.decimal(fuelState.consumptionL100km, 1)} L / 100 km)`;
+
+    if (els.fuelCalcBikeName) {
+      els.fuelCalcBikeName.textContent = `\uD83C\uDFCD\uFE0F ${bikeName}`;
+    }
+    if (els.fuelQuickPresetSelect) {
+      els.fuelQuickPresetSelect.value = fuelState.presetId || 'custom';
+    }
+
+    // Berekeningen via FuelService
+    const singleTrip = FuelService.calculateTripCost(roadKm, fuelState.consumptionL100km, stats.latestPrice);
+    const dailyCommute = FuelService.calculateDailyCommuteCost(roadKm, fuelState.consumptionL100km, stats.latestPrice);
+    const tank = FuelService.calculateTankCost(fuelState.tankCapacityL, stats.latestPrice);
+    const estRangeKm = FuelService.calculateRangeKm(fuelState.tankCapacityL, fuelState.consumptionL100km);
+    const savings = FuelService.calculateCarSavings(roadKm, fuelState.consumptionL100km, fuelState.carConsumptionL100km, stats.latestPrice);
+
+    const fmtCurrency = (val) => (typeof I18n !== 'undefined' && I18n.formatters?.currency) ? I18n.formatters.currency(val) : `\u20AC ${val.toFixed(2)}`;
+    const fmtLiters = (val) => (typeof I18n !== 'undefined' && I18n.formatters?.liters) ? I18n.formatters.liters(val) : `${val.toFixed(1)} L`;
+
+    if (els.fuelCostSingle) els.fuelCostSingle.textContent = fmtCurrency(singleTrip.cost);
+    if (els.fuelLitersSingle) els.fuelLitersSingle.textContent = `${fmtLiters(singleTrip.liters)} brandstof`;
+
+    if (els.fuelCostCommute) els.fuelCostCommute.textContent = fmtCurrency(dailyCommute.cost);
+    if (els.fuelLitersCommute) els.fuelLitersCommute.textContent = `${fmtLiters(dailyCommute.liters)} per werkdag`;
+
+    if (els.fuelCostTank) els.fuelCostTank.textContent = fmtCurrency(tank.cost);
+    if (els.fuelLblTank) els.fuelLblTank.textContent = (typeof I18n !== 'undefined' && I18n.t?.fuel?.fullTank)
+      ? I18n.t.fuel.fullTank(fuelState.tankCapacityL)
+      : `Volle Tank (${fuelState.tankCapacityL} L)`;
+    if (els.fuelRangeTank) els.fuelRangeTank.textContent = (typeof I18n !== 'undefined' && I18n.t?.fuel?.rangeEstimate)
+      ? I18n.t.fuel.rangeEstimate(estRangeKm)
+      : `ca. ${estRangeKm} km bereik`;
+
+    if (els.fuelCarSavings) els.fuelCarSavings.textContent = `+ ${fmtCurrency(savings.daily)}`;
+
+    // 5. Update compact strip in widget view
+    if (els.widgetFuelPriceLbl) {
+      els.widgetFuelPriceLbl.textContent = `${fmtCurrency(stats.latestPrice)}/L`;
+    }
+    if (els.widgetFuelTripCost) {
+      els.widgetFuelTripCost.textContent = fmtCurrency(singleTrip.cost);
+    }
+    if (els.widgetFuelConsumptionLbl) {
+      els.widgetFuelConsumptionLbl.textContent = `${I18n.formatters.decimal(fuelState.consumptionL100km, 1)} L/100km`;
+    }
+  },
   renderHourlyStrip(hourly, selectedDay, workdayConfig, commute) {
     const strip = this._getElements().hourlyStrip;
     if (!strip || !hourly || !hourly.time) return;

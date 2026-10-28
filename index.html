@@ -453,6 +453,128 @@
 
       </section>
 
+          <!-- ====================================================================
+           FUEL & COMMUTE COST SECTION: Brandstofprijzen (CBS) & Ritkostencalculator
+           ==================================================================== -->
+      <section class="m3-card fuel-cockpit-card" id="fuel-card">
+        <div class="fuel-card-grid">
+
+          <!-- Kolom 1: Actuele Pompprijzen & Interactieve SVG Grafiek -->
+          <div class="fuel-chart-col">
+            <div class="card-title-row">
+              <div class="card-title-text">
+                <span style="font-size: 1.15rem;">⛽</span>
+                <span>Actuele Brandstofprijzen Nederland</span>
+              </div>
+              <span class="hero-time-badge" id="fuel-source-badge">CBS StatLine</span>
+            </div>
+
+            <!-- Brandstof & Periode Selector Tabs -->
+            <div class="fuel-selectors-row">
+              <div class="fuel-segmented-group" id="fuel-type-group" role="radiogroup" aria-label="Brandstofkeuze">
+                <button type="button" class="fuel-seg-btn active" data-fuel="BenzineEuro95_1">Euro 95 (E10)</button>
+                <button type="button" class="fuel-seg-btn" data-fuel="SuperPlus98">Super 98 (E5)</button>
+                <button type="button" class="fuel-seg-btn" data-fuel="Diesel_2">Diesel</button>
+              </div>
+
+              <div class="fuel-segmented-group" id="fuel-range-group" role="radiogroup" aria-label="Periode">
+                <button type="button" class="fuel-seg-btn active" data-range="30D">30 Dagen</button>
+                <button type="button" class="fuel-seg-btn" data-range="90D">90 Dagen</button>
+              </div>
+            </div>
+
+            <!-- Grote Prijs KPI & Trend Banner -->
+            <div class="fuel-hero-row">
+              <div class="fuel-price-display">
+                <span class="fuel-currency">€</span>
+                <span class="fuel-price-large" id="fuel-price-val">--</span>
+                <span class="fuel-unit">/ liter</span>
+              </div>
+              <div class="fuel-trend-wrap">
+                <div class="fuel-trend-pill" id="fuel-trend-pill">
+                  <span id="fuel-trend-icon">•</span>
+                  <span id="fuel-trend-text">Laden...</span>
+                </div>
+                <div class="fuel-date-sub" id="fuel-date-sub">Laatste CBS meting: laden...</div>
+              </div>
+            </div>
+
+            <!-- Interactieve SVG Grafiek Container -->
+            <div class="fuel-chart-container" id="fuel-chart-container">
+              <div class="fuel-chart-loading">CBS Pompprijzen ophalen...</div>
+            </div>
+
+            <div class="fuel-cbs-footer">
+              <span>📊 Bron: Centraal Bureau voor de Statistiek (Tabel 80416NED)</span>
+              <span>•</span>
+              <span>Gewogen pompprijzen incl. accijns &amp; btw</span>
+            </div>
+          </div>
+
+          <!-- Kolom 2: 🏍️ Rit- & Tankkosten Calculator -->
+          <div class="fuel-calc-col">
+            <div class="card-title-row">
+              <div class="card-title-text">
+                <span style="font-size: 1.15rem;">🏍️</span>
+                <span>Rit- &amp; Tankkostencalculator</span>
+              </div>
+              <button type="button" class="city-chip fuel-config-btn" id="fuel-open-prefs-btn" title="Verbruik en motorfiets aanpassen">
+                ⚙️ Aanpassen
+              </button>
+            </div>
+
+            <!-- Traject en Actieve Motor Banner -->
+            <div class="fuel-route-summary-pill">
+              <div class="fuel-route-title">
+                <span id="fuel-calc-route-name">Utrecht ➔ Amersfoort</span>
+                <span class="fuel-route-dist" id="fuel-calc-km">36 km</span>
+              </div>
+              <div class="fuel-bike-badge" id="fuel-calc-bike-name">
+                🏍️ Honda CB600F Hornet (5,6 L / 100 km)
+              </div>
+            </div>
+
+            <!-- 4 Berekeningstegels -->
+            <div class="fuel-tiles-grid">
+              <div class="fuel-calc-tile">
+                <span class="fuel-tile-lbl">Enkele Rit</span>
+                <span class="fuel-tile-val" id="fuel-cost-single">€ --</span>
+                <span class="fuel-tile-sub" id="fuel-liters-single">-- liter</span>
+              </div>
+
+              <div class="fuel-calc-tile highlight">
+                <span class="fuel-tile-lbl">Dagretour (Heen &amp; Terug)</span>
+                <span class="fuel-tile-val" id="fuel-cost-commute">€ --</span>
+                <span class="fuel-tile-sub" id="fuel-liters-commute">-- liter / dag</span>
+              </div>
+
+              <div class="fuel-calc-tile">
+                <span class="fuel-tile-lbl" id="fuel-lbl-tank">Volle Tank (16 L)</span>
+                <span class="fuel-tile-val" id="fuel-cost-tank">€ --</span>
+                <span class="fuel-tile-sub" id="fuel-range-tank">ca. -- km bereik</span>
+              </div>
+
+              <div class="fuel-calc-tile savings">
+                <span class="fuel-tile-lbl">Besparing t.o.v. Auto</span>
+                <span class="fuel-tile-val" id="fuel-car-savings">€ --</span>
+                <span class="fuel-tile-sub">per werkdag bespaard 🟢</span>
+              </div>
+            </div>
+
+            <!-- Snelle preset kiezer direct op de kaart -->
+            <div class="fuel-quick-preset-wrap">
+              <label for="fuel-quick-preset-select" style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">
+                Snelle motorkeuze:
+              </label>
+              <select class="m3-select-input" id="fuel-quick-preset-select" aria-label="Snelle motorkeuze voor brandstofverbruik">
+                <!-- Dynamisch gevuld via Config.FUEL.PRESETS -->
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
     </main>
 
     <!-- ====================================================================
@@ -521,6 +643,13 @@
           <span id="widget-wind-text">💨 Wind: 25 km/u (Veilig)</span>
           <span id="widget-grip-text">🛣️ Grip: 100% Droog</span>
           <span id="widget-rain-text">💧 Regen: 0%</span>
+        </div>
+
+                <!-- Fuel & Trip Cost Strip in Single Widget Mode -->
+        <div class="widget-fuel-bar" id="widget-fuel-bar" title="Brandstof- en ritkosten">
+          <span class="widget-fuel-item">⛽ <strong id="widget-fuel-price-lbl">€ --/L</strong> (Euro 95)</span>
+          <span class="widget-fuel-sep">•</span>
+          <span class="widget-fuel-item">🏍️ Rit: <strong id="widget-fuel-trip-cost">€ --</strong> (<span id="widget-fuel-consumption-lbl">5,6 L/100km</span>)</span>
         </div>
 
         <button type="button" class="widget-expand-btn" id="widget-switch-to-cockpit-btn">
@@ -613,7 +742,7 @@
           <div>
             <div style="font-weight:800;font-size:0.84rem;color:var(--text-main);">🏍️ Rit- en weervoorkeuren aanpassen?</div>
             <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">
-              Koudegrens, verwarmde handschoenen, windlimiet, neerslagprofiel en rittijden zijn gekoppeld aan je <strong>Ritinstellingen</strong>.
+              Koudegrens, verwarmde handschoenen, windlimiet, motorverbruik (L/100 km) en rittijden zijn gekoppeld aan je <strong>Ritinstellingen</strong>.
             </div>
           </div>
           <button type="button" class="city-chip" id="switch-to-route-prefs-btn" style="font-weight:800;padding:6px 14px;height:auto;cursor:pointer;">
@@ -884,11 +1013,66 @@
                 Het Harmonie-model scant automatisch van <strong>-30 min</strong> tot <strong>+90 min</strong> rond jouw vertrektijd en signaleert wanneer eerder of later rijden droger is.
               </div>
             </div>
+
+
+          </div>
+
+          <!-- Tegel 3: Motorfiets & Brandstofverbruik (Ritkostencalculator) -->
+          <div class="wiki-card" style="grid-column: 1 / -1;">
+            <div class="wiki-card-header">
+              <span>⛽</span>
+              <div>
+                <div class="wiki-card-title">Motorfiets &amp; Brandstofverbruik (Ritkostencalculator)</div>
+                <div class="wiki-card-sub">Stel je eigen gemiddelde verbruik in voor accurate ritkosten</div>
+              </div>
+            </div>
+            <p class="wiki-card-body">
+              Kies een bekend motormodel of stel jouw exacte verbruik in per 100 kilometer (bijvoorbeeld je <strong>Honda CB600F Hornet (5,6 L)</strong> of een <strong>KTM Duke (3,8 L)</strong>).
+            </p>
+
+            <!-- Preset Kiezer -->
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>🏍️ Bekende motormodellen / Presets</span>
+                <span class="pref-val-pill" id="modal-val-bike-preset">Honda Hornet 2002</span>
+              </div>
+              <select class="m3-select-input" id="setting-bike-preset" aria-label="Kies motormodel of preset">
+                <!-- Dynamisch gevuld via Config.FUEL.PRESETS -->
+              </select>
+            </div>
+
+            <!-- Verbruik Slider (L / 100 km) -->
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>📊 Gemiddeld verbruik per 100 km</span>
+                <span class="pref-val-pill" id="val-fuel-consumption">5,6 L / 100 km (1 op 17,9)</span>
+              </div>
+              <input type="range" min="2.5" max="9.0" step="0.1" value="5.6" class="m3-range-slider" id="setting-fuel-consumption" />
+              <div class="pref-slider-hint">
+                Schuif voor jouw specifieke verbruik. Een zuinige 1-cilinder ligt rond 3,5-4,0 L; sportievere viercilinders rond 5,5-6,5 L.
+              </div>
+            </div>
+
+            <!-- Tankinhoud Slider -->
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>🛢️ Tankinhoud van je motor</span>
+                <span class="pref-val-pill" id="val-tank-capacity">16 Liter</span>
+              </div>
+              <input type="range" min="10" max="30" step="1" value="16" class="m3-range-slider" id="setting-tank-capacity" />
+              <div class="pref-slider-hint">Wordt gebruikt om de totale kosten van een volle tankbeurt en actieradius te berekenen.</div>
+            </div>
+
+            <!-- Live Ritprijs Voorbeeld -->
+            <div class="safety-monitor-notice" style="border-left-color: #0284c7; background: rgba(2, 132, 199, 0.05);">
+              <div class="safety-notice-header" style="color: var(--md-sys-color-primary);">
+                <span>💡</span>
+                <span id="fuel-pref-preview-text">Schatting voor jouw rit: ca. € 4,82 per enkele reis (36 km)</span>
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
-
       <!-- ==========================================
            ROUTE TAB PANEL 2: BASISLOCATIE & WEERSTATION
            ========================================== -->
@@ -1260,6 +1444,7 @@
   <script src="js/config.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/state.js"></script>
+  <script src="js/fuel-service.js"></script>
   <script src="js/weather-service.js"></script>
   <script src="js/commute-engine.js"></script>
   <script src="js/route-engine.js"></script>

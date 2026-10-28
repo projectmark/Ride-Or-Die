@@ -60,6 +60,36 @@ const Config = {
     }
   },
 
+  // 2b. Brandstofprijzen & verbruiksparameters (CBS Open Data StatLine)
+  FUEL: {
+    CBS_API_URL: 'https://opendata.cbs.nl/ODataApi/OData/80416ned/TypedDataSet',
+    CACHE_TTL_MS: 12 * 60 * 60 * 1000, // 12 uur cache
+    HISTORY_DAYS_QUERY: 120, // Aantal dagen historie op te halen
+    SUPER98_SURCHARGE: 0.19, // Marktconforme meerprijs Super 98 t.o.v. Euro 95 in NL
+    FALLBACK_PRICE_EURO95: 2.05,
+    FALLBACK_PRICE_DIESEL: 1.78,
+    FALLBACK_PRICE_LPG: 0.85,
+    DEFAULT_CONSUMPTION_L100KM: 5.6,
+    DEFAULT_TANK_CAPACITY_L: 16,
+    DEFAULT_CAR_CONSUMPTION_L100KM: 6.5,
+    WORKDAYS_PER_WEEK: 5,
+    WORKDAYS_PER_MONTH: 21.6,
+    CONSUMPTION_MIN: 2.5,
+    CONSUMPTION_MAX: 9.0,
+    CONSUMPTION_STEP: 0.1,
+    TANK_MIN: 10,
+    TANK_MAX: 30,
+    TANK_STEP: 1,
+    PRESETS: [
+      { id: 'hornet', name: 'Honda CB600F Hornet (2002)', consumption: 5.6, tank: 16 },
+      { id: 'duke', name: 'KTM 390 / 890 Duke', consumption: 3.8, tank: 14 },
+      { id: 'yamaha', name: 'Yamaha MT-07 / Tracer 7', consumption: 4.3, tank: 14 },
+      { id: 'gs', name: 'BMW R1200 / 1250 GS', consumption: 5.1, tank: 20 },
+      { id: 'allround', name: 'Gemiddelde Motor / Allround', consumption: 4.8, tank: 15 },
+      { id: 'custom', name: 'Aangepast verbruik...', consumption: 5.6, tank: 16 }
+    ]
+  },
+
   // 3. Standaardwaarden voor gebruikersvoorkeuren
   DEFAULTS: {
     THEME: 'light',
@@ -92,6 +122,14 @@ const Config = {
       mid: { name: 'Zeist', lat: 52.0911, lon: 5.2333, country: 'NL' },
       dest: { name: 'Amersfoort', lat: 52.1561, lon: 5.3878, country: 'NL' },
       legDurationMinutes: 15
+    },
+    FUEL: {
+      consumptionL100km: 5.6,
+      tankCapacityL: 16,
+      presetId: 'hornet',
+      fuelType: 'BenzineEuro95_1',
+      timeRange: '30D',
+      carConsumptionL100km: 6.5
     }
   },
 
