@@ -159,7 +159,7 @@ const App = {
     const records = State.get('fuelData');
     const fuelType = State.state.fuel?.fuelType || 'BenzineEuro95_1';
     const stats = records ? FuelService.getStats(records, fuelType, '30D') : null;
-    const price = stats ? stats.latestPrice : 2.05;
+    const price = FuelService.getEffectivePrice(stats, State.state.fuel);
     const trip = FuelService.calculateTripCost(roadKm, cons, price);
     const costStr = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
       ? I18n.formatters.currency(trip.cost)
@@ -405,6 +405,31 @@ const App = {
 
     const vTank = document.getElementById('val-tank-capacity');
     if (vTank) vTank.textContent = `${fuel.tankCapacityL || 16} Liter`;
+    // Prijsmodus & Dagkoers sync
+    const isCustomPrice = fuel.priceMode === 'custom';
+    const customPrice = Number(fuel.customPricePerLiter || 2.274);
+    const modalModeBtns = document.querySelectorAll('#modal-fuel-mode-group .fuel-seg-btn');
+    modalModeBtns.forEach(btn => {
+      const m = btn.getAttribute('data-mode');
+      btn.classList.toggle('active', (m === 'custom' && isCustomPrice) || (m === 'cbs' && !isCustomPrice));
+    });
+    const wrapCustom = document.getElementById('custom-price-slider-wrap');
+    if (wrapCustom) wrapCustom.style.display = isCustomPrice ? 'block' : 'none';
+    const chipsCustom = document.getElementById('fuel-quick-price-chips');
+    if (chipsCustom) chipsCustom.style.display = isCustomPrice ? 'flex' : 'none';
+    const rPrice = document.getElementById('setting-custom-fuel-price');
+    if (rPrice) rPrice.value = customPrice.toFixed(2);
+    const vPricePill = document.getElementById('val-fuel-price-pill');
+    if (vPricePill) {
+      if (isCustomPrice) {
+        vPricePill.textContent = `\u20AC ${customPrice.toFixed(3).replace('.', ',')} / L (Aangepast)`;
+      } else {
+        const records = State.get('fuelData');
+        const stats = records ? FuelService.getStats(records, fuel.fuelType || 'BenzineEuro95_1', '30D') : null;
+        const cbsP = stats ? stats.latestPrice : 2.274;
+        vPricePill.textContent = `\u20AC ${cbsP.toFixed(3).replace('.', ',')} / L (CBS)`;
+      }
+    }
 
     this._updateFuelPrefPreview();
 
@@ -999,6 +1024,71 @@ const App = {
         State.save();
         const records = State.get('fuelData');
         if (records) UIRenderer.renderFuelCard(records, State.state);
+      });
+    }
+
+        // Prijsbron toggle (CBS vs. Actuele Dagprijs)
+    const handlePriceModeChange = (mode) => {
+      State.state.fuel.priceMode = mode;
+      if (mode === 'custom' && (!State.state.fuel.customPricePerLiter || State.state.fuel.customPricePerLiter <= 0)) {
+        State.state.fuel.customPricePerLiter = Config.FUEL?.TODAY_MARKET_PRICE_EURO95 || 2.274;
+      }
+      State.save();
+      this._syncPreferenceSlidersToDOM();
+      const records = State.get('fuelData');
+      if (records) UIRenderer.renderFuelCard(records, State.state);
+      this._updateFuelPrefPreview();
+
+      const priceVal = State.state.fuel.customPricePerLiter || 2.274;
+      const priceStr = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
+        ? I18n.formatters.currency(priceVal)
+        : `\u20AC ${Number(priceVal).toFixed(2)}`;
+      const toastMsg = (mode === 'custom')
+        ? (I18n.t?.toasts?.fuelPriceModeCustom ? I18n.t.toasts.fuelPriceModeCustom(priceStr) : `Actuele dagprijs actief: ${priceStr}`)
+        : (I18n.t?.toasts?.fuelPriceModeCBS || 'CBS landelijk gewogen gemiddelde actief');
+      UIRenderer.showToast(toastMsg);
+    };
+
+    document.querySelectorAll('#fuel-mode-group .fuel-seg-btn, #modal-fuel-mode-group .fuel-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.getAttribute('data-mode');
+        if (mode) handlePriceModeChange(mode);
+      });
+    });
+
+    document.querySelectorAll('#fuel-quick-price-chips .quick-price-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = parseFloat(btn.getAttribute('data-price'));
+        if (!isNaN(p)) {
+          State.state.fuel.priceMode = 'custom';
+          State.state.fuel.customPricePerLiter = p;
+          State.save();
+          this._syncPreferenceSlidersToDOM();
+          const records = State.get('fuelData');
+          if (records) UIRenderer.renderFuelCard(records, State.state);
+          this._updateFuelPrefPreview();
+          const priceStr = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
+            ? I18n.formatters.currency(p)
+            : `\u20AC ${p.toFixed(2)}`;
+          UIRenderer.showToast(`Rekenprijs ingesteld op ${priceStr}/L`);
+        }
+      });
+    });
+
+    const customPriceSlider = document.getElementById('setting-custom-fuel-price');
+    if (customPriceSlider) {
+      customPriceSlider.addEventListener('input', (e) => {
+        const p = parseFloat(e.target.value);
+        if (!isNaN(p)) {
+          State.state.fuel.priceMode = 'custom';
+          State.state.fuel.customPricePerLiter = p;
+          const vPill = document.getElementById('val-fuel-price-pill');
+          if (vPill) vPill.textContent = `\u20AC ${p.toFixed(3).replace('.', ',')} / L (Aangepast)`;
+          State.save();
+          const records = State.get('fuelData');
+          if (records) UIRenderer.renderFuelCard(records, State.state);
+          this._updateFuelPrefPreview();
+        }
       });
     }
 

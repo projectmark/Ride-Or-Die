@@ -159,6 +159,14 @@ const UIRenderer = {
         fuelRangeTank: document.getElementById('fuel-range-tank'),
         fuelCarSavings: document.getElementById('fuel-car-savings'),
         fuelQuickPresetSelect: document.getElementById('fuel-quick-preset-select'),
+        fuelCustomTag: document.getElementById('fuel-custom-tag'),
+        fuelModeButtons: document.querySelectorAll('#fuel-mode-group .fuel-seg-btn'),
+        modalFuelModeButtons: document.querySelectorAll('#modal-fuel-mode-group .fuel-seg-btn'),
+        fuelQuickPriceChips: document.getElementById('fuel-quick-price-chips'),
+        customPriceSliderWrap: document.getElementById('custom-price-slider-wrap'),
+        settingCustomFuelPrice: document.getElementById('setting-custom-fuel-price'),
+        valFuelPricePill: document.getElementById('val-fuel-price-pill'),
+        cbsScheduleHint: document.getElementById('cbs-schedule-hint'),
 
         // Widget view fuel
         widgetFuelPriceLbl: document.getElementById('widget-fuel-price-lbl'),
@@ -899,11 +907,30 @@ const UIRenderer = {
     if (!stats) return;
 
     // 1. Prijs & Trend Banner
+    const effectivePrice = FuelService.getEffectivePrice(stats, fuelState);
+    const isCustomMode = fuelState.priceMode === 'custom';
     if (els.fuelPriceVal) {
       els.fuelPriceVal.textContent = (typeof I18n !== 'undefined' && I18n.formatters?.fuelPrice)
-        ? I18n.formatters.fuelPrice(stats.latestPrice)
-        : stats.latestPrice.toFixed(3).replace('.', ',');
+        ? I18n.formatters.fuelPrice(isCustomMode ? effectivePrice : stats.latestPrice)
+        : (isCustomMode ? effectivePrice : stats.latestPrice).toFixed(3).replace('.', ',');
     }
+
+    if (els.fuelCustomTag) {
+      els.fuelCustomTag.style.display = isCustomMode ? 'inline-flex' : 'none';
+      els.fuelCustomTag.textContent = isCustomMode ? 'Actuele koers' : '';
+    }
+
+    // Prijsmodus knoppen synchroniseren
+    const updateModeButtons = (btns) => {
+      if (!btns) return;
+      btns.forEach(btn => {
+        const m = btn.getAttribute('data-mode');
+        const active = (m === 'custom' && isCustomMode) || (m === 'cbs' && !isCustomMode);
+        btn.classList.toggle('active', active);
+      });
+    };
+    updateModeButtons(els.fuelModeButtons);
+    updateModeButtons(els.modalFuelModeButtons);
 
     if (els.fuelTrendPill && els.fuelTrendText && els.fuelTrendIcon) {
       const isDown = stats.diff7d <= 0;
@@ -916,9 +943,12 @@ const UIRenderer = {
     }
 
     if (els.fuelDateSub) {
-      els.fuelDateSub.textContent = (typeof I18n !== 'undefined' && I18n.t?.fuel?.latestCbsDate)
-        ? I18n.t.fuel.latestCbsDate(stats.latestDateStr)
-        : `Laatste CBS meting: ${stats.latestDateStr}`;
+      const sched = FuelService.getCbsScheduleInfo(stats.latestPeriod);
+      els.fuelDateSub.textContent = isCustomMode
+        ? ((typeof I18n !== 'undefined' && I18n.t?.fuel?.usingCustomPriceNotice) ? I18n.t.fuel.usingCustomPriceNotice(I18n.formatters.fuelPrice(effectivePrice)) : `Rekent met actuele dagprijs: \u20AC ${effectivePrice.toFixed(3)}/L`)
+        : ((typeof I18n !== 'undefined' && I18n.t?.fuel?.cbsDateWithNext) ? I18n.t.fuel.cbsDateWithNext(stats.latestDateStr, sched.relativeLabel) : `Laatste CBS meting: ${stats.latestDateStr} \u2022 Volgende: ${sched.relativeLabel}`);
+
+
     }
 
     // 2. Active buttons sync
@@ -964,12 +994,12 @@ const UIRenderer = {
       els.fuelQuickPresetSelect.value = fuelState.presetId || 'custom';
     }
 
-    // Berekeningen via FuelService
-    const singleTrip = FuelService.calculateTripCost(roadKm, fuelState.consumptionL100km, stats.latestPrice);
-    const dailyCommute = FuelService.calculateDailyCommuteCost(roadKm, fuelState.consumptionL100km, stats.latestPrice);
-    const tank = FuelService.calculateTankCost(fuelState.tankCapacityL, stats.latestPrice);
+    // Berekeningen via FuelService met effectieve prijs (CBS of actuele dagkoers)
+    const singleTrip = FuelService.calculateTripCost(roadKm, fuelState.consumptionL100km, effectivePrice);
+    const dailyCommute = FuelService.calculateDailyCommuteCost(roadKm, fuelState.consumptionL100km, effectivePrice);
+    const tank = FuelService.calculateTankCost(fuelState.tankCapacityL, effectivePrice);
     const estRangeKm = FuelService.calculateRangeKm(fuelState.tankCapacityL, fuelState.consumptionL100km);
-    const savings = FuelService.calculateCarSavings(roadKm, fuelState.consumptionL100km, fuelState.carConsumptionL100km, stats.latestPrice);
+    const savings = FuelService.calculateCarSavings(roadKm, fuelState.consumptionL100km, fuelState.carConsumptionL100km, effectivePrice);
 
     const fmtCurrency = (val) => (typeof I18n !== 'undefined' && I18n.formatters?.currency) ? I18n.formatters.currency(val) : `\u20AC ${val.toFixed(2)}`;
     const fmtLiters = (val) => (typeof I18n !== 'undefined' && I18n.formatters?.liters) ? I18n.formatters.liters(val) : `${val.toFixed(1)} L`;
@@ -992,7 +1022,7 @@ const UIRenderer = {
 
     // 5. Update compact strip in widget view
     if (els.widgetFuelPriceLbl) {
-      els.widgetFuelPriceLbl.textContent = `${fmtCurrency(stats.latestPrice)}/L`;
+      els.widgetFuelPriceLbl.textContent = `${fmtCurrency(effectivePrice)}/L`;
     }
     if (els.widgetFuelTripCost) {
       els.widgetFuelTripCost.textContent = fmtCurrency(singleTrip.cost);

@@ -139,9 +139,9 @@ const FuelService = {
   _getFallbackRecords() {
     const list = [];
     const fuelCfg = Config.FUEL || {};
-    const baseEuro = fuelCfg.FALLBACK_PRICE_EURO95 || 2.05;
-    const baseDiesel = fuelCfg.FALLBACK_PRICE_DIESEL || 1.78;
-    const baseLpg = fuelCfg.FALLBACK_PRICE_LPG || 0.85;
+    const baseEuro = fuelCfg.FALLBACK_PRICE_EURO95 || 2.274;
+    const baseDiesel = fuelCfg.FALLBACK_PRICE_DIESEL || 2.462;
+    const baseLpg = fuelCfg.FALLBACK_PRICE_LPG || 0.984;
     const superSurcharge = fuelCfg.SUPER98_SURCHARGE || 0.19;
     const now = new Date();
 
@@ -222,13 +222,57 @@ const FuelService = {
   },
 
   /**
+   * Bepaalt de effectieve rekenprijs op basis van de gebruikersvoorkeur (CBS vs. Aangepast/Actueel).
+   */
+  getEffectivePrice(stats, fuelState) {
+    if (fuelState && fuelState.priceMode === 'custom' && typeof fuelState.customPricePerLiter === 'number' && fuelState.customPricePerLiter > 0) {
+      return fuelState.customPricePerLiter;
+    }
+    return stats ? stats.latestPrice : (Config.FUEL?.FALLBACK_PRICE_EURO95 || 2.274);
+  },
+
+  /**
+   * Berekent informatie over de eerstvolgende CBS publicatiedatum (altijd wekelijks op donderdag).
+   */
+  getCbsScheduleInfo(latestPeriodStr) {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = zon, 1 = maa, 2 = din, 3 = woe, 4 = don, 5 = vri, 6 = zat
+    let daysUntilThursday = (4 - dayOfWeek + 7) % 7;
+    if (daysUntilThursday === 0 && now.getHours() >= 14) {
+      daysUntilThursday = 7;
+    }
+    const nextPub = new Date(now);
+    nextPub.setDate(now.getDate() + daysUntilThursday);
+
+    const isToday = daysUntilThursday === 0;
+    const isTomorrow = daysUntilThursday === 1;
+
+    let relativeLabel = '';
+    if (isToday) {
+      relativeLabel = 'vandaag';
+    } else if (isTomorrow) {
+      relativeLabel = 'morgen (donderdag)';
+    } else {
+      relativeLabel = (typeof I18n !== 'undefined' && I18n.formatters?.shortDate)
+        ? `donderdag ${I18n.formatters.shortDate(nextPub)}`
+        : `donderdag ${nextPub.getDate()} okt`;
+    }
+
+    return {
+      nextDate: nextPub,
+      relativeLabel,
+      cycleText: 'Wekelijks op donderdag'
+    };
+  },
+
+  /**
    * Berekent de kosten voor een enkele rit.
    */
   calculateTripCost(distanceKm, consumptionL100km, pricePerLiter) {
     const km = Math.max(0, Number(distanceKm) || 0);
     const dFuel = Config.DEFAULTS?.FUEL || {};
     const cons = Math.max(0.5, Number(consumptionL100km) || dFuel.consumptionL100km || 5.6);
-    const price = Math.max(0, Number(pricePerLiter) || Config.FUEL?.FALLBACK_PRICE_EURO95 || 2.05);
+    const price = Math.max(0, Number(pricePerLiter) || Config.FUEL?.FALLBACK_PRICE_EURO95 || 2.274);
 
     const liters = (km / 100) * cons;
     const cost = liters * price;
@@ -255,7 +299,7 @@ const FuelService = {
   calculateTankCost(tankCapacityL, pricePerLiter) {
     const dFuel = Config.DEFAULTS?.FUEL || {};
     const tank = Math.max(1, Number(tankCapacityL) || dFuel.tankCapacityL || 16);
-    const price = Math.max(0, Number(pricePerLiter) || Config.FUEL?.FALLBACK_PRICE_EURO95 || 2.05);
+    const price = Math.max(0, Number(pricePerLiter) || Config.FUEL?.FALLBACK_PRICE_EURO95 || 2.274);
     const cost = tank * price;
 
     return {
@@ -283,7 +327,7 @@ const FuelService = {
     const kmDaily = (Number(distanceKm) || 0) * 2;
     const bikeL = (kmDaily / 100) * (Number(bikeConsumption) || dFuel.consumptionL100km || 5.6);
     const carL = (kmDaily / 100) * (Number(carConsumption) || fuelCfg.DEFAULT_CAR_CONSUMPTION_L100KM || 6.5);
-    const price = Number(fuelPrice) || fuelCfg.FALLBACK_PRICE_EURO95 || 2.05;
+    const price = Number(fuelPrice) || fuelCfg.FALLBACK_PRICE_EURO95 || 2.274;
 
     const bikeCost = bikeL * price;
     const carCost = carL * price;

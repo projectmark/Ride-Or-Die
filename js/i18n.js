@@ -305,6 +305,12 @@ const I18n = {
         '90D': "90 Dagen"
       },
       latestCbsDate: (dateStr) => `Laatste CBS meting: ${dateStr}`,
+      cbsDateWithNext: (latestDateStr, nextRelLabel) => `Laatste CBS meting: ${latestDateStr} • Volgende: ${nextRelLabel}`,
+      priceModeCBS: "CBS Gemiddelde",
+      priceModeCustom: "Actuele Dagprijs",
+      customPriceActive: "Actuele dagprijs actief",
+      usingCustomPriceNotice: (priceStr) => `Rekent met actuele dagprijs: ${priceStr}/L`,
+      customPriceLabel: "Eigen literprijs (€ / liter)",
       rangeEstimate: (km) => `ca. ${km} km bereik`,
       tripEstimateNotice: (km, costStr, litersStr) => `Schatting voor jouw rit (${km} km): ca. ${costStr} per enkele reis (${litersStr})`
     },
@@ -340,6 +346,8 @@ const I18n = {
       widgetModeActive: "Beknopte weergave ingeschakeld",
       cockpitModeActive: "Uitgebreid dashboard ingeschakeld",
       bikeProfileUpdated: (name) => `Motorfiets: ${name}`,
+      fuelPriceModeCustom: (priceStr) => `Actuele dagprijs ingesteld op ${priceStr}/L`,
+      fuelPriceModeCBS: "CBS landelijk gewogen gemiddelde actief",
       fuelRefreshed: "Brandstofprijzen bijgewerkt via CBS"
     }
   }

@@ -3268,6 +3268,60 @@ body {
   gap: 2px;
 }
 
+.fuel-price-source-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 6px 0 10px;
+}
+
+.fuel-custom-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  margin-left: 6px;
+  align-self: center;
+}
+
+[data-theme="dark"] .fuel-custom-tag {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.fuel-quick-price-chips .quick-price-btn {
+  font-size: 0.74rem;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  transition: all 0.15s ease;
+}
+
+.fuel-quick-price-chips .quick-price-btn:hover {
+  background: var(--md-sys-color-primary);
+  color: #fff;
+  border-color: var(--md-sys-color-primary);
+}
+
+.fuel-quick-price-chips .quick-price-btn.active {
+  background: var(--md-sys-color-primary);
+  color: #fff;
+  border-color: var(--md-sys-color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
 .fuel-currency {
   font-size: 1.25rem;
   font-weight: 800;

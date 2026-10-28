@@ -66,9 +66,18 @@ const Config = {
     CACHE_TTL_MS: 12 * 60 * 60 * 1000, // 12 uur cache
     HISTORY_DAYS_QUERY: 120, // Aantal dagen historie op te halen
     SUPER98_SURCHARGE: 0.19, // Marktconforme meerprijs Super 98 t.o.v. Euro 95 in NL
-    FALLBACK_PRICE_EURO95: 2.05,
-    FALLBACK_PRICE_DIESEL: 1.78,
-    FALLBACK_PRICE_LPG: 0.85,
+    FALLBACK_PRICE_EURO95: 2.274,
+    FALLBACK_PRICE_DIESEL: 2.462,
+    FALLBACK_PRICE_LPG: 0.984,
+    TODAY_MARKET_PRICE_EURO95: 2.274,
+    PRICE_MIN: 1.50,
+    PRICE_MAX: 3.20,
+    PRICE_STEP: 0.01,
+    QUICK_PRICES: [
+      { id: 'today', name: 'Vandaag marktprijs', price: 2.274, badge: '⚡ Vandaag' },
+      { id: 'unmanned', name: 'Onbemand (TinQ / Tango)', price: 2.189, badge: '⛽ Onbemand' },
+      { id: 'highway', name: 'Snelweg / Merkstation', price: 2.459, badge: '🏪 Snelweg' }
+    ],
     DEFAULT_CONSUMPTION_L100KM: 5.6,
     DEFAULT_TANK_CAPACITY_L: 16,
     DEFAULT_CAR_CONSUMPTION_L100KM: 6.5,
@@ -129,7 +138,9 @@ const Config = {
       presetId: 'hornet',
       fuelType: 'BenzineEuro95_1',
       timeRange: '30D',
-      carConsumptionL100km: 6.5
+      carConsumptionL100km: 6.5,
+      priceMode: 'cbs', // 'cbs' | 'custom'
+      customPricePerLiter: 2.274
     }
   },
 
