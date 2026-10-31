@@ -8,6 +8,11 @@
   <meta name="theme-color" content="#f5f8fc" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⛅%3C/text%3E%3C/svg%3E" />
 
+  <!-- API Preconnect Hints (KNMI Open-Meteo & CBS OpenData) -->
+  <link rel="preconnect" href="https://api.open-meteo.com" crossorigin />
+  <link rel="preconnect" href="https://geocoding-api.open-meteo.com" crossorigin />
+  <link rel="preconnect" href="https://opendata.cbs.nl" crossorigin />
+
   <!-- Google Fonts: Outfit, Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -96,6 +101,7 @@
         </div>
         <div class="brand-title">
           <span>RIDE OR DIE</span>
+          <span class="brand-version-badge" title="2027 Edition — v2.0 Dynamic Engine">2.0</span>
         </div>
       </div>
 
@@ -197,7 +203,7 @@
       <section class="commute-grid-2col">
 
         <!-- Ochtendrit Card -->
-        <div class="m3-card commute-slot-card m3-day-switch" id="slot-morning-card">
+        <div class="m3-card commute-slot-card" id="slot-morning-card" data-verdict="green">
           <div class="slot-header-row">
             <div class="slot-title-group">
               <div class="slot-icon-circle">🌅</div>
@@ -233,7 +239,7 @@
         </div>
 
         <!-- Avondrit Card -->
-        <div class="m3-card commute-slot-card m3-day-switch" id="slot-evening-card">
+        <div class="m3-card commute-slot-card" id="slot-evening-card" data-verdict="green">
           <div class="slot-header-row">
             <div class="slot-title-group">
               <div class="slot-icon-circle">🌇</div>
@@ -292,20 +298,20 @@
       </section>
 
       <!-- 4 ESSENTIAL SAFETY TELEMETRY METERS -->
-      <section class="safety-telemetry-grid m3-day-switch">
+      <section class="safety-telemetry-grid">
 
         <!-- Zijwind -->
         <div class="telemetry-gauge-card">
           <div class="gauge-top-row">
             <span>Zijwind</span>
-            <span id="meter-wind-bft">4 BFT</span>
+            <span id="meter-wind-bft">3 BFT</span>
           </div>
           <div class="gauge-primary-row">
-            <span class="gauge-main-val" id="meter-wind-val">25 km/u</span>
+            <span class="gauge-main-val" id="meter-wind-val">18 km/u</span>
             <span class="gauge-status-tag" id="meter-wind-tag">Veilig</span>
           </div>
           <div class="gauge-bar-track">
-            <div class="gauge-bar-fill" id="meter-wind-bar" style="width: 0%; background: #10b981;"></div>
+            <div class="gauge-bar-fill" id="meter-wind-bar" style="width: 23%; background: linear-gradient(90deg, #22d3ee 0%, #0284c7 55%, #10b981 100%);"></div>
           </div>
         </div>
 
@@ -317,10 +323,10 @@
           </div>
           <div class="gauge-primary-row">
             <span class="gauge-main-val" id="meter-grip-val">100%</span>
-            <span class="gauge-status-tag" id="meter-grip-tag">Optimaal</span>
+            <span class="gauge-status-tag" id="meter-grip-tag">Optimaal droog</span>
           </div>
           <div class="gauge-bar-track">
-            <div class="gauge-bar-fill" id="meter-grip-bar" style="width: 0%; background: #10b981;"></div>
+            <div class="gauge-bar-fill" id="meter-grip-bar" style="width: 100%; background: linear-gradient(90deg, #34d399 0%, #10b981 55%, #059669 100%);"></div>
           </div>
         </div>
 
@@ -328,14 +334,14 @@
         <div class="telemetry-gauge-card">
           <div class="gauge-top-row">
             <span>Regenkans</span>
-            <span id="meter-rain-mm">0,0 mm</span>
+            <span id="meter-rain-mm">Droog</span>
           </div>
           <div class="gauge-primary-row">
-            <span class="gauge-main-val" id="meter-rain-val">Droog</span>
-            <span class="gauge-status-tag" id="meter-rain-tag">0%</span>
+            <span class="gauge-main-val" id="meter-rain-val">0,0 mm</span>
+            <span class="gauge-status-tag" id="meter-rain-tag">Droog</span>
           </div>
           <div class="gauge-bar-track">
-            <div class="gauge-bar-fill" id="meter-rain-bar" style="width: 0%; background: #10b981;"></div>
+            <div class="gauge-bar-fill" id="meter-rain-bar" style="width: 10%; background: linear-gradient(90deg, #38bdf8 0%, #06b6d4 50%, #10b981 100%);"></div>
           </div>
         </div>
 
@@ -350,7 +356,7 @@
             <span class="gauge-status-tag" id="meter-temp-tag">Behaaglijk</span>
           </div>
           <div class="gauge-bar-track">
-            <div class="gauge-bar-fill" id="meter-temp-bar" style="width: 0%; background: #10b981;"></div>
+            <div class="gauge-bar-fill" id="meter-temp-bar" style="width: 45%; background: linear-gradient(90deg, #38bdf8 0%, #06b6d4 50%, #14b8a6 100%);"></div>
           </div>
         </div>
 
@@ -466,7 +472,17 @@
                 <span style="font-size: 1.15rem;">⛽</span>
                 <span>Actuele Brandstofprijzen Nederland</span>
               </div>
-              <span class="hero-time-badge" id="fuel-source-badge">CBS StatLine</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="hero-time-badge" id="fuel-source-badge">CBS + Dagkoers</span>
+                <button type="button" class="m3-icon-btn fuel-sync-btn" id="fuel-refresh-btn" title="Ververs brandstofdata &amp; dagkoers nu" aria-label="Ververs brandstofdata">
+                  <svg id="fuel-refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                    <path d="M3 3v5h5"></path>
+                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                    <path d="M16 21h5v-5"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <!-- Brandstof & Periode Selector Tabs -->
@@ -486,11 +502,11 @@
                         <!-- Prijsbron Kiezer (CBS vs. Actuele Dagprijs) -->
             <div class="fuel-price-source-row">
               <div class="fuel-segmented-group" id="fuel-mode-group" role="radiogroup" aria-label="Prijsbron">
-                <button type="button" class="fuel-seg-btn" data-mode="cbs" id="btn-fuel-mode-cbs" title="Wekelijks gewogen gemiddelde via CBS">
-                  &#x1F3DB;&#xFE0F; CBS Gemiddelde
+                <button type="button" class="fuel-seg-btn active" data-mode="daily" id="btn-fuel-mode-daily" title="Dynamische marktdagkoers van vandaag">
+                  &#x26A1; Actuele Dagkoers
                 </button>
-                <button type="button" class="fuel-seg-btn active" data-mode="custom" id="btn-fuel-mode-custom" title="Reken met de actuele dagkoers van vandaag of eigen pompprijs">
-                  &#x26A1; Actuele Dagprijs (&euro; 2,27)
+                <button type="button" class="fuel-seg-btn" data-mode="cbs" id="btn-fuel-mode-cbs" title="Wekelijks gewogen gemiddelde via CBS">
+                  &#x1F3DB;&#xFE0F; CBS Meting
                 </button>
               </div>
             </div>
@@ -536,14 +552,20 @@
               </button>
             </div>
 
-            <!-- Traject en Actieve Motor Banner -->
+            <!-- Traject en Actieve Voertuigvergelijking Banner -->
             <div class="fuel-route-summary-pill">
               <div class="fuel-route-title">
                 <span id="fuel-calc-route-name">Utrecht ➔ Amersfoort</span>
                 <span class="fuel-route-dist" id="fuel-calc-km">36 km</span>
               </div>
-              <div class="fuel-bike-badge" id="fuel-calc-bike-name">
-                🏍️ Honda CB600F Hornet (5,6 L / 100 km)
+              <div class="fuel-vs-comparison-row">
+                <div class="fuel-bike-badge" id="fuel-calc-bike-name">
+                  🏍️ Honda CB600F Hornet (5,6 L)
+                </div>
+                <span class="fuel-vs-pill">VS</span>
+                <div class="fuel-car-badge" id="fuel-calc-car-name">
+                  🚗 Swift Sport '23 (5,8 L)
+                </div>
               </div>
             </div>
 
@@ -567,21 +589,31 @@
                 <span class="fuel-tile-sub" id="fuel-range-tank">ca. -- km bereik</span>
               </div>
 
-              <div class="fuel-calc-tile savings">
-                <span class="fuel-tile-lbl">Besparing t.o.v. Auto</span>
+              <div class="fuel-calc-tile savings" id="fuel-savings-tile">
+                <span class="fuel-tile-lbl" id="fuel-lbl-savings">T.o.v. Swift Sport '23</span>
                 <span class="fuel-tile-val" id="fuel-car-savings">€ --</span>
-                <span class="fuel-tile-sub">per werkdag bespaard 🟢</span>
+                <span class="fuel-tile-sub" id="fuel-sub-savings">per werkdag bespaard 🟢</span>
               </div>
             </div>
 
-            <!-- Snelle preset kiezer direct op de kaart -->
-            <div class="fuel-quick-preset-wrap">
-              <label for="fuel-quick-preset-select" style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">
-                Snelle motorkeuze:
-              </label>
-              <select class="m3-select-input" id="fuel-quick-preset-select" aria-label="Snelle motorkeuze voor brandstofverbruik">
-                <!-- Dynamisch gevuld via Config.FUEL.PRESETS -->
-              </select>
+            <!-- Snelle Voertuigvergelijking Kiezers (Motor vs. Auto) -->
+            <div class="fuel-dual-selectors-grid">
+              <div class="fuel-quick-preset-wrap">
+                <label for="fuel-quick-preset-select" class="fuel-quick-select-label">
+                  🏍️ Jouw motorfiets:
+                </label>
+                <select class="m3-select-input" id="fuel-quick-preset-select" aria-label="Snelle motorkeuze voor brandstofverbruik">
+                  <!-- Dynamisch gevuld via Config.FUEL.PRESETS -->
+                </select>
+              </div>
+              <div class="fuel-quick-preset-wrap">
+                <label for="fuel-quick-car-select" class="fuel-quick-select-label">
+                  🚗 Vergelijk met auto:
+                </label>
+                <select class="m3-select-input" id="fuel-quick-car-select" aria-label="Snelle autokeuze voor kostenvergelijking">
+                  <!-- Dynamisch gevuld via Config.FUEL.CAR_PRESETS -->
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1075,37 +1107,61 @@
               <input type="range" min="10" max="30" step="1" value="16" class="m3-range-slider" id="setting-tank-capacity" />
               <div class="pref-slider-hint">Wordt gebruikt om de totale kosten van een volle tankbeurt en actieradius te berekenen.</div>
             </div>
+
+            <!-- Auto-vergelijking Kiezer (Motor vs. Auto) -->
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>🚗 Auto voor kostenvergelijking (Motor vs. Auto)</span>
+                <span class="pref-val-pill" id="modal-val-car-preset">Suzuki Swift Sport (2023)</span>
+              </div>
+              <select class="m3-select-input" id="setting-car-preset" aria-label="Kies automodel voor besparingsvergelijking">
+                <!-- Dynamisch gevuld via Config.FUEL.CAR_PRESETS -->
+              </select>
+            </div>
+
+            <!-- Auto Verbruik Slider (L / 100 km) -->
+            <div class="pref-slider-group">
+              <div class="pref-slider-header">
+                <span>🚙 Gemiddeld verbruik vergelijkingsauto</span>
+                <span class="pref-val-pill" id="val-car-consumption">5,8 L / 100 km (1 op 17,2)</span>
+              </div>
+              <input type="range" min="3.0" max="14.0" step="0.1" value="5.8" class="m3-range-slider" id="setting-car-consumption" />
+              <div class="pref-slider-hint">
+                Vergelijk je motor met bijv. een <strong>Suzuki Swift Sport 2023 (5,8 L)</strong>, <strong>Renault Clio RS Trophy 2018 (7,4 L)</strong> of een zuinige <strong>Toyota Aygo X 2026 (4,6 L)</strong>.
+              </div>
+            </div>
             <!-- Brandstofprijs & Dagkoers Modus -->
             <div class="pref-slider-group">
               <div class="pref-slider-header">
                 <span>&#x1F4B6; Rekenprijs / Dagkoers per liter</span>
-                <span class="pref-val-pill" id="val-fuel-price-pill">&euro; 2,274 / L</span>
+                <span class="pref-val-pill" id="val-fuel-price-pill">--</span>
               </div>
               <div class="fuel-segmented-group" id="modal-fuel-mode-group" role="radiogroup" aria-label="Prijsmodus" style="width: 100%; display: flex; margin-bottom: 8px;">
-                <button type="button" class="fuel-seg-btn" data-mode="cbs" id="modal-btn-mode-cbs" style="flex: 1; text-align: center;">
-                  CBS Gemiddelde (19 okt: &euro; 2,391)
+                <button type="button" class="fuel-seg-btn active" data-mode="daily" id="modal-btn-mode-daily" style="flex: 1; text-align: center;">
+                  &#x26A1; Actuele Dagkoers
                 </button>
-                <button type="button" class="fuel-seg-btn active" data-mode="custom" id="modal-btn-mode-custom" style="flex: 1; text-align: center;">
-                  Actuele Dagprijs / Eigen Pomp
+                <button type="button" class="fuel-seg-btn" data-mode="cbs" id="modal-btn-mode-cbs" style="flex: 1; text-align: center;">
+                  &#x1F3DB;&#xFE0F; CBS Meting
                 </button>
               </div>
 
-              <!-- Snelle Koers Chips -->
+              <!-- Snelle Koers Chips (Dynamisch) -->
               <div class="fuel-quick-price-chips" id="fuel-quick-price-chips" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
-                <button type="button" class="city-chip quick-price-btn" data-price="2.274">&#x26A1; Vandaag dagprijs (&euro; 2,27)</button>
-                <button type="button" class="city-chip quick-price-btn" data-price="2.189">&#x26FD; Onbemand / TinQ (&euro; 2,19)</button>
-                <button type="button" class="city-chip quick-price-btn" data-price="2.459">&#x1F3EA; Snelweg (&euro; 2,46)</button>
+                <button type="button" class="city-chip quick-price-btn" id="chip-price-today" data-preset="today">&#x26A1; Dagkoers</button>
+                <button type="button" class="city-chip quick-price-btn" id="chip-price-unmanned" data-preset="unmanned" data-offset="-0.09">&#x26FD; Onbemand (-9 ct)</button>
+                <button type="button" class="city-chip quick-price-btn" id="chip-price-highway" data-preset="highway" data-offset="0.15">&#x1F3EA; Snelweg (+15 ct)</button>
+                <button type="button" class="city-chip quick-price-btn" id="chip-price-reset" data-preset="reset" style="margin-left: auto;">&#x1F504; Reset</button>
               </div>
 
               <!-- Custom Price Slider -->
               <div id="custom-price-slider-wrap" style="display: block;">
-                <input type="range" min="1.50" max="3.00" step="0.01" value="2.274" class="m3-range-slider" id="setting-custom-fuel-price" />
+                <input type="range" min="1.50" max="3.00" step="0.01" value="2.25" class="m3-range-slider" id="setting-custom-fuel-price" />
                 <div class="pref-slider-hint">
-                  Schuif voor jouw specifieke pompprijs. Het dashboard berekent direct alle rit- en tankkosten met dit bedrag.
+                  Schuif voor jouw specifieke pompprijs. Klik 'Dagkoers' of 'Reset' om automatisch de live marktprijs te volgen.
                 </div>
               </div>
               <div class="pref-slider-hint" id="cbs-schedule-hint">
-                &#x2139;&#xFE0F; CBS publiceert wekelijks op donderdag over de voorgaande week. Volgende CBS-cijfers verschijnen donderdag 29 okt.
+                &#x2139;&#xFE0F; CBS publiceert wekelijks op donderdag over de voorgaande week.
               </div>
             </div>
 

@@ -5,18 +5,29 @@
  */
 
 const CommuteEngine = {
+  _workdayCacheKey: '',
+  _workdayCacheVal: null,
+
   /**
-   * Bepaalt werkdaginformatie (Vandaag en Volgende werkdag).
+   * Bepaalt werkdaginformatie (Vandaag en Volgende werkdag) met dag-caching.
    */
   getWorkdayConfig(now = new Date()) {
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayDateStr = `${y}-${m}-${day}`;
+
+    if (this._workdayCacheKey === todayDateStr && this._workdayCacheVal) {
+      return this._workdayCacheVal;
+    }
+
     const formatYMD = (d) => {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
+      const yr = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      const dy = String(d.getDate()).padStart(2, '0');
+      return `${yr}-${mo}-${dy}`;
     };
 
-    const todayDateStr = formatYMD(now);
     const dayOfWeek = now.getDay(); // 0 = zo, 1 = ma, ..., 6 = za
 
     let daysOffset = 1;
@@ -34,7 +45,7 @@ const CommuteEngine = {
     const nextDayShort = dayNamesShortNL[nextWorkdayDate.getDay()];
     const isTomorrow = (daysOffset === 1);
 
-    return {
+    const result = {
       today: {
         date: now,
         dateStr: todayDateStr,
@@ -50,6 +61,10 @@ const CommuteEngine = {
         fullLabel: isTomorrow ? `Morgen (${nextDayName})` : `Volgende werkdag (${nextDayName})`
       }
     };
+
+    this._workdayCacheKey = todayDateStr;
+    this._workdayCacheVal = result;
+    return result;
   },
 
   /**
@@ -76,7 +91,8 @@ const CommuteEngine = {
     }
 
     let maxTemp = -999, minTemp = 999, totalPrecip = 0, maxPrecipProb = 0, maxGusts = 0, worstCode = 0;
-    indices.forEach(idx => {
+    for (let j = 0; j < indices.length; j++) {
+      const idx = indices[j];
       const t = hourly.temperature_2m[idx] || 0;
       if (t > maxTemp) maxTemp = t;
       if (t < minTemp) minTemp = t;
@@ -87,7 +103,7 @@ const CommuteEngine = {
       if (g > maxGusts) maxGusts = g;
       const code = hourly.weather_code[idx] || 0;
       if (code > worstCode) worstCode = code;
-    });
+    }
 
     return {
       avgTemp: Math.round((maxTemp + minTemp) / 2),
@@ -114,13 +130,12 @@ const CommuteEngine = {
     const maxGustsLimit = userLimits.maxGusts || W.DEFAULT_MAX_GUSTS;
     const minTempLimit = userLimits.minTemp !== undefined ? userLimits.minTemp : T.DEFAULT_MIN;
     const rainTolerance = userLimits.rainTolerance || (userLimits.avoidRain ? 'avoid' : 'flexible');
-    const avoidRain = (rainTolerance === 'avoid');
     const heatedGloves = !!userLimits.heatedGloves;
 
     // 1. Absolute Zero-Tolerance: IJzel, sneeuw en bevroren wegdek
     const winterWmoCodes = [48, 56, 57, 66, 67, 71, 73, 75, 77, 85, 86];
     const isWinterCode = winterWmoCodes.includes(slot.worstCode);
-    const isFreezing = slot.avgTemp <= 1.5;
+    const isFreezing = slot.avgTemp <= (T.FREEZING || 1.5);
 
     if (isFreezing || isWinterCode) {
       score -= 65;
@@ -151,8 +166,9 @@ const CommuteEngine = {
     }
 
     // 3. Seizoenscontext: Herfst & nat bladerdek (september t/m december)
-    const dateObj = activeDateStr ? new Date(activeDateStr) : new Date();
-    const currentMonth = dateObj.getMonth();
+    const currentMonth = (typeof activeDateStr === 'string' && activeDateStr.length >= 7)
+      ? (parseInt(activeDateStr.substring(5, 7), 10) - 1)
+      : new Date().getMonth();
     const isAutumn = (currentMonth >= 8 && currentMonth <= 11);
     if (isAutumn && !isFreezing && (slot.totalPrecip >= 0.05 || slot.maxGusts >= 40)) {
       score -= 8;
@@ -429,7 +445,6 @@ const CommuteEngine = {
 
     const startName = routeState && routeState.start ? routeState.start.name : 'Start';
     const destName = routeState && routeState.dest ? routeState.dest.name : 'Bestemming';
-    const midName = routeState && routeState.mid ? routeState.mid.name : 'Halverwege';
 
     const morningRainAmt = morningAnalysis ? morningAnalysis.maxRainOverall : (morningData ? morningData.totalPrecip : 0);
     const eveningRainAmt = eveningAnalysis ? eveningAnalysis.maxRainOverall : (eveningData ? eveningData.totalPrecip : 0);
@@ -504,7 +519,9 @@ const CommuteEngine = {
 
     const isFreezingRisk = minDayTemp <= (Config.THRESHOLDS.TEMPERATURE.FREEZING || 1.5);
     const isColdWetRisk = minDayTemp <= (Config.THRESHOLDS.TEMPERATURE.COMPOUND_COLD_WET || 7) && maxRouteRain >= Config.THRESHOLDS.RAIN.TRACE_MM;
-    const activeMonth = new Date(activeDateStr).getMonth(); // 8=Sep, 9=Okt, 10=Nov, 11=Dec
+    const activeMonth = (typeof activeDateStr === 'string' && activeDateStr.length >= 7)
+      ? (parseInt(activeDateStr.substring(5, 7), 10) - 1)
+      : new Date().getMonth(); // 8=Sep, 9=Okt, 10=Nov, 11=Dec
     const isAutumnSeason = activeMonth >= 8 && activeMonth <= 11;
     const isAutumnLeavesRisk = isAutumnSeason && (maxRouteRain >= Config.THRESHOLDS.RAIN.TRACE_MM || maxRouteGusts >= 40);
 

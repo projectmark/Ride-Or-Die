@@ -8,16 +8,44 @@ const App = {
   _routeSearchTimer: null,
   _locationSearchTimer: null,
   _focusedWaypoint: 'start',
+  _lastActiveDateStr: new Date().toDateString(),
+  _rafRenderId: null,
+  _rafFuelRenderId: null,
+
+  /**
+   * Plan een dashboard-render op het eerstvolgende animatieframe (60fps/120fps throttling bij sliders).
+   */
+  _scheduleRender() {
+    if (this._rafRenderId) return;
+    this._rafRenderId = requestAnimationFrame(() => {
+      this._rafRenderId = null;
+      this._renderCurrentData();
+    });
+  },
+
+  /**
+   * Plan een brandstofkaart-render op het eerstvolgende animatieframe.
+   */
+  _scheduleFuelRender() {
+    if (this._rafFuelRenderId) return;
+    this._rafFuelRenderId = requestAnimationFrame(() => {
+      this._rafFuelRenderId = null;
+      const records = State.get('fuelData');
+      if (records) UIRenderer.renderFuelCard(records, State.state);
+      this._updateFuelPrefPreview();
+    });
+  },
 
   /**
    * Initialiseert de applicatie bij het laden van de pagina.
    */
   async init() {
+    this._lastActiveDateStr = new Date().toDateString();
     State.load();
     UIRenderer.renderTheme(State.get('theme'), true);
     UIRenderer.renderViewMode(State.get('viewMode'));
     UIRenderer.updateNavbar(State.state);
-    UIRenderer.populateFuelPresets(State.state.fuel?.presetId);
+    UIRenderer.populateFuelPresets(State.state.fuel?.presetId, State.state.fuel?.carPresetId);
 
     const workdayConfig = CommuteEngine.getWorkdayConfig();
     UIRenderer.renderDayToggle(State.get('selectedDay'), workdayConfig);
@@ -25,12 +53,13 @@ const App = {
     this._bindEvents();
     this._setupStateSubscribers();
 
-    // Initieel weer ophalen voor huidige locatie en route (parallel voor minimale laadtijd)
+    // Initieel weer ophalen voor huidige locatie en route (parallel voor minimale laadtijd, 1x gecontroleerd renderen)
     await Promise.all([
-      this.refreshWeather(false),
-      this.analyzeCurrentRoute(false),
+      this.refreshWeather(false, true),
+      this.analyzeCurrentRoute(false, true),
       this.refreshFuelData(false)
     ]);
+    this._renderCurrentData();
     this._startBackgroundPolling();
   },
 
@@ -105,7 +134,7 @@ const App = {
   /**
    * Haalt weergegevens op via WeatherService.
    */
-  async refreshWeather(force = false) {
+  async refreshWeather(force = false, skipRender = false) {
     const loc = State.get('location');
     if (!loc) return;
 
@@ -116,13 +145,15 @@ const App = {
 
     try {
       const res = await WeatherService.fetchMainLocationWeather(loc.latitude, loc.longitude, force);
-      if (res.instantData && !State.get('weatherData')) {
+      if (res.instantData && !State.get('weatherData') && !skipRender) {
         State.set('weatherData', res.instantData, false);
         this._renderCurrentData();
       }
 
       State.set('weatherData', res.data, false);
-      this._renderCurrentData();
+      if (!skipRender) {
+        this._renderCurrentData();
+      }
 
       if (force) {
         UIRenderer.showToast(I18n.t.toasts.weatherRefreshed);
@@ -138,16 +169,25 @@ const App = {
   },
 
   /**
-   * Haalt actuele en historische brandstofprijzen op via FuelService (CBS).
+   * Haalt actuele en historische brandstofprijzen op via FuelService (CBS + Dynamische Dagkoers).
    */
   async refreshFuelData(force = false) {
+    const syncIcon = document.getElementById('fuel-refresh-icon');
+    if (syncIcon && force) syncIcon.classList.add('spin');
     try {
       const records = await FuelService.fetchFuelData(force);
       State.set('fuelData', records, false);
       UIRenderer.renderFuelCard(records, State.state);
       this._updateFuelPrefPreview();
+      if (force) {
+        UIRenderer.showToast('\u26FD Brandstofprijzen & actuele dagkoers bijgewerkt');
+      }
     } catch (e) {
       console.warn('[App] Kon brandstofdata niet laden:', e);
+    } finally {
+      if (syncIcon) {
+        setTimeout(() => syncIcon.classList.remove('spin'), 400);
+      }
     }
   },
 
@@ -156,11 +196,13 @@ const App = {
     if (!previewEl) return;
     const roadKm = State.state.route?.roadKm || 36;
     const cons = State.state.fuel?.consumptionL100km || 5.6;
+    const carCons = State.state.fuel?.carConsumptionL100km || 5.8;
     const records = State.get('fuelData');
     const fuelType = State.state.fuel?.fuelType || 'BenzineEuro95_1';
     const stats = records ? FuelService.getStats(records, fuelType, '30D', State.state.fuel) : null;
     const price = FuelService.getEffectivePrice(stats, State.state.fuel);
     const trip = FuelService.calculateTripCost(roadKm, cons, price);
+    const savings = FuelService.calculateCarSavings(roadKm, cons, carCons, price);
     const costStr = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
       ? I18n.formatters.currency(trip.cost)
       : `€ ${trip.cost.toFixed(2)}`;
@@ -168,11 +210,14 @@ const App = {
       ? I18n.formatters.liters(trip.liters)
       : `${trip.liters.toFixed(1)} L`;
 
-    if (typeof I18n !== 'undefined' && I18n.t?.fuel?.tripEstimateNotice) {
-      previewEl.textContent = I18n.t.fuel.tripEstimateNotice(roadKm, costStr, litersStr);
-    } else {
-      previewEl.textContent = `Schatting voor jouw rit (${roadKm} km): ca. ${costStr} per enkele reis (${litersStr})`;
-    }
+    const carPresets = Config.FUEL?.CAR_PRESETS || [];
+    const activeCar = carPresets.find(c => c.id === State.state.fuel?.carPresetId) || carPresets.find(c => c.consumption === carCons);
+    const carLabel = (activeCar && activeCar.id !== 'custom') ? (activeCar.shortName || activeCar.name) : `Auto (${carCons.toFixed(1).replace('.', ',')} L)`;
+    const diffStr = savings.daily >= 0
+      ? `Besparing vs. ${carLabel}: € ${savings.absDaily.toFixed(2).replace('.', ',')}/dag (€ ${Math.round(savings.absMonthly)}/mnd)`
+      : `Verschil vs. ${carLabel}: ${carLabel} is € ${savings.absDaily.toFixed(2).replace('.', ',')}/dag zuiniger`;
+
+    previewEl.textContent = `Rit (${roadKm} km): ${costStr} enkele reis (${litersStr}) • ${diffStr}`;
   },
 
   _applyBikePreset(presetId) {
@@ -197,7 +242,25 @@ const App = {
     UIRenderer.showToast(toastMsg);
   },
 
-  async analyzeCurrentRoute(force = false) {
+  _applyCarPreset(carPresetId) {
+    const carPresets = Config.FUEL?.CAR_PRESETS || [];
+    const found = carPresets.find(c => c.id === carPresetId);
+    if (!found) return;
+
+    State.state.fuel.carPresetId = carPresetId;
+    if (carPresetId !== 'custom') {
+      State.state.fuel.carConsumptionL100km = found.consumption;
+    }
+    State.save();
+
+    this._syncPreferenceSlidersToDOM();
+    const records = State.get('fuelData');
+    if (records) UIRenderer.renderFuelCard(records, State.state);
+    const shortName = found.name.split('—')[0].trim();
+    UIRenderer.showToast(`\uD83D\uDE97 Vergelijkingsauto: ${shortName} (${found.consumption.toFixed(1).replace('.', ',')} L/100km)`);
+  },
+
+  async analyzeCurrentRoute(force = false, skipRender = false) {
     const route = State.state.route;
     if (!route || !route.start || !route.dest) return;
 
@@ -213,7 +276,9 @@ const App = {
       );
 
       route.waypointsWeather = waypointsWeather;
-      this._renderCurrentData();
+      if (!skipRender) {
+        this._renderCurrentData();
+      }
     } catch (err) {
       console.warn("Fout bij trajectanalyse:", err);
     }
@@ -244,16 +309,21 @@ const App = {
     const drop = document.getElementById(`route-${key}-results`);
     if (drop) drop.classList.remove('show');
 
-    if (key === 'start') {
-      State.set('location', { name, latitude: Number(lat), longitude: Number(lon), country });
-      this.refreshWeather(false);
-    }
-
     this._updateCorridorPreview();
     this._renderRouteChips();
     this._renderLocationChips();
     State.save();
-    this.analyzeCurrentRoute(false);
+
+    if (key === 'start') {
+      State.set('location', { name, latitude: Number(lat), longitude: Number(lon), country });
+      Promise.all([
+        this.refreshWeather(false, true),
+        this.analyzeCurrentRoute(false, true)
+      ]).then(() => this._renderCurrentData());
+    } else {
+      this.analyzeCurrentRoute(false);
+    }
+
     UIRenderer.showToast(`${name} gekozen voor je motorrit`);
   },
 
@@ -285,8 +355,10 @@ const App = {
     this._renderRouteChips();
     this._renderLocationChips();
     State.save();
-    this.refreshWeather(false);
-    this.analyzeCurrentRoute(false);
+    Promise.all([
+      this.refreshWeather(false, true),
+      this.analyzeCurrentRoute(false, true)
+    ]).then(() => this._renderCurrentData());
     UIRenderer.showToast(I18n.t.toasts.routeSwapped);
   },
 
@@ -405,30 +477,58 @@ const App = {
 
     const vTank = document.getElementById('val-tank-capacity');
     if (vTank) vTank.textContent = `${fuel.tankCapacityL || 16} Liter`;
+
+    // Vergelijkingsauto (Motor vs. Auto) sync
+    const carPresets = Config.FUEL?.CAR_PRESETS || [];
+    const carConsVal = Number(fuel.carConsumptionL100km || 5.8);
+    const matchedCar = carPresets.find(c => c.id === fuel.carPresetId) || carPresets.find(c => c.consumption === carConsVal);
+    const activeCarId = fuel.carPresetId || (matchedCar ? matchedCar.id : 'custom');
+
+    const selCarPreset = document.getElementById('setting-car-preset');
+    if (selCarPreset) selCarPreset.value = activeCarId;
+    const quickCarPreset = document.getElementById('fuel-quick-car-select');
+    if (quickCarPreset) quickCarPreset.value = activeCarId;
+
+    const vCarPreset = document.getElementById('modal-val-car-preset');
+    if (vCarPreset) {
+      vCarPreset.textContent = (matchedCar && activeCarId !== 'custom') ? matchedCar.name : 'Eigen Auto';
+    }
+
+    const rCarCons = document.getElementById('setting-car-consumption');
+    if (rCarCons) rCarCons.value = carConsVal;
+
+    const vCarCons = document.getElementById('val-car-consumption');
+    if (vCarCons) {
+      const carRatio = carConsVal > 0 ? (100 / carConsVal).toFixed(1) : '17,2';
+      vCarCons.textContent = `${carConsVal.toFixed(1).replace('.', ',')} L / 100 km (1 op ${carRatio.replace('.', ',')})`;
+    }
     // Prijsmodus & Dagkoers sync
-    const isCustomPrice = fuel.priceMode === 'custom';
-    const customPrice = Number(fuel.customPricePerLiter || 2.274);
+    const mode = fuel.priceMode || 'daily';
+    const isUserCustom = Boolean(fuel.isUserCustom && typeof fuel.customPricePerLiter === 'number');
+    const records = State.get('fuelData');
+    const stats = records ? FuelService.getStats(records, fuel.fuelType || 'BenzineEuro95_1', '30D', fuel) : null;
+    const effectivePrice = FuelService.getEffectivePrice(stats, fuel);
+    const fmtPrice = (p) => (typeof I18n !== 'undefined' && I18n.formatters?.fuelPrice) ? I18n.formatters.fuelPrice(p) : Number(p).toFixed(3).replace('.', ',');
+
     const modalModeBtns = document.querySelectorAll('#modal-fuel-mode-group .fuel-seg-btn');
     modalModeBtns.forEach(btn => {
       const m = btn.getAttribute('data-mode');
-      btn.classList.toggle('active', (m === 'custom' && isCustomPrice) || (m === 'cbs' && !isCustomPrice));
+      const active = (m === 'cbs' && mode === 'cbs' && !isUserCustom) || (m === 'daily' && mode === 'daily' && !isUserCustom);
+      btn.classList.toggle('active', active);
     });
+
     const wrapCustom = document.getElementById('custom-price-slider-wrap');
-    if (wrapCustom) wrapCustom.style.display = isCustomPrice ? 'block' : 'none';
+    if (wrapCustom) wrapCustom.style.display = 'block';
     const chipsCustom = document.getElementById('fuel-quick-price-chips');
-    if (chipsCustom) chipsCustom.style.display = isCustomPrice ? 'flex' : 'none';
+    if (chipsCustom) chipsCustom.style.display = 'flex';
+
     const rPrice = document.getElementById('setting-custom-fuel-price');
-    if (rPrice) rPrice.value = customPrice.toFixed(2);
+    if (rPrice) rPrice.value = effectivePrice.toFixed(2);
+
     const vPricePill = document.getElementById('val-fuel-price-pill');
     if (vPricePill) {
-      if (isCustomPrice) {
-        vPricePill.textContent = `\u20AC ${customPrice.toFixed(3).replace('.', ',')} / L (Aangepast)`;
-      } else {
-        const records = State.get('fuelData');
-        const stats = records ? FuelService.getStats(records, fuel.fuelType || 'BenzineEuro95_1', '30D', { priceMode: 'cbs' }) : null;
-        const cbsP = stats ? stats.latestPrice : 2.274;
-        vPricePill.textContent = `\u20AC ${cbsP.toFixed(3).replace('.', ',')} / L (CBS)`;
-      }
+      const note = isUserCustom ? '(Aangepast)' : (mode === 'cbs' ? '(CBS)' : '(Dagkoers)');
+      vPricePill.textContent = `\u20AC ${fmtPrice(effectivePrice)} / L ${note}`;
     }
 
     this._updateFuelPrefPreview();
@@ -504,8 +604,12 @@ const App = {
       this._updateCorridorPreview();
       this._renderRouteChips();
       this._renderLocationChips();
-      this.analyzeCurrentRoute(false);
-      this.refreshFuelData(false);
+      if (!State.state.route?.waypointsWeather?.start) {
+        this.analyzeCurrentRoute(false);
+      }
+      if (!State.get('fuelData')) {
+        this.refreshFuelData(false);
+      }
     } else if (modalId === 'settings-modal') {
       UIRenderer.renderTheme(State.get('theme'), true);
       this._syncPreferenceSlidersToDOM();
@@ -520,19 +624,23 @@ const App = {
         panel.style.display = panel.getAttribute('data-panel') === 'live' ? 'flex' : 'none';
       });
 
-      const curData = State.get('weatherData');
-      if (curData) {
-        const curAdvice = CommuteEngine.computeAdvice(curData, {
-          selectedDay: State.get('selectedDay'),
-          morningTime: State.state.commute.morningTime,
-          eveningTime: State.state.commute.eveningTime,
-          minTemp: State.state.commute.minTemp,
-          maxGusts: State.state.commute.maxGusts,
-          avoidRain: State.state.commute.avoidRain,
-          rainTolerance: State.state.commute.rainTolerance,
-          heatedGloves: State.state.commute.heatedGloves
-        }, State.state.route);
-        UIRenderer.renderScoreBreakdown(curAdvice, State.state);
+      if (UIRenderer._lastAdvice) {
+        UIRenderer.renderScoreBreakdown(UIRenderer._lastAdvice, State.state);
+      } else {
+        const curData = State.get('weatherData');
+        if (curData) {
+          const curAdvice = CommuteEngine.computeAdvice(curData, {
+            selectedDay: State.get('selectedDay'),
+            morningTime: State.state.commute.morningTime,
+            eveningTime: State.state.commute.eveningTime,
+            minTemp: State.state.commute.minTemp,
+            maxGusts: State.state.commute.maxGusts,
+            avoidRain: State.state.commute.avoidRain,
+            rainTolerance: State.state.commute.rainTolerance,
+            heatedGloves: State.state.commute.heatedGloves
+          }, State.state.route);
+          UIRenderer.renderScoreBreakdown(curAdvice, State.state);
+        }
       }
     }
     modal.classList.add('open');
@@ -575,18 +683,36 @@ const App = {
   },
 
   _startBackgroundPolling() {
+    const checkDailyRolloverAndRefresh = () => {
+      const todayStr = new Date().toDateString();
+      const isNewDay = todayStr !== this._lastActiveDateStr;
+      if (isNewDay) {
+        this._lastActiveDateStr = todayStr;
+        const workdayConfig = CommuteEngine.getWorkdayConfig();
+        UIRenderer.renderDayToggle(State.get('selectedDay'), workdayConfig);
+        this.refreshWeather(true);
+        this.analyzeCurrentRoute(true);
+        this.refreshFuelData(true);
+        return;
+      }
+
+      const cached = WeatherCache.get(State.state.location.latitude, State.state.location.longitude, false);
+      if (!cached || !cached.isFresh) {
+        this.refreshWeather(false);
+        this.analyzeCurrentRoute(false);
+      }
+      this.refreshFuelData(false);
+    };
+
     setInterval(() => {
       if (!document.hidden) {
-        this.refreshWeather(false);
+        checkDailyRolloverAndRefresh();
       }
     }, Config.API.CACHE_TTL_MS);
 
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
-        const cached = WeatherCache.get(State.state.location.latitude, State.state.location.longitude);
-        if (!cached || !cached.isFresh) {
-          this.refreshWeather(false);
-        }
+        checkDailyRolloverAndRefresh();
       }
     });
   },
@@ -652,6 +778,12 @@ const App = {
     if (refreshBtn) refreshBtn.addEventListener('click', () => {
       this.refreshWeather(true);
       this.analyzeCurrentRoute(true);
+      this.refreshFuelData(true);
+    });
+
+    const fuelRefreshBtn = document.getElementById('fuel-refresh-btn');
+    if (fuelRefreshBtn) fuelRefreshBtn.addEventListener('click', () => {
+      this.refreshFuelData(true);
     });
 
     const fsBtn = document.getElementById('fullscreen-btn');
@@ -919,10 +1051,17 @@ const App = {
       const el = document.getElementById(inputId);
       if (!el) return;
       el.addEventListener('input', (e) => {
-        State.state.commute[prop] = parseInt(e.target.value, 10);
-        this._syncPreferenceSlidersToDOM();
-        State.save();
-        this._renderCurrentData();
+        const val = parseInt(e.target.value, 10);
+        State.state.commute[prop] = val;
+        if (prop === 'minTemp') {
+          const vTemp = document.getElementById('val-min-temp');
+          if (vTemp) vTemp.textContent = I18n.formatters.celsius(val);
+        } else if (prop === 'maxGusts') {
+          const vGusts = document.getElementById('val-max-gusts');
+          if (vGusts) vGusts.textContent = I18n.formatters.kmh(val);
+        }
+        State.saveDebounced();
+        this._scheduleRender();
       });
     };
 
@@ -990,6 +1129,44 @@ const App = {
       });
     }
 
+    const quickCarPreset = document.getElementById('fuel-quick-car-select');
+    if (quickCarPreset) {
+      quickCarPreset.addEventListener('change', (e) => {
+        this._applyCarPreset(e.target.value);
+      });
+    }
+
+    const modalCarPreset = document.getElementById('setting-car-preset');
+    if (modalCarPreset) {
+      modalCarPreset.addEventListener('change', (e) => {
+        this._applyCarPreset(e.target.value);
+      });
+    }
+
+    const carConsSlider = document.getElementById('setting-car-consumption');
+    if (carConsSlider) {
+      carConsSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (!isNaN(val)) {
+          State.state.fuel.carConsumptionL100km = val;
+          State.state.fuel.carPresetId = 'custom';
+          const vCarCons = document.getElementById('val-car-consumption');
+          if (vCarCons) {
+            const ratio = (100 / val).toFixed(1);
+            vCarCons.textContent = `${val.toFixed(1).replace('.', ',')} L / 100 km (1 op ${ratio.replace('.', ',')})`;
+          }
+          const selCarM = document.getElementById('setting-car-preset');
+          if (selCarM) selCarM.value = 'custom';
+          const vCarP = document.getElementById('modal-val-car-preset');
+          if (vCarP) vCarP.textContent = 'Eigen Auto';
+          const quickCarP = document.getElementById('fuel-quick-car-select');
+          if (quickCarP) quickCarP.value = 'custom';
+          State.saveDebounced();
+          this._scheduleFuelRender();
+        }
+      });
+    }
+
     const consSlider = document.getElementById('setting-fuel-consumption');
     if (consSlider) {
       consSlider.addEventListener('input', (e) => {
@@ -1007,10 +1184,8 @@ const App = {
         if (vP) vP.textContent = 'Aangepast';
         const quickP = document.getElementById('fuel-quick-preset-select');
         if (quickP) quickP.value = 'custom';
-        State.save();
-        const records = State.get('fuelData');
-        if (records) UIRenderer.renderFuelCard(records, State.state);
-        this._updateFuelPrefPreview();
+        State.saveDebounced();
+        this._scheduleFuelRender();
       });
     }
 
@@ -1021,73 +1196,89 @@ const App = {
         State.state.fuel.tankCapacityL = val;
         const vTank = document.getElementById('val-tank-capacity');
         if (vTank) vTank.textContent = val + ' Liter';
-        State.save();
-        const records = State.get('fuelData');
-        if (records) UIRenderer.renderFuelCard(records, State.state);
+        State.saveDebounced();
+        this._scheduleFuelRender();
       });
     }
 
-        // Prijsbron toggle (CBS vs. Actuele Dagprijs)
-    const handlePriceModeChange = (mode) => {
+        // Dynamische Prijsmodus toggle (Actuele Dagkoers vs. CBS Meting)
+    const handlePriceModeChange = (targetMode) => {
+      const mode = (targetMode === 'cbs') ? 'cbs' : 'daily';
       State.state.fuel.priceMode = mode;
-      if (mode === 'custom' && (!State.state.fuel.customPricePerLiter || State.state.fuel.customPricePerLiter <= 0)) {
-        State.state.fuel.customPricePerLiter = Config.FUEL?.TODAY_MARKET_PRICE_EURO95 || 2.274;
-      }
+      State.state.fuel.isUserCustom = false;
+      State.state.fuel.customPricePerLiter = null;
       State.save();
       this._syncPreferenceSlidersToDOM();
       const records = State.get('fuelData');
       if (records) UIRenderer.renderFuelCard(records, State.state);
       this._updateFuelPrefPreview();
 
-      const priceVal = State.state.fuel.customPricePerLiter || 2.274;
-      const priceStr = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
-        ? I18n.formatters.currency(priceVal)
-        : `\u20AC ${Number(priceVal).toFixed(2)}`;
-      const toastMsg = (mode === 'custom')
-        ? (I18n.t?.toasts?.fuelPriceModeCustom ? I18n.t.toasts.fuelPriceModeCustom(priceStr) : `Actuele dagprijs actief: ${priceStr}`)
-        : (I18n.t?.toasts?.fuelPriceModeCBS || 'CBS landelijk gewogen gemiddelde actief');
+      const toastMsg = (mode === 'daily') ? '\u26A1 Dynamische actuele dagkoers actief' : '\uD83C\uDFDB\uFE0F CBS landelijk gewogen meting actief';
       UIRenderer.showToast(toastMsg);
     };
 
     document.querySelectorAll('#fuel-mode-group .fuel-seg-btn, #modal-fuel-mode-group .fuel-seg-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const mode = btn.getAttribute('data-mode');
-        if (mode) handlePriceModeChange(mode);
+        const m = btn.getAttribute('data-mode');
+        if (m) handlePriceModeChange(m);
       });
     });
 
+    // Snelle prijzen chips (Dynamisch met offsets)
     document.querySelectorAll('#fuel-quick-price-chips .quick-price-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const p = parseFloat(btn.getAttribute('data-price'));
-        if (!isNaN(p)) {
-          State.state.fuel.priceMode = 'custom';
-          State.state.fuel.customPricePerLiter = p;
+        const preset = btn.getAttribute('data-preset');
+        const offsetAttr = btn.getAttribute('data-offset');
+
+        if (preset === 'today' || preset === 'reset') {
+          State.state.fuel.priceMode = 'daily';
+          State.state.fuel.isUserCustom = false;
+          State.state.fuel.customPricePerLiter = null;
           State.save();
           this._syncPreferenceSlidersToDOM();
           const records = State.get('fuelData');
           if (records) UIRenderer.renderFuelCard(records, State.state);
           this._updateFuelPrefPreview();
-          const priceStr = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
-            ? I18n.formatters.currency(p)
-            : `\u20AC ${p.toFixed(2)}`;
-          UIRenderer.showToast(`Rekenprijs ingesteld op ${priceStr}/L`);
+          UIRenderer.showToast('Hersteld naar live actuele dagkoers');
+          return;
+        }
+
+        if (offsetAttr) {
+          const offset = parseFloat(offsetAttr);
+          const records = State.get('fuelData');
+          const stats = records ? FuelService.getStats(records, State.state.fuel.fuelType, '30D', State.state.fuel) : null;
+          const basePrice = stats ? stats.latestPrice : 2.25;
+          const targetPrice = parseFloat((basePrice + offset).toFixed(3));
+
+          State.state.fuel.priceMode = 'custom';
+          State.state.fuel.isUserCustom = true;
+          State.state.fuel.customPricePerLiter = targetPrice;
+          State.save();
+          this._syncPreferenceSlidersToDOM();
+          if (records) UIRenderer.renderFuelCard(records, State.state);
+          this._updateFuelPrefPreview();
+
+          const fmtP = (typeof I18n !== 'undefined' && I18n.formatters?.currency)
+            ? I18n.formatters.currency(targetPrice)
+            : `\u20AC ${targetPrice.toFixed(2)}`;
+          UIRenderer.showToast(`Pompprijs ingesteld op ${fmtP}/L`);
         }
       });
     });
 
+    // Eigen Pompprijs Slider
     const customPriceSlider = document.getElementById('setting-custom-fuel-price');
     if (customPriceSlider) {
       customPriceSlider.addEventListener('input', (e) => {
         const p = parseFloat(e.target.value);
         if (!isNaN(p)) {
           State.state.fuel.priceMode = 'custom';
+          State.state.fuel.isUserCustom = true;
           State.state.fuel.customPricePerLiter = p;
           const vPill = document.getElementById('val-fuel-price-pill');
           if (vPill) vPill.textContent = `\u20AC ${p.toFixed(3).replace('.', ',')} / L (Aangepast)`;
-          State.save();
-          const records = State.get('fuelData');
-          if (records) UIRenderer.renderFuelCard(records, State.state);
-          this._updateFuelPrefPreview();
+          State.saveDebounced();
+          this._scheduleFuelRender();
         }
       });
     }
@@ -1095,8 +1286,7 @@ const App = {
     const openFuelPrefsBtn = document.getElementById('fuel-open-prefs-btn');
     if (openFuelPrefsBtn) {
       openFuelPrefsBtn.addEventListener('click', () => {
-        this.openModal('route-planner-modal');
-        this._switchRouteModalTab('corridor');
+        this.openModal('route-planner-modal', 'route');
         setTimeout(() => {
           const tegel3 = document.querySelector('#route-planner-modal .wiki-card[style*="grid-column"]');
           if (tegel3) tegel3.scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -8,6 +8,10 @@
 const FuelService = {
   _cacheKey: 'rideordie_cbs_fuel_cache_v1',
   _inFlightPromise: null,
+  _memRecords: null,
+  _memTimestamp: 0,
+  _statsCacheKey: '',
+  _statsCacheVal: null,
 
   /**
    * Berekent de begindatum voor de CBS OData query (standaard geconfigureerd in Config.FUEL).
@@ -33,15 +37,25 @@ const FuelService = {
     this._inFlightPromise = (async () => {
       const fuelCfg = Config.FUEL || {};
 
-      // 1. Controleer lokale cache
+      // 1. Controleer L1 geheugencache en L2 localStorage cache (inclusief daggrens-controle voor gegarandeerde dagelijkse update)
       if (!force) {
+        const now = Date.now();
+        const ttl = fuelCfg.CACHE_TTL_MS || (12 * 60 * 60 * 1000);
+        const todayStr = new Date(now).toDateString();
+
+        if (this._memRecords && this._memTimestamp && (now - this._memTimestamp < ttl) && (new Date(this._memTimestamp).toDateString() === todayStr)) {
+          return this._memRecords;
+        }
+
         try {
           const cached = localStorage.getItem(this._cacheKey);
           if (cached) {
             const parsed = JSON.parse(cached);
-            const age = Date.now() - (parsed.timestamp || 0);
-            const ttl = fuelCfg.CACHE_TTL_MS || (12 * 60 * 60 * 1000);
-            if (age < ttl && Array.isArray(parsed.records) && parsed.records.length > 0) {
+            const age = now - (parsed.timestamp || 0);
+            const isSameDay = parsed.timestamp && (new Date(parsed.timestamp).toDateString() === todayStr);
+            if (isSameDay && age < ttl && Array.isArray(parsed.records) && parsed.records.length > 0) {
+              this._memRecords = parsed.records;
+              this._memTimestamp = parsed.timestamp;
               return parsed.records;
             }
           }
@@ -50,14 +64,18 @@ const FuelService = {
         }
       }
 
-      // 2. Ophalen via CBS OData REST API (CORS ingeschakeld door CBS)
+      // 2. Ophalen via CBS OData REST API (CORS ingeschakeld door CBS) met netwerk-timeout
       const startDate = this._getStartDateString();
       const baseUrl = fuelCfg.CBS_API_URL || 'https://opendata.cbs.nl/ODataApi/OData/80416ned/TypedDataSet';
       const url = `${baseUrl}?$filter=Perioden ge '${startDate}'`;
+      const controller = new AbortController();
+      const timeoutMs = (Config.API && Config.API.FETCH_TIMEOUT_MS) || 10000;
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
         const response = await fetch(url, {
-          headers: { 'Accept': 'application/json' }
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
         });
 
         if (!response.ok) {
@@ -102,10 +120,14 @@ const FuelService = {
           })
           .sort((a, b) => a.timestamp - b.timestamp);
 
-        // 4. Bewaar in cache
+        // 4. Bewaar in geheugen- en localStorage-cache
+        const nowTs = Date.now();
+        this._memRecords = records;
+        this._memTimestamp = nowTs;
+        this._statsCacheKey = '';
         try {
           localStorage.setItem(this._cacheKey, JSON.stringify({
-            timestamp: Date.now(),
+            timestamp: nowTs,
             records
           }));
         } catch (e) {
@@ -115,17 +137,22 @@ const FuelService = {
         return records;
       } catch (err) {
         console.warn('[FuelService] Fout bij ophalen CBS-data, fallback actief:', err);
+        if (this._memRecords && this._memRecords.length > 0) {
+          return this._memRecords;
+        }
         try {
           const cached = localStorage.getItem(this._cacheKey);
           if (cached) {
             const parsed = JSON.parse(cached);
             if (Array.isArray(parsed.records) && parsed.records.length > 0) {
+              this._memRecords = parsed.records;
               return parsed.records;
             }
           }
         } catch (e) {}
         return this._getFallbackRecords();
       } finally {
+        clearTimeout(timer);
         this._inFlightPromise = null;
       }
     })();
@@ -139,15 +166,14 @@ const FuelService = {
   _getFallbackRecords() {
     const list = [];
     const fuelCfg = Config.FUEL || {};
-    const baseEuro = fuelCfg.FALLBACK_PRICE_EURO95 || 2.274;
-    const baseDiesel = fuelCfg.FALLBACK_PRICE_DIESEL || 2.462;
-    const baseLpg = fuelCfg.FALLBACK_PRICE_LPG || 0.984;
+    const baseEuro = fuelCfg.FALLBACK_PRICE_EURO95 || 2.25;
+    const baseDiesel = fuelCfg.FALLBACK_PRICE_DIESEL || 2.40;
+    const baseLpg = fuelCfg.FALLBACK_PRICE_LPG || 0.98;
     const superSurcharge = fuelCfg.SUPER98_SURCHARGE || 0.19;
     const now = new Date();
 
     for (let i = 35; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(now.getDate() - i);
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
       const wave = Math.sin(i / 5) * 0.03;
       const benzine = parseFloat((baseEuro + wave).toFixed(3));
       list.push({
@@ -168,63 +194,109 @@ const FuelService = {
 
   /**
    * Berekent statistieken en trends voor de gekozen brandstof en periode.
-   * Breidt de reeks naadloos uit met de actuele dagkoersbrug indien actuele dagprijs-modus actief is.
+   * Analyseert de live CBS-tabel en berekent bij de actuele dagkoersmodus een
+   * dynamische, wiskundige extrapolatie (nowcast) voor de dagen tussen de laatste
+   * CBS-publicatie en vandaag. 100% dynamisch, zonder hardgecodeerde datums of prijzen.
    */
   getStats(records, fuelType = 'BenzineEuro95_1', range = '30D', fuelState = null) {
     if (!Array.isArray(records) || records.length === 0) return null;
 
+    const mode = fuelState?.priceMode || 'daily'; // 'daily' | 'cbs' | 'custom'
+    const isUserCustom = Boolean(fuelState?.isUserCustom && typeof fuelState?.customPricePerLiter === 'number');
+    const customPrice = isUserCustom ? fuelState.customPricePerLiter : '';
+    const todayKey = new Date().toDateString();
+    const lastRecPeriod = records[records.length - 1]?.period || '';
+    const cacheKey = `${lastRecPeriod}_${records.length}_${fuelType}_${range}_${mode}_${isUserCustom}_${customPrice}_${todayKey}`;
+
+    if (this._statsCacheKey === cacheKey && this._statsCacheVal) {
+      return this._statsCacheVal;
+    }
+
+    const validCbs = records.filter(r => typeof r[fuelType] === 'number');
+    if (validCbs.length === 0) return null;
+
+    const isCbsMode = mode === 'cbs';
+
+    const lastCbs = validCbs[validCbs.length - 1];
+    const cbsPrice = lastCbs[fuelType];
+    const cbsDateStr = lastCbs.dateStr;
+    const cbsIsoDate = lastCbs.isoDate;
+
     let allRecords = records;
-    const isCustomMode = !fuelState || fuelState.priceMode !== 'cbs'; // Standaard: actuele dagprijs
+    let isNowcast = false;
+    let daysProjected = 0;
 
-    if (isCustomMode && Config.FUEL?.DAILY_BRIDGE && Config.FUEL.DAILY_BRIDGE.length > 0) {
-      const lastRec = records[records.length - 1];
-      const lastIso = lastRec ? lastRec.isoDate : '2000-01-01';
-      const superSurcharge = Config.FUEL?.SUPER98_SURCHARGE || 0.19;
+    // Dynamische Nowcast (alleen in 'daily' modus wanneer CBS nog niet vandaag bevat)
+    if (!isCbsMode) {
+      const now = new Date();
+      const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-      const bridgeRecords = Config.FUEL.DAILY_BRIDGE
-        .filter(b => b.date > lastIso)
-        .map(b => {
-          const parts = b.date.split('-');
-          const dObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-          const p = b.date.replace(/-/g, '');
-          const benzine = b.BenzineEuro95_1;
-          const diesel = b.Diesel_2;
-          const lpg = b.Lpg_3 || 0.984;
-          const super98 = benzine !== null ? parseFloat((benzine + superSurcharge).toFixed(3)) : null;
+      const parts = lastCbs.isoDate ? lastCbs.isoDate.split('-') : [];
+      const lastCbsDate = parts.length === 3
+        ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
+        : new Date(lastCbs.timestamp);
 
-          return {
-            period: p,
-            timestamp: dObj.getTime(),
-            dateStr: (typeof I18n !== 'undefined' && I18n.formatters?.shortDate)
-              ? I18n.formatters.shortDate(dObj)
-              : `${dObj.getDate()} okt`,
-            isoDate: b.date,
-            BenzineEuro95_1: benzine,
-            SuperPlus98: super98,
-            Diesel_2: diesel,
-            Lpg_3: lpg,
-            isBridge: true
+      const diffMs = todayMid.getTime() - lastCbsDate.getTime();
+      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffDays > 0) {
+        // Bereken dagelijkse veranderingssnelheid over de laatste 7 CBS-dagen
+        const window7 = validCbs.slice(-7);
+        const pLast = window7[window7.length - 1][fuelType];
+        const pFirst = window7[0][fuelType];
+        const spanDays = Math.max(1, window7.length - 1);
+        const rawDailySlope = (pLast - pFirst) / spanDays;
+        // Begrens extreme uitschieters tot max +/- 2 cent per dag voor stabiliteit
+        const dailySlope = Math.max(-0.02, Math.min(0.02, rawDailySlope));
+
+        const projectedRecords = [];
+        let runningPrice = pLast;
+        const superSurcharge = Config.FUEL?.SUPER98_SURCHARGE || 0.19;
+
+        for (let step = 1; step <= diffDays; step++) {
+          const stepDate = new Date(lastCbsDate.getFullYear(), lastCbsDate.getMonth(), lastCbsDate.getDate() + step);
+          // Demp de helling geleidelijk naarmate dagen verder van de laatste meting liggen
+          const decay = Math.pow(0.92, step - 1);
+          runningPrice = parseFloat((runningPrice + (dailySlope * decay)).toFixed(3));
+
+          const y = stepDate.getFullYear();
+          const m = String(stepDate.getMonth() + 1).padStart(2, '0');
+          const d = String(stepDate.getDate()).padStart(2, '0');
+          const pCode = `${y}${m}${d}`;
+          const iso = `${y}-${m}-${d}`;
+          const dStr = (typeof I18n !== 'undefined' && I18n.formatters?.shortDate)
+            ? I18n.formatters.shortDate(stepDate)
+            : `${stepDate.getDate()} m${stepDate.getMonth() + 1}`;
+
+          const projRec = {
+            period: pCode,
+            timestamp: stepDate.getTime(),
+            dateStr: dStr,
+            isoDate: iso,
+            isNowcast: true,
+            [fuelType]: runningPrice
           };
-        });
 
-      if (bridgeRecords.length > 0) {
-        if (fuelState && typeof fuelState.customPricePerLiter === 'number' && fuelState.customPricePerLiter > 0) {
-          const lastBridge = bridgeRecords[bridgeRecords.length - 1];
-          if (fuelType === 'BenzineEuro95_1') lastBridge.BenzineEuro95_1 = fuelState.customPricePerLiter;
-          else if (fuelType === 'Diesel_2') lastBridge.Diesel_2 = fuelState.customPricePerLiter;
-          else if (fuelType === 'SuperPlus98') lastBridge.SuperPlus98 = fuelState.customPricePerLiter;
+          if (fuelType === 'BenzineEuro95_1') {
+            projRec.SuperPlus98 = parseFloat((runningPrice + superSurcharge).toFixed(3));
+          }
+
+          projectedRecords.push(projRec);
         }
-        allRecords = records.concat(bridgeRecords);
+
+        if (projectedRecords.length > 0) {
+          allRecords = records.concat(projectedRecords);
+          isNowcast = true;
+          daysProjected = diffDays;
+        }
       }
     }
 
     const daysCount = range === '90D' ? 90 : 30;
-    const validRecords = allRecords.filter(r => typeof r[fuelType] === 'number');
-    if (validRecords.length === 0) return null;
-
-    const slice = validRecords.slice(-daysCount);
+    const finalValid = allRecords.filter(r => typeof r[fuelType] === 'number');
+    const slice = finalValid.slice(-daysCount);
     const latest = slice[slice.length - 1];
-    const latestPrice = latest[fuelType];
+    const latestPrice = isUserCustom ? fuelState.customPricePerLiter : (isCbsMode ? cbsPrice : latest[fuelType]);
 
     const ref7Idx = Math.max(0, slice.length - 8);
     const price7d = slice[ref7Idx] ? slice[ref7Idx][fuelType] : latestPrice;
@@ -246,13 +318,19 @@ const FuelService = {
 
     const avg = slice.length > 0 ? (sum / slice.length) : latestPrice;
 
-    return {
+    const result = {
       fuelType,
       range,
-      isCustomMode,
+      mode,
+      isUserCustom,
+      isNowcast,
+      daysProjected,
+      cbsPrice,
+      cbsDateStr,
+      cbsIsoDate,
       latestPrice,
-      latestDateStr: latest.dateStr,
-      latestPeriod: latest.period,
+      latestDateStr: isCbsMode ? cbsDateStr : latest.dateStr,
+      latestPeriod: isCbsMode ? lastCbs.period : latest.period,
       diff7d,
       diff7dCents: (diff7d * 100).toFixed(1),
       diffRange,
@@ -263,19 +341,30 @@ const FuelService = {
       history: slice.map(r => ({
         timestamp: r.timestamp,
         dateStr: r.dateStr,
-        price: r[fuelType]
+        price: r[fuelType],
+        isNowcast: Boolean(r.isNowcast)
       }))
     };
+
+    this._statsCacheKey = cacheKey;
+    this._statsCacheVal = result;
+    return result;
   },
 
   /**
-   * Bepaalt de effectieve rekenprijs op basis van de gebruikersvoorkeur (CBS vs. Aangepast/Actueel).
+   * Bepaalt de effectieve rekenprijs op basis van gebruikersvoorkeur en de dynamische data.
    */
   getEffectivePrice(stats, fuelState) {
-    if (fuelState && fuelState.priceMode === 'custom' && typeof fuelState.customPricePerLiter === 'number' && fuelState.customPricePerLiter > 0) {
+    if (fuelState?.isUserCustom && typeof fuelState?.customPricePerLiter === 'number') {
       return fuelState.customPricePerLiter;
     }
-    return stats ? stats.latestPrice : (Config.FUEL?.FALLBACK_PRICE_EURO95 || 2.274);
+    if (stats) {
+      if (fuelState?.priceMode === 'cbs') {
+        return stats.cbsPrice;
+      }
+      return stats.latestPrice;
+    }
+    return Config.FUEL?.FALLBACK_PRICE_EURO95 || 2.25;
   },
 
   /**
@@ -366,26 +455,39 @@ const FuelService = {
   },
 
   /**
-   * Berekent de besparing van de motor ten opzichte van de auto ('het koekblik').
+   * Berekent het kostenverschil / de besparing van de motor ten opzichte van het geselecteerde autovoertuig.
+   * Ondersteunt zowel positieve besparing (motor zuiniger dan bijv. Swift Sport of Clio RS)
+   * als negatief verschil (wanneer een hybride stadsauto zoals Aygo X 2026 zuiniger is dan bijv. een 2002 Hornet).
    */
   calculateCarSavings(distanceKm, bikeConsumption, carConsumption, fuelPrice) {
     const fuelCfg = Config.FUEL || {};
     const dFuel = Config.DEFAULTS?.FUEL || {};
     const kmDaily = (Number(distanceKm) || 0) * 2;
-    const bikeL = (kmDaily / 100) * (Number(bikeConsumption) || dFuel.consumptionL100km || 5.6);
-    const carL = (kmDaily / 100) * (Number(carConsumption) || fuelCfg.DEFAULT_CAR_CONSUMPTION_L100KM || 6.5);
-    const price = Number(fuelPrice) || fuelCfg.FALLBACK_PRICE_EURO95 || 2.274;
+    const bikeCons = Number(bikeConsumption) || dFuel.consumptionL100km || 5.6;
+    const carCons = Number(carConsumption) || dFuel.carConsumptionL100km || fuelCfg.DEFAULT_CAR_CONSUMPTION_L100KM || 5.8;
+    const bikeL = (kmDaily / 100) * bikeCons;
+    const carL = (kmDaily / 100) * carCons;
+    const price = Number(fuelPrice) || fuelCfg.FALLBACK_PRICE_EURO95 || 2.250;
 
     const bikeCost = bikeL * price;
     const carCost = carL * price;
-    const savingsDaily = Math.max(0, carCost - bikeCost);
+    const diffDaily = carCost - bikeCost; // Positief = motor is goedkoper (besparing)
     const workdaysWeek = fuelCfg.WORKDAYS_PER_WEEK || 5;
     const workdaysMonth = fuelCfg.WORKDAYS_PER_MONTH || 21.6;
+    const workdaysYear = fuelCfg.WORKDAYS_PER_YEAR || 215;
 
     return {
-      daily: parseFloat(savingsDaily.toFixed(2)),
-      weekly: parseFloat((savingsDaily * workdaysWeek).toFixed(2)),
-      monthly: parseFloat((savingsDaily * workdaysMonth).toFixed(2))
+      daily: parseFloat(diffDaily.toFixed(2)),
+      weekly: parseFloat((diffDaily * workdaysWeek).toFixed(2)),
+      monthly: parseFloat((diffDaily * workdaysMonth).toFixed(2)),
+      yearly: parseFloat((diffDaily * workdaysYear).toFixed(2)),
+      absDaily: parseFloat(Math.abs(diffDaily).toFixed(2)),
+      absMonthly: parseFloat(Math.abs(diffDaily * workdaysMonth).toFixed(2)),
+      absYearly: parseFloat(Math.abs(diffDaily * workdaysYear).toFixed(2)),
+      isBikeCheaper: diffDaily >= -0.005,
+      bikeCostDaily: parseFloat(bikeCost.toFixed(2)),
+      carCostDaily: parseFloat(carCost.toFixed(2)),
+      diffLitersPer100km: parseFloat((carCons - bikeCons).toFixed(1))
     };
   }
 };

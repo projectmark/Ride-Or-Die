@@ -4,22 +4,43 @@
  * Consequent actief geformuleerd, vrij van Engelse leenwoorden en met correcte komma-notatie.
  */
 
+const _numFormatters = new Map();
+function _getNumberFormatter(decimals) {
+  let fmt = _numFormatters.get(decimals);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat('nl-NL', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+    _numFormatters.set(decimals, fmt);
+  }
+  return fmt;
+}
+
+const _fullDateFormatter = new Intl.DateTimeFormat('nl-NL', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long'
+});
+
+const _shortDateFormatter = new Intl.DateTimeFormat('nl-NL', {
+  day: 'numeric',
+  month: 'short'
+});
+
 const I18n = {
-  // 1. Getal-, datum- en tijdnotaties volgens de Nederlandse standaard
+  // 1. Getal-, datum- en tijdnotaties volgens de Nederlandse standaard (gecachte Intl-instanties)
   formatters: {
     // Formatteert een decimaal getal met een komma (bijv. 1,5 i.p.v. 1.5)
     decimal(num, decimals = 1) {
-      if (num === null || num === undefined || isNaN(num)) return '0,0';
-      return Number(num).toLocaleString('nl-NL', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-      });
+      const n = Number(num);
+      if (num === null || num === undefined || Number.isNaN(n)) return '0,0';
+      return _getNumberFormatter(decimals).format(n);
     },
 
     // Neerslag in millimeters met komma (bijv. "0,0 mm", "1,2 mm")
     millimeters(val) {
-      const formatted = this.decimal(val, 1);
-      return `${formatted} mm`;
+      return `${this.decimal(val, 1)} mm`;
     },
 
     // Snelheid en windstoten in kilometers per uur
@@ -44,7 +65,7 @@ const I18n = {
     // Datum voluit: "Donderdag 15 oktober"
     fullDate(date = new Date()) {
       const d = (date instanceof Date) ? date : new Date(date);
-      const str = d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+      const str = _fullDateFormatter.format(d);
       return str.charAt(0).toUpperCase() + str.slice(1);
     },
 
@@ -55,23 +76,20 @@ const I18n = {
 
     // Geldbedrag in Euro's met Nederlandse komma
     currency(num, decimals = 2) {
-      if (num === null || num === undefined || isNaN(num)) return '€ --';
-      const formatted = Number(num).toLocaleString('nl-NL', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-      });
-      return `€ ${formatted}`;
+      const n = Number(num);
+      if (num === null || num === undefined || Number.isNaN(n)) return '€ --';
+      return `€ ${_getNumberFormatter(decimals).format(n)}`;
     },
 
     // Brandstofprijs per liter (standaard 3 decimalen, bijv. 2,391)
     fuelPrice(num) {
-      if (num === null || num === undefined || isNaN(num)) return '--';
+      if (num === null || num === undefined || Number.isNaN(Number(num))) return '--';
       return this.decimal(num, 3);
     },
 
     // Volume in liters met komma
     liters(val, decimals = 1) {
-      if (val === null || val === undefined || isNaN(val)) return '-- L';
+      if (val === null || val === undefined || Number.isNaN(Number(val))) return '-- L';
       return `${this.decimal(val, decimals)} L`;
     },
 
@@ -79,8 +97,7 @@ const I18n = {
     consumptionRatio(l100km) {
       const val = Number(l100km);
       if (!val || val <= 0) return '1 op --';
-      const ratio = (100 / val).toFixed(1);
-      return `1 op ${this.decimal(ratio, 1)}`;
+      return `1 op ${this.decimal(100 / val, 1)}`;
     },
 
     // Uitgebreid verbruikslabel
@@ -92,7 +109,7 @@ const I18n = {
     shortDate(date) {
       if (!date) return '';
       const d = (date instanceof Date) ? date : new Date(date);
-      return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
+      return _shortDateFormatter.format(d).replace('.', '');
     },
 
     // Reistijd in minuten
@@ -242,7 +259,8 @@ const I18n = {
       high: "Hoog",
       veryHigh: "Zeer hoog",
       quiet: "Rustig",
-      strong: "Krachtig"
+      strong: "Krachtig",
+      dangerous: "Gevaarlijk"
     },
 
     // Kleding- en uitrustingsadvies

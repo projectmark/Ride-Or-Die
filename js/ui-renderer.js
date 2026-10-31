@@ -5,8 +5,14 @@
  */
 
 const UIRenderer = {
-  // Gecachte DOM-referenties voor maximale rendersnelheid
+  // Gecachte DOM-referenties en memoization-sleutels voor maximale rendersnelheid
   _elements: null,
+  _svgCache: new Map(),
+  _lastHourlyKey: '',
+  _lastDailyKey: '',
+  _lastFuelChartKey: '',
+  _lastBarContextKey: '',
+  _forceBarSweepCounter: 0,
 
   _getElements() {
     if (!this._elements) {
@@ -76,6 +82,7 @@ const UIRenderer = {
 
         // Hero Mini
         heroCityName: document.getElementById('hero-city-name'),
+        heroUpdateTime: document.getElementById('hero-update-time'),
         heroTemp: document.getElementById('hero-temp'),
         heroWeatherIcon: document.getElementById('hero-weather-icon'),
         heroCondition: document.getElementById('hero-condition'),
@@ -150,6 +157,7 @@ const UIRenderer = {
         fuelCalcRouteName: document.getElementById('fuel-calc-route-name'),
         fuelCalcKm: document.getElementById('fuel-calc-km'),
         fuelCalcBikeName: document.getElementById('fuel-calc-bike-name'),
+        fuelCalcCarName: document.getElementById('fuel-calc-car-name'),
         fuelCostSingle: document.getElementById('fuel-cost-single'),
         fuelLitersSingle: document.getElementById('fuel-liters-single'),
         fuelCostCommute: document.getElementById('fuel-cost-commute'),
@@ -157,8 +165,14 @@ const UIRenderer = {
         fuelCostTank: document.getElementById('fuel-cost-tank'),
         fuelLblTank: document.getElementById('fuel-lbl-tank'),
         fuelRangeTank: document.getElementById('fuel-range-tank'),
+        fuelSavingsTile: document.getElementById('fuel-savings-tile'),
+        fuelLblSavings: document.getElementById('fuel-lbl-savings'),
         fuelCarSavings: document.getElementById('fuel-car-savings'),
+        fuelSubSavings: document.getElementById('fuel-sub-savings'),
         fuelQuickPresetSelect: document.getElementById('fuel-quick-preset-select'),
+        fuelQuickCarSelect: document.getElementById('fuel-quick-car-select'),
+        fuelRefreshBtn: document.getElementById('fuel-refresh-btn'),
+        fuelRefreshIcon: document.getElementById('fuel-refresh-icon'),
         fuelCustomTag: document.getElementById('fuel-custom-tag'),
         fuelModeButtons: document.querySelectorAll('#fuel-mode-group .fuel-seg-btn'),
         modalFuelModeButtons: document.querySelectorAll('#modal-fuel-mode-group .fuel-seg-btn'),
@@ -180,78 +194,96 @@ const UIRenderer = {
   },
 
   /**
-   * Genereert weer-iconen (SVG).
+   * Genereert weer-iconen (SVG) met geheugencache.
    */
   getWeatherSvg(iconType, isNight = false) {
+    const cacheKey = `${iconType}_${isNight ? '1' : '0'}`;
+    if (this._svgCache.has(cacheKey)) {
+      return this._svgCache.get(cacheKey);
+    }
+
+    let svg = '';
     if (isNight && (iconType === 'sun' || iconType === 'partly-cloudy')) {
-      return `
+      svg = `
         <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
           <path d="M44 38A18 18 0 1 1 26 20a14 14 0 0 0 18 18z" fill="#facc15" stroke="#ca8a04" stroke-width="2"/>
           <circle cx="48" cy="18" r="1.5" fill="#f59e0b"/>
           <circle cx="54" cy="28" r="1" fill="#f59e0b"/>
         </svg>`;
+    } else {
+      switch (iconType) {
+        case 'sun':
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <circle cx="32" cy="32" r="14" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+              <path d="M32 6v6M32 52v6M6 32h6M52 32h6M13.6 13.6l4.2 4.2M46.2 46.2l4.2 4.2M13.6 50.4l4.2-4.2M46.2 17.8l4.2-4.2" stroke="#d97706" stroke-width="3" stroke-linecap="round"/>
+            </svg>`;
+          break;
+        case 'partly-cloudy':
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <circle cx="26" cy="24" r="10" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+              <path d="M22 48h22a10 10 0 0 0 2-19.8 14 14 0 0 0-26.4 4.8A8 8 0 0 0 22 48z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/>
+            </svg>`;
+          break;
+        case 'cloudy':
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <path d="M20 46h24a10 10 0 0 0 1-19.9 14 14 0 0 0-26 3.9A8 8 0 0 0 20 46z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+            </svg>`;
+          break;
+        case 'drizzle':
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <path d="M20 40h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 40z" fill="#94a3b8"/>
+              <path d="M24 46l-2 6M34 46l-2 6M44 46l-2 6" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>`;
+          break;
+        case 'rain':
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <path d="M20 38h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 38z" fill="#64748b"/>
+              <path d="M22 44l-4 12M32 44l-4 12M42 44l-4 12" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+            </svg>`;
+          break;
+        case 'heavy-rain':
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <path d="M20 36h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 36z" fill="#475569"/>
+              <path d="M20 42l-5 14M30 42l-5 14M40 42l-5 14M50 42l-5 14" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+            </svg>`;
+          break;
+        case 'thunder':
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <path d="M19 36h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 19 36z" fill="#334155"/>
+              <path d="M32 38l-6 10h8l-4 10 12-14h-8l4-6h-6z" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+            </svg>`;
+          break;
+        case 'snow':
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <path d="M20 40h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 40z" fill="#94a3b8"/>
+              <circle cx="22" cy="48" r="2" fill="#38bdf8"/>
+              <circle cx="32" cy="52" r="2" fill="#38bdf8"/>
+              <circle cx="42" cy="48" r="2" fill="#38bdf8"/>
+            </svg>`;
+          break;
+        case 'fog':
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <path d="M16 26h32M12 34h40M18 42h28" stroke="#64748b" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>`;
+          break;
+        default:
+          svg = `
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <circle cx="32" cy="32" r="14" fill="#fbbf24"/>
+            </svg>`;
+      }
     }
-    switch (iconType) {
-      case 'sun':
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <circle cx="32" cy="32" r="14" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
-            <path d="M32 6v6M32 52v6M6 32h6M52 32h6M13.6 13.6l4.2 4.2M46.2 46.2l4.2 4.2M13.6 50.4l4.2-4.2M46.2 17.8l4.2-4.2" stroke="#d97706" stroke-width="3" stroke-linecap="round"/>
-          </svg>`;
-      case 'partly-cloudy':
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <circle cx="26" cy="24" r="10" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
-            <path d="M22 48h22a10 10 0 0 0 2-19.8 14 14 0 0 0-26.4 4.8A8 8 0 0 0 22 48z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/>
-          </svg>`;
-      case 'cloudy':
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <path d="M20 46h24a10 10 0 0 0 1-19.9 14 14 0 0 0-26 3.9A8 8 0 0 0 20 46z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
-          </svg>`;
-      case 'drizzle':
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <path d="M20 40h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 40z" fill="#94a3b8"/>
-            <path d="M24 46l-2 6M34 46l-2 6M44 46l-2 6" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>`;
-      case 'rain':
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <path d="M20 38h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 38z" fill="#64748b"/>
-            <path d="M22 44l-4 12M32 44l-4 12M42 44l-4 12" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
-          </svg>`;
-      case 'heavy-rain':
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <path d="M20 36h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 36z" fill="#475569"/>
-            <path d="M20 42l-5 14M30 42l-5 14M40 42l-5 14M50 42l-5 14" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
-          </svg>`;
-      case 'thunder':
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <path d="M19 36h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 19 36z" fill="#334155"/>
-            <path d="M32 38l-6 10h8l-4 10 12-14h-8l4-6h-6z" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
-          </svg>`;
-      case 'snow':
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <path d="M20 40h24a9 9 0 0 0 1-17.9 13 13 0 0 0-24 3.9A7 7 0 0 0 20 40z" fill="#94a3b8"/>
-            <circle cx="22" cy="48" r="2" fill="#38bdf8"/>
-            <circle cx="32" cy="52" r="2" fill="#38bdf8"/>
-            <circle cx="42" cy="48" r="2" fill="#38bdf8"/>
-          </svg>`;
-      case 'fog':
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <path d="M16 26h32M12 34h40M18 42h28" stroke="#64748b" stroke-width="3.5" stroke-linecap="round"/>
-          </svg>`;
-      default:
-        return `
-          <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <circle cx="32" cy="32" r="14" fill="#fbbf24"/>
-          </svg>`;
-    }
+    this._svgCache.set(cacheKey, svg);
+    return svg;
   },
 
   /**
@@ -275,51 +307,94 @@ const UIRenderer = {
     if (icon) {
       icon.classList.toggle('spin', isLoading);
     }
+    if (isLoading) {
+      this._forceBarSweepCounter++;
+      this._lastDailyKey = '';
+    }
   },
 
   /**
-   * Animeert een voortgangsbalk soepel naar het doelpercentage via CSS transitions.
+   * Berekent een exacte RGB-kleur op het meteorologische thermische spectrum (-5°C t/m 30°C).
+   * Volledig dynamisch geëxtrapoleerd zonder vaste buckets.
    */
-  _animateBar(barEl, targetPercent, bg) {
+  _getThermalColor(tempC) {
+    const stops = [
+      { t: -5, rgb: [99, 102, 241] },  // Diep vorst-indigo (#6366f1)
+      { t: 0,  rgb: [59, 130, 246] },  // Vriespunt-blauw (#3b82f6)
+      { t: 5,  rgb: [56, 189, 248] },  // Helder ijsblauw (#38bdf8)
+      { t: 9,  rgb: [6, 182, 212] },   // Fris cyaan (#06b6d4)
+      { t: 13, rgb: [20, 184, 166] },  // Zeegroen / teal (#14b8a6)
+      { t: 17, rgb: [16, 185, 129] },  // Comfort smaragd (#10b981)
+      { t: 21, rgb: [234, 179, 8] },   // Zonnig goudgeel (#eab308)
+      { t: 25, rgb: [249, 115, 22] },  // Zomers oranje (#f97316)
+      { t: 30, rgb: [239, 68, 68] }    // Hitte koraalrood (#ef4444)
+    ];
+
+    const val = Number.isFinite(tempC) ? tempC : 14;
+    if (val <= stops[0].t) return `rgb(${stops[0].rgb.join(', ')})`;
+    if (val >= stops[stops.length - 1].t) return `rgb(${stops[stops.length - 1].rgb.join(', ')})`;
+
+    for (let i = 0; i < stops.length - 1; i++) {
+      const a = stops[i];
+      const b = stops[i + 1];
+      if (val >= a.t && val <= b.t) {
+        const ratio = (val - a.t) / (b.t - a.t);
+        const r = Math.round(a.rgb[0] + (b.rgb[0] - a.rgb[0]) * ratio);
+        const g = Math.round(a.rgb[1] + (b.rgb[1] - a.rgb[1]) * ratio);
+        const bl = Math.round(a.rgb[2] + (b.rgb[2] - a.rgb[2]) * ratio);
+        return `rgb(${r}, ${g}, ${bl})`;
+      }
+    }
+    return 'rgb(6, 182, 212)';
+  },
+
+  /**
+   * Genereert een rijke 3-stops thermische CSS linear-gradient voor een temperatuurbereik.
+   */
+  _getThermalGradient(minTemp, maxTemp) {
+    const low = Number.isFinite(minTemp) ? minTemp : 8;
+    const high = Number.isFinite(maxTemp) ? Math.max(low + 2, maxTemp) : low + 6;
+    const mid = (low + high) / 2;
+    const cStart = this._getThermalColor(low);
+    const cMid = this._getThermalColor(mid);
+    const cEnd = this._getThermalColor(high);
+    return `linear-gradient(90deg, ${cStart} 0%, ${cMid} 50%, ${cEnd} 100%)`;
+  },
+
+  /**
+   * Animeert de telemetriebalkjes vloeiend met een frisse spring-curve en glans-sweep
+   * zonder dat omliggende kaarten verschuiven.
+   */
+  _animateBar(barEl, targetPercent, bg, delayMs = 0, forceSweep = false) {
     if (!barEl) return;
     if (bg) barEl.style.background = bg;
 
-    // Directe reset naar 0% zonder terugwaartse animatie
-    barEl.style.transition = 'none';
-    barEl.style.width = '0%';
+    if (forceSweep) {
+      if (barEl._animRaf) cancelAnimationFrame(barEl._animRaf);
+      barEl.style.transition = 'none';
+      barEl.style.width = '0%';
+      barEl.classList.remove('is-sweeping');
+      void barEl.offsetWidth;
 
-    // Vloeiende voorwaartse sweep met Material Design 3 curve
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        barEl.style.transition = 'width 0.75s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease';
-        barEl.style.width = `${targetPercent}%`;
-      }, 40);
-    });
+      barEl._animRaf = requestAnimationFrame(() => {
+        barEl._animRaf = requestAnimationFrame(() => {
+          barEl.style.transition = `width 0.9s cubic-bezier(0.16, 1, 0.3, 1) ${delayMs}ms, background 0.45s ease`;
+          barEl.style.width = `${targetPercent}%`;
+          barEl.classList.add('is-sweeping');
+          barEl._animRaf = null;
+        });
+      });
+    } else {
+      barEl.style.transition = 'width 0.55s cubic-bezier(0.22, 1, 0.36, 1), background 0.35s ease';
+      barEl.style.width = `${targetPercent}%`;
+    }
   },
 
   /**
-   * Activeert een serene, rustige fade-overgang over de dashboardkaarten.
+   * Houdt dashboardkaarten 100% stabiel op hun plek voor maximale leesbaarheid.
    */
   triggerContentTransition() {
-    const cards = [
-      document.getElementById('master-verdict-card'),
-      document.getElementById('slot-morning-card'),
-      document.getElementById('slot-evening-card'),
-      document.getElementById('gear-advisor-card'),
-      document.querySelector('.safety-telemetry-grid'),
-      document.querySelector('.weather-hero-mini'),
-      document.querySelector('.daily-forecast-card'),
-      document.getElementById('single-widget-card')
-    ].filter(Boolean);
-
-    cards.forEach(el => {
-      el.classList.remove('m3-day-switch');
-      el.style.animationDelay = '';
-    });
-
-    requestAnimationFrame(() => {
-      cards.forEach(el => el.classList.add('m3-day-switch'));
-    });
+    // Geen animatie-reset op het geheel om subtiele verschuivingen te voorkomen
   },
 
   /**
@@ -350,17 +425,9 @@ const UIRenderer = {
     const isWidget = viewMode === 'widget';
     if (els.cockpitView) {
       els.cockpitView.style.display = isWidget ? 'none' : 'flex';
-      if (!isWidget) {
-        els.cockpitView.classList.remove('view-enter');
-        requestAnimationFrame(() => els.cockpitView.classList.add('view-enter'));
-      }
     }
     if (els.widgetView) {
       els.widgetView.style.display = isWidget ? 'flex' : 'none';
-      if (isWidget) {
-        els.widgetView.classList.remove('view-enter');
-        requestAnimationFrame(() => els.widgetView.classList.add('view-enter'));
-      }
     }
 
     if (els.viewModeBtnText && els.viewModeBtnIcon) {
@@ -410,6 +477,7 @@ const UIRenderer = {
    */
   renderDayToggle(selectedDay, workdayConfig) {
     const els = this._getElements();
+    this._forceBarSweepCounter++;
     if (els.navNextDayText && workdayConfig) {
       els.navNextDayText.textContent = workdayConfig.nextWorkday.buttonLabel;
     }
@@ -433,6 +501,11 @@ const UIRenderer = {
     const workdayConfig = advice.workdayConfig;
 
     this.updateNavbar(state);
+
+    // Synchroniseer automatisch thema met actuele dag/nacht-status van KNMI
+    if (state.theme === 'auto' && current) {
+      this.renderTheme('auto', current.is_day === 1);
+    }
 
     // Subtiele zijdezachte crossfade bij gegevens- of dagwissel
     this.triggerContentTransition();
@@ -538,6 +611,10 @@ const UIRenderer = {
     }
 
     // --- 4. TELEMETRIEMETERS ---
+    const barContextKey = `${state.selectedDay}_${state.location?.name || ''}_${state.route?.start?.name || ''}_${state.route?.dest?.name || ''}_${current?.time || ''}_${this._forceBarSweepCounter}`;
+    const isFreshBarSweep = this._lastBarContextKey !== barContextKey;
+    this._lastBarContextKey = barContextKey;
+
     const telem = advice.telemetry || {};
     const windVal = telem.maxGusts || 25;
     if (els.meterWindVal) els.meterWindVal.textContent = I18n.formatters.kmh(windVal);
@@ -553,8 +630,12 @@ const UIRenderer = {
     }
     if (els.meterWindBar) {
       const wPercent = Math.min(100, Math.round((windVal / 80) * 100));
-      const wColor = isDangerousGust ? '#ef4444' : isAlertGust ? '#f59e0b' : '#10b981';
-      this._animateBar(els.meterWindBar, wPercent, wColor);
+      const wGrad = isDangerousGust
+        ? 'linear-gradient(90deg, #f59e0b 0%, #ef4444 55%, #dc2626 100%)'
+        : isAlertGust
+          ? 'linear-gradient(90deg, #38bdf8 0%, #f59e0b 55%, #ea580c 100%)'
+          : 'linear-gradient(90deg, #22d3ee 0%, #0284c7 55%, #10b981 100%)';
+      this._animateBar(els.meterWindBar, wPercent, wGrad, 0, isFreshBarSweep);
     }
 
     const gripVal = telem.gripPercent !== undefined ? telem.gripPercent : 100;
@@ -566,8 +647,12 @@ const UIRenderer = {
     }
     if (els.meterGripBar) {
       const gripPercent = Math.min(100, Math.max(0, gripVal));
-      const gColor = gripVal === 100 ? '#10b981' : gripVal > 70 ? '#f59e0b' : '#ef4444';
-      this._animateBar(els.meterGripBar, gripPercent, gColor);
+      const gGrad = gripVal === 100
+        ? 'linear-gradient(90deg, #34d399 0%, #10b981 55%, #059669 100%)'
+        : gripVal > 70
+          ? 'linear-gradient(90deg, #10b981 0%, #eab308 55%, #f59e0b 100%)'
+          : 'linear-gradient(90deg, #f59e0b 0%, #ef4444 65%, #b91c1c 100%)';
+      this._animateBar(els.meterGripBar, gripPercent, gGrad, 65, isFreshBarSweep);
     }
 
     const rainVal = telem.maxRain !== undefined ? telem.maxRain : 0;
@@ -576,13 +661,17 @@ const UIRenderer = {
     if (els.meterRainMm) els.meterRainMm.textContent = rainVal > 0.1 ? `Kans: ${maxProb}%` : I18n.t.telemetry.dry;
     if (els.meterRainTag) {
       els.meterRainTag.textContent = rainVal > 2.0 ? 'Plensbui' : rainVal > 0.2 ? 'Bui verwacht' : I18n.t.telemetry.dry;
-      els.meterRainTag.style.color = rainVal > 2.0 ? '#ef4444' : rainVal > 0.2 ? '#f59e0b' : '#10b981';
+      els.meterRainTag.style.color = rainVal > 2.0 ? '#ef4444' : rainVal > 0.2 ? '#0284c7' : '#10b981';
     }
     if (els.meterRainBar) {
       const rPercent = Math.min(100, Math.max(8, Math.round((rainVal / 4.0) * 100)));
-      const targetRainW = rainVal > 0.1 ? rPercent : 6;
-      const rColor = rainVal > 2.0 ? '#ef4444' : rainVal > 0.2 ? '#f59e0b' : '#10b981';
-      this._animateBar(els.meterRainBar, targetRainW, rColor);
+      const targetRainW = rainVal > 0.1 ? rPercent : 10;
+      const rGrad = rainVal > 2.0
+        ? 'linear-gradient(90deg, #38bdf8 0%, #2563eb 50%, #ef4444 100%)'
+        : rainVal > 0.2
+          ? 'linear-gradient(90deg, #38bdf8 0%, #0284c7 55%, #3b82f6 100%)'
+          : 'linear-gradient(90deg, #38bdf8 0%, #06b6d4 50%, #10b981 100%)';
+      this._animateBar(els.meterRainBar, targetRainW, rGrad, 130, isFreshBarSweep);
     }
 
     const tempVal = telem.avgTemp !== undefined ? telem.avgTemp : 15;
@@ -595,20 +684,39 @@ const UIRenderer = {
       els.meterTempTag.style.color = tempVal < 4 ? '#0284c7' : tempVal > 29 ? '#f59e0b' : '#10b981';
     }
     if (els.meterTempBar) {
-      const tPercent = Math.min(100, Math.max(10, Math.round(((tempVal + 5) / 40) * 100)));
-      const tColor = tempVal < 4 ? '#0284c7' : tempVal > 29 ? '#f59e0b' : '#10b981';
-      this._animateBar(els.meterTempBar, tPercent, tColor);
+      const tPercent = Math.min(100, Math.max(12, Math.round(((tempVal + 5) / 38) * 100)));
+      const tGrad = this._getThermalGradient(Math.max(-4, tempVal - 6), tempVal);
+      this._animateBar(els.meterTempBar, tPercent, tGrad, 195, isFreshBarSweep);
     }
 
     // --- 5. LIVE WEER & 6 SPECIFICATIES ---
     const defaultCity = (typeof Config !== 'undefined' && Config.DEFAULTS && Config.DEFAULTS.LOCATION && Config.DEFAULTS.LOCATION.name) || 'Utrecht';
     if (els.heroCityName) els.heroCityName.textContent = state.location.name || defaultCity;
     if (els.dailyCityName) els.dailyCityName.textContent = state.location.name || defaultCity;
+    if (els.heroUpdateTime) {
+      els.heroUpdateTime.textContent = isNextWorkday
+        ? `${workdayConfig.nextWorkday.dayName} (verwachting)`
+        : `Actueel • ${I18n.formatters.time(current?.time || new Date())}`;
+    }
 
     let dayIdx = 0;
     if (daily && daily.time) {
       const fIdx = daily.time.findIndex(t => t.startsWith(workdayConfig.nextWorkday.dateStr));
       if (fIdx >= 0) dayIdx = fIdx;
+    }
+
+    // Zoek de index van het actuele uur in de uurlijkse array (in plaats van 00:00 middernacht index 0)
+    let curHourIdx = 0;
+    if (hourly && hourly.time) {
+      if (isNextWorkday) {
+        const targetMidday = `${workdayConfig.nextWorkday.dateStr}T12:00`;
+        const hIdx = hourly.time.findIndex(t => t.startsWith(targetMidday));
+        curHourIdx = hIdx >= 0 ? hIdx : Math.min(hourly.time.length - 1, dayIdx * 24 + 12);
+      } else {
+        const nowHourPrefix = `${workdayConfig.today.dateStr}T${String(new Date().getHours()).padStart(2, '0')}`;
+        const hIdx = hourly.time.findIndex(t => t.startsWith(nowHourPrefix));
+        curHourIdx = hIdx >= 0 ? hIdx : 0;
+      }
     }
 
     if (isNextWorkday && daily && daily.time) {
@@ -655,7 +763,9 @@ const UIRenderer = {
     }
 
     const precipSum = isNextWorkday ? ((daily && daily.precipitation_sum && daily.precipitation_sum[dayIdx]) || 0) : (current.precipitation || 0);
-    const precipProbVal = isNextWorkday ? ((daily && daily.precipitation_probability_max && daily.precipitation_probability_max[dayIdx]) || 0) : ((hourly && hourly.precipitation_probability && hourly.precipitation_probability[0] !== undefined) ? hourly.precipitation_probability[0] : 0);
+    const precipProbVal = isNextWorkday
+      ? ((daily && daily.precipitation_probability_max && daily.precipitation_probability_max[dayIdx]) || 0)
+      : ((hourly && hourly.precipitation_probability && hourly.precipitation_probability[curHourIdx] !== undefined) ? hourly.precipitation_probability[curHourIdx] : 0);
     if (els.specPrecip) els.specPrecip.textContent = I18n.formatters.millimeters(precipSum);
     if (els.specPrecipProb) els.specPrecipProb.textContent = `Kans: ${precipProbVal}%`;
 
@@ -671,7 +781,7 @@ const UIRenderer = {
       els.specPressureStatus.textContent = pressure > Config.THRESHOLDS.SURFACE_PRESSURE.HIGH_STABLE ? I18n.t.specs.stable : pressure < Config.THRESHOLDS.SURFACE_PRESSURE.LOW_UNSTABLE ? I18n.t.specs.unstable : I18n.t.specs.stable;
     }
 
-    const vis = (hourly && hourly.visibility && hourly.visibility[0] !== undefined) ? Math.round(hourly.visibility[0] / 1000) : 10;
+    const vis = (hourly && hourly.visibility && hourly.visibility[curHourIdx] !== undefined) ? Math.round(hourly.visibility[curHourIdx] / 1000) : 10;
     if (els.specVisibility) els.specVisibility.textContent = `${vis} km`;
     if (els.specVisibilityStatus) {
       els.specVisibilityStatus.textContent = vis >= 10 ? I18n.t.specs.excellent : vis >= 5 ? I18n.t.specs.good : vis >= 2 ? I18n.t.specs.moderate : I18n.t.specs.limited;
@@ -679,7 +789,7 @@ const UIRenderer = {
 
     // --- 6. UURLIJKSE EN 7-DAAGSE VERWACHTING ---
     this.renderHourlyStrip(hourly, state.selectedDay, workdayConfig, state.commute);
-    this.renderDailyForecast(daily);
+    this.renderDailyForecast(daily, current ? current.temperature_2m : null);
 
     // --- 7. BEKNOPTE WIDGET WEERGAVE ---
     if (els.singleWidgetCard) els.singleWidgetCard.dataset.verdict = advice.dayVerdict;
@@ -754,31 +864,40 @@ const UIRenderer = {
   },
 
   /**
-   * Vult de motormodel-keuzelijsten dynamisch vanuit Config.FUEL.PRESETS (DRY).
+   * Vult de motormodel- en automodel-keuzelijsten dynamisch vanuit Config.FUEL (DRY).
    */
-  populateFuelPresets(activePresetId = 'hornet') {
+  populateFuelPresets(activePresetId = 'hornet', activeCarPresetId = 'swift_sport_2023') {
     const presets = Config.FUEL?.PRESETS || [];
+    const carPresets = Config.FUEL?.CAR_PRESETS || [];
     const els = this._getElements();
 
-    const renderOptions = (includeRatio = false) => {
-      return presets.map(p => {
+    const renderListOptions = (list, selectedId, includeRatio = false) => {
+      return list.map(p => {
         const isCustom = p.id === 'custom';
         const ratioStr = (!isCustom && typeof I18n !== 'undefined' && I18n.formatters?.consumptionRatio)
           ? ` (${I18n.formatters.consumptionRatio(p.consumption)})`
           : '';
         const consStr = !isCustom ? ` \u2014 ${I18n.formatters.decimal(p.consumption, 1)} L / 100 km` : '';
         const label = includeRatio ? `${p.name}${consStr}${ratioStr}` : `${p.name}${consStr}`;
-        const selected = p.id === activePresetId ? ' selected' : '';
+        const selected = p.id === selectedId ? ' selected' : '';
         return `<option value="${p.id}"${selected}>${label}</option>`;
       }).join('');
     };
 
     if (els.fuelQuickPresetSelect) {
-      els.fuelQuickPresetSelect.innerHTML = renderOptions(false);
+      els.fuelQuickPresetSelect.innerHTML = renderListOptions(presets, activePresetId, false);
     }
     const modalSelect = document.getElementById('setting-bike-preset');
     if (modalSelect) {
-      modalSelect.innerHTML = renderOptions(true);
+      modalSelect.innerHTML = renderListOptions(presets, activePresetId, true);
+    }
+
+    if (els.fuelQuickCarSelect) {
+      els.fuelQuickCarSelect.innerHTML = renderListOptions(carPresets, activeCarPresetId, false);
+    }
+    const modalCarSelect = document.getElementById('setting-car-preset');
+    if (modalCarSelect) {
+      modalCarSelect.innerHTML = renderListOptions(carPresets, activeCarPresetId, true);
     }
   },
 
@@ -908,29 +1027,70 @@ const UIRenderer = {
 
     // 1. Prijs & Trend Banner
     const effectivePrice = FuelService.getEffectivePrice(stats, fuelState);
-    const isCustomMode = fuelState.priceMode === 'custom';
+    const mode = fuelState.priceMode || 'daily';
+    const isUserCustom = Boolean(fuelState.isUserCustom && typeof fuelState.customPricePerLiter === 'number');
+    const fmtPrice = (p) => (typeof I18n !== 'undefined' && I18n.formatters?.fuelPrice)
+      ? I18n.formatters.fuelPrice(p)
+      : Number(p).toFixed(3).replace('.', ',');
+
     if (els.fuelPriceVal) {
-      els.fuelPriceVal.textContent = (typeof I18n !== 'undefined' && I18n.formatters?.fuelPrice)
-        ? I18n.formatters.fuelPrice(isCustomMode ? effectivePrice : stats.latestPrice)
-        : (isCustomMode ? effectivePrice : stats.latestPrice).toFixed(3).replace('.', ',');
+      els.fuelPriceVal.textContent = fmtPrice(effectivePrice);
     }
 
     if (els.fuelCustomTag) {
-      els.fuelCustomTag.style.display = isCustomMode ? 'inline-flex' : 'none';
-      els.fuelCustomTag.textContent = isCustomMode ? 'Actuele koers' : '';
+      els.fuelCustomTag.style.display = 'inline-flex';
+      if (isUserCustom) {
+        els.fuelCustomTag.textContent = 'Eigen pompprijs';
+      } else if (mode === 'cbs') {
+        els.fuelCustomTag.textContent = 'CBS gewogen';
+      } else {
+        els.fuelCustomTag.textContent = 'Actuele koers';
+      }
     }
 
-    // Prijsmodus knoppen synchroniseren
+    // Prijsmodus knoppen & tekst dynamisch synchroniseren
     const updateModeButtons = (btns) => {
       if (!btns) return;
       btns.forEach(btn => {
         const m = btn.getAttribute('data-mode');
-        const active = (m === 'custom' && isCustomMode) || (m === 'cbs' && !isCustomMode);
+        let active = false;
+        if (m === 'cbs') {
+          active = (mode === 'cbs' && !isUserCustom);
+          btn.innerHTML = `&#x1F3DB;&#xFE0F; CBS Meting (${stats.cbsDateStr}: &euro;&nbsp;${fmtPrice(stats.cbsPrice)})`;
+        } else if (m === 'daily') {
+          active = (mode === 'daily' && !isUserCustom);
+          btn.innerHTML = `&#x26A1; Actuele Dagkoers (&euro;&nbsp;${fmtPrice(stats.latestPrice)})`;
+        } else if (m === 'custom') {
+          active = isUserCustom;
+          btn.innerHTML = `&#x26FD; Eigen Pompprijs ${isUserCustom ? `(&euro;&nbsp;${fmtPrice(effectivePrice)})` : ''}`;
+        }
         btn.classList.toggle('active', active);
       });
     };
     updateModeButtons(els.fuelModeButtons);
     updateModeButtons(els.modalFuelModeButtons);
+
+    // Snelle prijzen chips dynamisch verrijken
+    const chipToday = document.getElementById('chip-price-today');
+    if (chipToday) chipToday.textContent = `\u26A1 Dagkoers (\u20AC ${fmtPrice(stats.latestPrice)})`;
+    const chipUnmanned = document.getElementById('chip-price-unmanned');
+    if (chipUnmanned) chipUnmanned.textContent = `\u26FD Onbemand (\u20AC ${fmtPrice(stats.latestPrice - 0.09)})`;
+    const chipHighway = document.getElementById('chip-price-highway');
+    if (chipHighway) chipHighway.textContent = `\uD83C\uDFEA Snelweg (\u20AC ${fmtPrice(stats.latestPrice + 0.15)})`;
+
+    if (els.valFuelPricePill) {
+      const note = isUserCustom ? '(Aangepast)' : (mode === 'cbs' ? '(CBS)' : '(Dagkoers)');
+      els.valFuelPricePill.textContent = `\u20AC ${fmtPrice(effectivePrice)} / L ${note}`;
+    }
+
+    if (els.settingCustomFuelPrice && !isUserCustom) {
+      els.settingCustomFuelPrice.value = effectivePrice.toFixed(2);
+    }
+
+    if (els.cbsScheduleHint) {
+      const sched = FuelService.getCbsScheduleInfo(stats.latestPeriod);
+      els.cbsScheduleHint.textContent = `\u2139\uFE0F CBS publiceert wekelijks op donderdag over de voorgaande week. Volgende CBS-publicatie: ${sched.relativeLabel}.`;
+    }
 
     if (els.fuelTrendPill && els.fuelTrendText && els.fuelTrendIcon) {
       const isDown = stats.diff7d <= 0;
@@ -944,13 +1104,14 @@ const UIRenderer = {
 
     if (els.fuelDateSub) {
       const sched = FuelService.getCbsScheduleInfo(stats.latestPeriod);
-      els.fuelDateSub.textContent = isCustomMode
-        ? ((typeof I18n !== 'undefined' && I18n.t?.fuel?.usingDailyPriceNotice)
-            ? I18n.t.fuel.usingDailyPriceNotice(stats.latestDateStr, `\u20AC ${((typeof I18n !== 'undefined' && I18n.formatters?.fuelPrice) ? I18n.formatters.fuelPrice(effectivePrice) : effectivePrice.toFixed(3).replace('.', ','))}`)
-            : `Actuele dagkoers: ${stats.latestDateStr} (\u20AC ${((typeof I18n !== 'undefined' && I18n.formatters?.fuelPrice) ? I18n.formatters.fuelPrice(effectivePrice) : effectivePrice.toFixed(3).replace('.', ','))}/L) \u2022 Bron: Dagmeting`)
-        : ((typeof I18n !== 'undefined' && I18n.t?.fuel?.cbsDateWithNext) ? I18n.t.fuel.cbsDateWithNext(stats.latestDateStr, sched.relativeLabel) : `Laatste CBS meting: ${stats.latestDateStr} \u2022 Volgende: ${sched.relativeLabel}`);
-
-
+      if (isUserCustom) {
+        els.fuelDateSub.textContent = `Eigen pompprijs: \u20AC ${fmtPrice(effectivePrice)}/L \u2022 Aangepast in voorkeuren`;
+      } else if (mode === 'cbs') {
+        els.fuelDateSub.textContent = `Laatste CBS meting: ${stats.cbsDateStr} (\u20AC ${fmtPrice(stats.cbsPrice)}/L) \u2022 Volgende: ${sched.relativeLabel}`;
+      } else {
+        const sourceLabel = stats.isNowcast ? 'Dynamische markttrend tot vandaag' : 'Bron: CBS StatLine';
+        els.fuelDateSub.textContent = `Actuele dagkoers: ${stats.latestDateStr} (\u20AC ${fmtPrice(stats.latestPrice)}/L) \u2022 ${sourceLabel}`;
+      }
     }
 
     // 2. Active buttons sync
@@ -965,9 +1126,13 @@ const UIRenderer = {
       });
     }
 
-    // 3. SVG Grafiek renderen via UIRenderer
+    // 3. SVG Grafiek renderen via UIRenderer (met memoization bij ongewijzigde koersdata)
     if (els.fuelChartContainer) {
-      els.fuelChartContainer.innerHTML = this.renderFuelSvgChart(stats);
+      const chartKey = `${stats.fuelType}_${stats.range}_${stats.mode}_${stats.latestPrice}_${stats.cbsPrice}_${stats.history.length}`;
+      if (this._lastFuelChartKey !== chartKey || els.fuelChartContainer.children.length === 0) {
+        this._lastFuelChartKey = chartKey;
+        els.fuelChartContainer.innerHTML = this.renderFuelSvgChart(stats);
+      }
     }
 
     // 4. Rit- en Tankkostencalculator
@@ -982,18 +1147,36 @@ const UIRenderer = {
       els.fuelCalcKm.textContent = `${roadKm} km`;
     }
 
-    // Motorbadge naam
+    // Motorbadge & Autobadge namen
     const presets = Config.FUEL?.PRESETS || [];
     const activePreset = presets.find(p => p.id === fuelState.presetId) || presets.find(p => p.consumption === fuelState.consumptionL100km);
-    const bikeName = activePreset
-      ? activePreset.name
-      : `Motorfiets (${I18n.formatters.decimal(fuelState.consumptionL100km, 1)} L / 100 km)`;
+    const bikeConsFmt = I18n.formatters.decimal(fuelState.consumptionL100km, 1);
+    const bikeName = (activePreset && activePreset.id !== 'custom')
+      ? `${activePreset.name} (${bikeConsFmt} L)`
+      : `Motorfiets (${bikeConsFmt} L / 100 km)`;
+
+    const carPresets = Config.FUEL?.CAR_PRESETS || [];
+    const carConsVal = Number(fuelState.carConsumptionL100km) || dFuel.carConsumptionL100km || 5.8;
+    const carConsFmt = I18n.formatters.decimal(carConsVal, 1);
+    const activeCarPreset = carPresets.find(c => c.id === fuelState.carPresetId) || carPresets.find(c => c.consumption === carConsVal);
+    const carShortName = (activeCarPreset && activeCarPreset.id !== 'custom')
+      ? (activeCarPreset.shortName || activeCarPreset.name)
+      : `Auto (${carConsFmt} L)`;
+    const carBadgeName = (activeCarPreset && activeCarPreset.id !== 'custom')
+      ? `${activeCarPreset.shortName || activeCarPreset.name} (${carConsFmt} L)`
+      : `Auto (${carConsFmt} L / 100 km)`;
 
     if (els.fuelCalcBikeName) {
       els.fuelCalcBikeName.textContent = `\uD83C\uDFCD\uFE0F ${bikeName}`;
     }
+    if (els.fuelCalcCarName) {
+      els.fuelCalcCarName.textContent = `\uD83D\uDE97 ${carBadgeName}`;
+    }
     if (els.fuelQuickPresetSelect) {
       els.fuelQuickPresetSelect.value = fuelState.presetId || 'custom';
+    }
+    if (els.fuelQuickCarSelect) {
+      els.fuelQuickCarSelect.value = fuelState.carPresetId || (activeCarPreset ? activeCarPreset.id : 'custom');
     }
 
     // Berekeningen via FuelService met effectieve prijs (CBS of actuele dagkoers)
@@ -1001,7 +1184,7 @@ const UIRenderer = {
     const dailyCommute = FuelService.calculateDailyCommuteCost(roadKm, fuelState.consumptionL100km, effectivePrice);
     const tank = FuelService.calculateTankCost(fuelState.tankCapacityL, effectivePrice);
     const estRangeKm = FuelService.calculateRangeKm(fuelState.tankCapacityL, fuelState.consumptionL100km);
-    const savings = FuelService.calculateCarSavings(roadKm, fuelState.consumptionL100km, fuelState.carConsumptionL100km, effectivePrice);
+    const savings = FuelService.calculateCarSavings(roadKm, fuelState.consumptionL100km, carConsVal, effectivePrice);
 
     const fmtCurrency = (val) => (typeof I18n !== 'undefined' && I18n.formatters?.currency) ? I18n.formatters.currency(val) : `\u20AC ${val.toFixed(2)}`;
     const fmtLiters = (val) => (typeof I18n !== 'undefined' && I18n.formatters?.liters) ? I18n.formatters.liters(val) : `${val.toFixed(1)} L`;
@@ -1020,7 +1203,41 @@ const UIRenderer = {
       ? I18n.t.fuel.rangeEstimate(estRangeKm)
       : `ca. ${estRangeKm} km bereik`;
 
-    if (els.fuelCarSavings) els.fuelCarSavings.textContent = `+ ${fmtCurrency(savings.daily)}`;
+    // 4b. Dynamische Motor vs. Auto vergelijkingstegel
+    if (els.fuelSavingsTile) {
+      els.fuelSavingsTile.classList.remove('cost-extra', 'neutral-diff');
+      if (savings.daily < -0.01) {
+        els.fuelSavingsTile.classList.add('cost-extra');
+      } else if (Math.abs(savings.daily) <= 0.01) {
+        els.fuelSavingsTile.classList.add('neutral-diff');
+      }
+    }
+
+    if (els.fuelLblSavings) {
+      els.fuelLblSavings.textContent = savings.daily >= -0.01
+        ? `Besparing vs. ${carShortName}`
+        : `Verschil vs. ${carShortName}`;
+    }
+
+    if (els.fuelCarSavings) {
+      if (savings.daily > 0.01) {
+        els.fuelCarSavings.textContent = `+ ${fmtCurrency(savings.absDaily)}`;
+      } else if (savings.daily < -0.01) {
+        els.fuelCarSavings.textContent = `- ${fmtCurrency(savings.absDaily)}`;
+      } else {
+        els.fuelCarSavings.textContent = fmtCurrency(0);
+      }
+    }
+
+    if (els.fuelSubSavings) {
+      if (savings.daily > 0.01) {
+        els.fuelSubSavings.textContent = `/dag \u2022 \u20AC ${Math.round(savings.absMonthly)}/mnd (\u20AC ${Math.round(savings.absYearly)}/jr) \uD83D\uDFE2`;
+      } else if (savings.daily < -0.01) {
+        els.fuelSubSavings.textContent = `/dag meer (\u20AC ${Math.round(savings.absMonthly)}/mnd) \u2022 0 file \uD83C\uDFCD\uFE0F`;
+      } else {
+        els.fuelSubSavings.textContent = `Gelijk verbruik \u2022 0 min file \u26A1`;
+      }
+    }
 
     // 5. Update compact strip in widget view
     if (els.widgetFuelPriceLbl) {
@@ -1048,12 +1265,21 @@ const UIRenderer = {
     const morningHour = parseInt(morningTimeStr.split(':')[0], 10);
     const eveningHour = parseInt(eveningTimeStr.split(':')[0], 10);
 
+    // Memoization: bouw 26 uurchips + SVG-iconen niet opnieuw op als uurlijkse data en rittijden ongewijzigd zijn
+    const hourlyKey = `${hourly.time[0]}_${hourly.temperature_2m[0]}_${selectedDay}_${activeDateStr}_${morningHour}_${eveningHour}_${now.getHours()}`;
+    if (this._lastHourlyKey === hourlyKey && strip.children.length > 0) {
+      return;
+    }
+    this._lastHourlyKey = hourlyKey;
+
     const currentHourTarget = `${workdayConfig.today.dateStr}T${String(now.getHours()).padStart(2, '0')}`;
     let currentIdx = hourly.time.findIndex(t => t.startsWith(currentHourTarget));
     if (currentIdx === -1) {
+      const epochs = hourly._epochMs;
       let minDiff = Infinity;
       for (let i = 0; i < hourly.time.length; i++) {
-        const diff = Math.abs(new Date(hourly.time[i]).getTime() - currentMs);
+        const ptMs = epochs ? epochs[i] : new Date(hourly.time[i]).getTime();
+        const diff = Math.abs(ptMs - currentMs);
         if (diff < minDiff) {
           minDiff = diff;
           currentIdx = i;
@@ -1085,6 +1311,7 @@ const UIRenderer = {
       const isNight = hourNum < 6 || hourNum > 21;
 
       let rainDisplay = precip > 0.05 ? `💧${I18n.formatters.decimal(precip, 1)}m` : (rainProb > 45 ? `⛅0m` : `☀️0%`);
+      const rainState = precip > 0.05 ? 'wet' : (rainProb > 45 ? 'chance' : 'dry');
       const isSameDate = timeStr.startsWith(activeDateStr);
       const isMorning = isSameDate && (hourNum === morningHour);
       const isEvening = isSameDate && (hourNum === eveningHour);
@@ -1116,35 +1343,42 @@ const UIRenderer = {
           <span class="hour-time">${hourStr}</span>
           <div class="hour-icon">${this.getWeatherSvg(iconType, isNight)}</div>
           <span class="hour-temp">${temp}°</span>
-          <span class="hour-rain">${rainDisplay}</span>
+          <span class="hour-rain" data-rain="${rainState}">${rainDisplay}</span>
         </div>
       `);
     }
 
     strip.innerHTML = chips.join('');
-    strip.classList.remove('m3-day-switch');
-    requestAnimationFrame(() => {
-      strip.classList.add('m3-day-switch');
-      const targetChip = strip.querySelector('.hour-chip.is-current-hour') || strip.querySelector('.hour-chip.is-commute-morning');
-      if (targetChip) {
-        const chipRect = targetChip.getBoundingClientRect();
-        const stripRect = strip.getBoundingClientRect();
-        const scrollOffset = strip.scrollLeft + (chipRect.left - stripRect.left) - (strip.clientWidth / 2) + (targetChip.clientWidth / 2);
-        strip.scrollLeft = Math.max(0, scrollOffset);
-      }
-    });
+    const targetChip = strip.querySelector('.hour-chip.is-current-hour') || strip.querySelector('.hour-chip.is-commute-morning');
+    if (targetChip) {
+      const scrollOffset = targetChip.offsetLeft - (strip.clientWidth / 2) + (targetChip.clientWidth / 2);
+      strip.scrollLeft = Math.max(0, scrollOffset);
+    }
   },
 
   /**
-   * Rendert de 7-daagse weersverwachting.
+   * Rendert de 7-daagse weersverwachting met echte week-relatieve schaal,
+   * meteorologische thermische kleurgradiënten en een Apple Weather 'Nu'-indicator op vandaag.
    */
-  renderDailyForecast(daily) {
+  renderDailyForecast(daily, currentTemp = null) {
     const container = this._getElements().dailyList;
     if (!container || !daily || !daily.time) return;
+
+    const dailyKey = `${daily.time[0]}_${daily.temperature_2m_max.join(',')}_${daily.temperature_2m_min.join(',')}_${Math.round(currentTemp ?? -99)}_${this._forceBarSweepCounter}`;
+    if (this._lastDailyKey === dailyKey && container.children.length > 0) {
+      return;
+    }
+    this._lastDailyKey = dailyKey;
 
     const dayNames = ['Zon', 'Maa', 'Din', 'Woe', 'Don', 'Vri', 'Zat'];
     const count = Math.min(7, daily.time.length);
     const rows = [];
+
+    const minTemps = daily.temperature_2m_min.slice(0, count).map(t => Math.round(Number(t)));
+    const maxTemps = daily.temperature_2m_max.slice(0, count).map(t => Math.round(Number(t)));
+    const weekMin = Math.min(...minTemps);
+    const weekMax = Math.max(...maxTemps);
+    const weekSpan = Math.max(8, weekMax - weekMin);
 
     for (let i = 0; i < count; i++) {
       const d = new Date(daily.time[i] + 'T00:00:00');
@@ -1153,16 +1387,33 @@ const UIRenderer = {
       const name = isToday ? 'Vandaag' : isTomorrow ? 'Morgen' : dayNames[d.getDay()];
       const code = daily.weather_code[i] || 0;
       const iconType = (I18n.weatherCodes[code] || {}).icon || 'sun';
-      const minTemp = Math.round(daily.temperature_2m_min[i]);
-      const maxTemp = Math.round(daily.temperature_2m_max[i]);
+      const minTemp = minTemps[i];
+      const maxTemp = maxTemps[i];
       const rainSum = daily.precipitation_sum[i] || 0;
       const rainProb = daily.precipitation_probability_max[i] || 0;
 
-      const barLeft = Math.max(5, Math.min(65, ((minTemp + 5) / 35) * 100));
-      const rawBarWidth = Math.max(15, Math.min(75, ((maxTemp - minTemp) / 20) * 80));
-      const safeBarWidth = Math.min(rawBarWidth, Math.max(12, 96 - barLeft));
+      // Relatieve positie binnen de 7-daagse weekbandbreedte (Apple Weather stijl)
+      const rawLeft = ((minTemp - weekMin) / weekSpan) * 82 + 3;
+      const barLeft = Math.max(3, Math.min(76, rawLeft));
+      const rawWidth = ((maxTemp - minTemp) / weekSpan) * 82;
+      const safeBarWidth = Math.min(Math.max(16, rawWidth), 97 - barLeft);
 
-      let rainDisplay = rainSum > 0.1 ? `💧 ${I18n.formatters.decimal(rainSum, 1)}m` : (rainProb > 40 ? `⛅ 0m` : `☀️ 0%`);
+      // Echte thermische kleurgradiënt op basis van minTemp en maxTemp van die specifieke dag
+      const thermalGrad = this._getThermalGradient(minTemp, maxTemp);
+      const maxColor = this._getThermalColor(maxTemp);
+
+      // Positie van huidige temperatuur-indicator op de balk van Vandaag
+      let currentDotHtml = '';
+      if (isToday && Number.isFinite(currentTemp)) {
+        const clampedCur = Math.max(minTemp, Math.min(maxTemp, currentTemp));
+        const daySpan = Math.max(1, maxTemp - minTemp);
+        const relRatio = (clampedCur - minTemp) / daySpan;
+        const dotLeftPct = Math.max(5, Math.min(95, barLeft + relRatio * safeBarWidth));
+        currentDotHtml = `<span class="temp-current-dot" style="left: ${dotLeftPct.toFixed(1)}%;" title="Huidige temperatuur: ${Math.round(currentTemp)}°C"></span>`;
+      }
+
+      let rainDisplay = rainSum > 0.1 ? `💧 ${I18n.formatters.decimal(rainSum, 1)}m` : (rainProb > 40 ? `⛅ ${rainProb}%` : `☀️ 0%`);
+      const rainState = rainSum > 0.1 ? 'wet' : (rainProb > 40 ? 'chance' : 'dry');
 
       rows.push(`
         <div class="daily-row ${isToday ? 'is-today' : ''}">
@@ -1171,26 +1422,17 @@ const UIRenderer = {
           <div class="daily-temp-bar-container">
             <span class="daily-min">${minTemp}°</span>
             <div class="temp-bar-track">
-              <div class="temp-bar-fill" style="left: ${barLeft}%; width: 0%;" data-target-width="${safeBarWidth}%"></div>
+              <div class="temp-bar-fill" style="left: ${barLeft.toFixed(1)}%; width: ${safeBarWidth.toFixed(1)}%; background: ${thermalGrad}; --bar-glow: ${maxColor}; --bar-delay: ${i * 55}ms;"></div>
+              ${currentDotHtml}
             </div>
             <span class="daily-max">${maxTemp}°</span>
           </div>
-          <span class="daily-rain-pill">${rainDisplay}</span>
+          <span class="daily-rain-pill" data-rain="${rainState}">${rainDisplay}</span>
         </div>
       `);
     }
 
     container.innerHTML = rows.join('');
-
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        const fills = container.querySelectorAll('.temp-bar-fill');
-        fills.forEach((fill, idx) => {
-          fill.style.transitionDelay = `${idx * 0.04}s`;
-          fill.style.width = fill.dataset.targetWidth || '40%';
-        });
-      }, 40);
-    });
   },
 
   /**

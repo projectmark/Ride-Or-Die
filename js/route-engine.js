@@ -6,6 +6,25 @@
 
 const RouteEngine = {
   /**
+   * Geeft de voorgeïndexeerde Float64Array met epoch-milliseconden terug voor een tijdreeks.
+   */
+  _getEpochArray(block) {
+    if (!block || !Array.isArray(block.time)) return null;
+    if (block._epochMs) return block._epochMs;
+    const len = block.time.length;
+    const arr = new Float64Array(len);
+    for (let i = 0; i < len; i++) {
+      arr[i] = Date.parse(block.time[i]);
+    }
+    Object.defineProperty(block, '_epochMs', {
+      value: arr,
+      enumerable: false,
+      configurable: true
+    });
+    return arr;
+  },
+
+  /**
    * Berekent de afstand in kilometers tussen twee gps-coördinaten via de Haversine-formule.
    */
   calculateDistanceKm(lat1, lon1, lat2, lon2) {
@@ -41,16 +60,17 @@ const RouteEngine = {
     const destNameLower = (dest.name || '').toLowerCase();
     const presetCities = Config.PRESET_CITIES || [];
 
-    presetCities.forEach(city => {
+    for (let i = 0; i < presetCities.length; i++) {
+      const city = presetCities[i];
       const cNameLower = city.name.toLowerCase();
-      if (cNameLower === startNameLower || cNameLower === destNameLower) return;
+      if (cNameLower === startNameLower || cNameLower === destNameLower) continue;
 
       const d = this.calculateDistanceKm(midLat, midLon, city.lat, city.lon);
       if (d < minCityDist) {
         minCityDist = d;
         closestCity = city;
       }
-    });
+    }
 
     let mid = null;
     if (closestCity && minCityDist <= 20) {
@@ -98,7 +118,11 @@ const RouteEngine = {
       State.state.route.dest = corridor.dest;
       State.state.route.legDurationMinutes = corridor.legDurationMinutes;
       State.state.route.roadKm = corridor.roadKm;
-      State.save();
+      if (typeof State.saveDebounced === 'function') {
+        State.saveDebounced();
+      } else {
+        State.save();
+      }
     }
     return corridor;
   },
@@ -115,17 +139,20 @@ const RouteEngine = {
     const current = weatherData.current;
     const targetMs = targetDate.getTime();
 
-    // 1. Minutely_15 voor nauwkeurige buiendetectie
+    // 1. Minutely_15 voor nauwkeurige buiendetectie (via gecachte Float64Array)
     if (minutely && minutely.time && minutely.time.length > 0) {
+      const epochs = this._getEpochArray(minutely);
       let closestIdx = -1;
       let minDiff = Infinity;
 
-      for (let i = 0; i < minutely.time.length; i++) {
-        const stepMs = new Date(minutely.time[i]).getTime();
-        const diff = Math.abs(stepMs - targetMs);
+      for (let i = 0; i < epochs.length; i++) {
+        const diff = Math.abs(epochs[i] - targetMs);
         if (diff < minDiff) {
           minDiff = diff;
           closestIdx = i;
+        } else if (epochs[i] > targetMs) {
+          // Omdat tijdstappen oplopend zijn, wordt het verschil hierna alleen maar groter
+          break;
         }
       }
 
@@ -154,17 +181,19 @@ const RouteEngine = {
       }
     }
 
-    // 2. Terugval op uurbasis
+    // 2. Terugval op uurbasis (via gecachte Float64Array)
     if (hourly && hourly.time && hourly.time.length > 0) {
+      const epochs = this._getEpochArray(hourly);
       let closestIdx = -1;
       let minDiff = Infinity;
 
-      for (let i = 0; i < hourly.time.length; i++) {
-        const stepMs = new Date(hourly.time[i]).getTime();
-        const diff = Math.abs(stepMs - targetMs);
+      for (let i = 0; i < epochs.length; i++) {
+        const diff = Math.abs(epochs[i] - targetMs);
         if (diff < minDiff) {
           minDiff = diff;
           closestIdx = i;
+        } else if (epochs[i] > targetMs) {
+          break;
         }
       }
 
@@ -229,16 +258,17 @@ const RouteEngine = {
     const check = (data) => {
       if (!data || !data.minutely_15 || !data.minutely_15.time) return;
       const m = data.minutely_15;
-      for (let i = 0; i < m.time.length; i++) {
-        const stepMs = new Date(m.time[i]).getTime();
-        if (stepMs >= startMs && stepMs <= endMs) {
-          const p = m.precipitation[i] || 0;
-          if (p > maxPrecip) maxPrecip = p;
-          const g = m.wind_gusts_10m[i] || 0;
-          if (g > maxGusts) maxGusts = g;
-          const c = m.weather_code[i] || 0;
-          if (c > worstCode) worstCode = c;
-        }
+      const epochs = this._getEpochArray(m);
+      for (let i = 0; i < epochs.length; i++) {
+        const stepMs = epochs[i];
+        if (stepMs < startMs) continue;
+        if (stepMs > endMs) break;
+        const p = m.precipitation[i] || 0;
+        if (p > maxPrecip) maxPrecip = p;
+        const g = m.wind_gusts_10m[i] || 0;
+        if (g > maxGusts) maxGusts = g;
+        const c = m.weather_code[i] || 0;
+        if (c > worstCode) worstCode = c;
       }
     };
 

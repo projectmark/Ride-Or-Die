@@ -15,6 +15,7 @@ const Config = {
     MAX_CACHE_ENTRIES: 20,
     GEOCODING_MAX_RESULTS: 8,
     SEARCH_DEBOUNCE_MS: 250,
+    FETCH_TIMEOUT_MS: 10000,
     GPS_TIMEOUT_MS: 10000,
     GPS_REVERSE_TIMEOUT_MS: 3500
   },
@@ -37,6 +38,7 @@ const Config = {
     },
     TEMPERATURE: {
       DEFAULT_MIN: 8, // °C
+      FREEZING: 1.5, // <= 1.5°C: direct levensgevaarlijk glad (ijzel/vorst)
       ICE_RISK: 2, // Onder 2°C: direct levensgevaarlijk glad (ijzel/vorst)
       COMPOUND_COLD_WET: 7, // Onder 7°C met regen: zware slipaftrek
       HEATED_GLOVES_FLOOR: 3, // Met verwarmde handschoenen acceptabel tot 3°C
@@ -66,26 +68,29 @@ const Config = {
     CACHE_TTL_MS: 12 * 60 * 60 * 1000, // 12 uur cache
     HISTORY_DAYS_QUERY: 120, // Aantal dagen historie op te halen
     SUPER98_SURCHARGE: 0.19, // Marktconforme meerprijs Super 98 t.o.v. Euro 95 in NL
-    FALLBACK_PRICE_EURO95: 2.274,
-    FALLBACK_PRICE_DIESEL: 2.462,
-    FALLBACK_PRICE_LPG: 0.984,
-    TODAY_MARKET_PRICE_EURO95: 2.274,
+    FALLBACK_PRICE_EURO95: 2.250,
+    FALLBACK_PRICE_DIESEL: 2.400,
+    FALLBACK_PRICE_LPG: 0.980,
     PRICE_MIN: 1.50,
     PRICE_MAX: 3.20,
     PRICE_STEP: 0.01,
-    QUICK_PRICES: [
-      { id: 'today', name: 'Vandaag marktprijs', price: 2.274, badge: '⚡ Vandaag' },
-      { id: 'unmanned', name: 'Onbemand (TinQ / Tango)', price: 2.189, badge: '⛽ Onbemand' },
-      { id: 'highway', name: 'Snelweg / Merkstation', price: 2.459, badge: '🏪 Snelweg' }
+    QUICK_OFFSETS: [
+      { id: 'today', name: 'Dagkoers', offset: 0, badge: '⚡ Dagkoers' },
+      { id: 'unmanned', name: 'Onbemand voordeel (-9 ct)', offset: -0.09, badge: '⛽ Onbemand' },
+      { id: 'highway', name: 'Snelweg opslag (+15 ct)', offset: 0.15, badge: '🏪 Snelweg' }
     ],
     DEFAULT_CONSUMPTION_L100KM: 5.6,
     DEFAULT_TANK_CAPACITY_L: 16,
-    DEFAULT_CAR_CONSUMPTION_L100KM: 6.5,
+    DEFAULT_CAR_CONSUMPTION_L100KM: 5.8,
     WORKDAYS_PER_WEEK: 5,
     WORKDAYS_PER_MONTH: 21.6,
+    WORKDAYS_PER_YEAR: 215,
     CONSUMPTION_MIN: 2.5,
     CONSUMPTION_MAX: 9.0,
     CONSUMPTION_STEP: 0.1,
+    CAR_CONSUMPTION_MIN: 3.0,
+    CAR_CONSUMPTION_MAX: 14.0,
+    CAR_CONSUMPTION_STEP: 0.1,
     TANK_MIN: 10,
     TANK_MAX: 30,
     TANK_STEP: 1,
@@ -94,20 +99,19 @@ const Config = {
       { id: 'duke', name: 'KTM 390 / 890 Duke', consumption: 3.8, tank: 14 },
       { id: 'yamaha', name: 'Yamaha MT-07 / Tracer 7', consumption: 4.3, tank: 14 },
       { id: 'gs', name: 'BMW R1200 / 1250 GS', consumption: 5.1, tank: 20 },
+      { id: 'nc750x', name: 'Honda NC750X (Zuinig)', consumption: 3.5, tank: 14 },
       { id: 'allround', name: 'Gemiddelde Motor / Allround', consumption: 4.8, tank: 15 },
       { id: 'custom', name: 'Aangepast verbruik...', consumption: 5.6, tank: 16 }
     ],
-    // Dagelijkse koersbrug tussen de meest recente CBS-publicatie en vandaag (28 okt 2026)
-    DAILY_BRIDGE: [
-      { date: '2026-10-20', BenzineEuro95_1: 2.348, Diesel_2: 2.438 },
-      { date: '2026-10-21', BenzineEuro95_1: 2.331, Diesel_2: 2.443 },
-      { date: '2026-10-22', BenzineEuro95_1: 2.322, Diesel_2: 2.446 },
-      { date: '2026-10-23', BenzineEuro95_1: 2.306, Diesel_2: 2.450 },
-      { date: '2026-10-24', BenzineEuro95_1: 2.292, Diesel_2: 2.451 },
-      { date: '2026-10-25', BenzineEuro95_1: 2.292, Diesel_2: 2.450 },
-      { date: '2026-10-26', BenzineEuro95_1: 2.293, Diesel_2: 2.454 },
-      { date: '2026-10-27', BenzineEuro95_1: 2.283, Diesel_2: 2.460 },
-      { date: '2026-10-28', BenzineEuro95_1: 2.274, Diesel_2: 2.462 }
+    CAR_PRESETS: [
+      { id: 'swift_sport_2023', name: 'Suzuki Swift Sport (2023)', shortName: 'Swift Sport \'23', consumption: 5.8 },
+      { id: 'clio_rs_2018', name: 'Renault Clio RS Trophy (2018)', shortName: 'Clio RS Trophy \'18', consumption: 7.4 },
+      { id: 'aygo_x_2026', name: 'Toyota Aygo X Hybrid (2026)', shortName: 'Aygo X \'26', consumption: 4.6 },
+      { id: 'golf_8', name: 'VW Golf 1.5 eTSI', shortName: 'VW Golf eTSI', consumption: 5.7 },
+      { id: 'focus_ecoboost', name: 'Ford Focus 1.0 EcoBoost', shortName: 'Ford Focus', consumption: 6.1 },
+      { id: 'xc40_b4', name: 'Volvo XC40 / SUV Gemiddeld', shortName: 'SUV / XC40', consumption: 7.6 },
+      { id: 'avg_nl', name: 'Gemiddelde Benzineauto NL', shortName: 'Gemiddelde Auto', consumption: 6.5 },
+      { id: 'custom', name: 'Eigen auto verbruik...', shortName: 'Eigen Auto', consumption: 6.5 }
     ]
   },
 
@@ -148,11 +152,13 @@ const Config = {
       consumptionL100km: 5.6,
       tankCapacityL: 16,
       presetId: 'hornet',
+      carPresetId: 'swift_sport_2023',
+      carConsumptionL100km: 5.8,
       fuelType: 'BenzineEuro95_1',
       timeRange: '30D',
-      carConsumptionL100km: 6.5,
-      priceMode: 'custom', // 'custom' (standaard: actuele dagprijs) | 'cbs'
-      customPricePerLiter: 2.274
+      priceMode: 'daily', // 'daily' (standaard: dynamische marktdagkoers) | 'cbs' | 'custom'
+      customPricePerLiter: null,
+      isUserCustom: false
     }
   },
 

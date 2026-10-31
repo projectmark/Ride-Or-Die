@@ -7,7 +7,11 @@
 class StateStore {
   constructor() {
     this._subscribers = new Map();
+    this._saveTimer = null;
     this.state = this._getInitialState();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pagehide', () => this.flushSave());
+    }
   }
 
   _getInitialState() {
@@ -52,11 +56,13 @@ class StateStore {
           consumptionL100km: 5.6,
           tankCapacityL: 16,
           presetId: 'hornet',
+          carPresetId: 'swift_sport_2023',
+          carConsumptionL100km: 5.8,
           fuelType: 'BenzineEuro95_1',
           timeRange: '30D',
-          carConsumptionL100km: 6.5,
-          priceMode: 'custom',
-          customPricePerLiter: 2.274
+          priceMode: 'daily',
+          customPricePerLiter: null,
+          isUserCustom: false
         })
       },
       fuelData: null,
@@ -92,13 +98,38 @@ class StateStore {
    */
   set(key, value, persist = true) {
     const oldVal = this.state[key];
+    if (oldVal === value && (typeof value !== 'object' || value === null)) {
+      return;
+    }
     this.state[key] = value;
     this._notify(key, value, oldVal);
-    if (persist) this.save();
+    if (persist) this.saveDebounced();
   }
 
   get(key) {
     return this.state[key];
+  }
+
+  /**
+   * Slaat de huidige toestand gedebounced op om main-thread I/O tijdens slider-interacties te voorkomen.
+   */
+  saveDebounced(delayMs = 150) {
+    clearTimeout(this._saveTimer);
+    this._saveTimer = setTimeout(() => {
+      this._saveTimer = null;
+      this.save();
+    }, delayMs);
+  }
+
+  /**
+   * Schrijft openstaande wijzigingen direct weg naar localStorage.
+   */
+  flushSave() {
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer);
+      this._saveTimer = null;
+      this.save();
+    }
   }
 
   /**
@@ -169,15 +200,19 @@ class StateStore {
                 ? Math.max(fCfg.TANK_MIN || 5, Math.min(fCfg.TANK_MAX || 50, parsedFuel.tankCapacityL))
                 : (dFuel.tankCapacityL || 16),
               presetId: typeof parsedFuel.presetId === 'string' ? parsedFuel.presetId : (dFuel.presetId || 'hornet'),
+              carPresetId: typeof parsedFuel.carPresetId === 'string' ? parsedFuel.carPresetId : (dFuel.carPresetId || 'swift_sport_2023'),
               fuelType: ['BenzineEuro95_1', 'SuperPlus98', 'Diesel_2'].includes(parsedFuel.fuelType) ? parsedFuel.fuelType : (dFuel.fuelType || 'BenzineEuro95_1'),
               timeRange: ['30D', '90D'].includes(parsedFuel.timeRange) ? parsedFuel.timeRange : (dFuel.timeRange || '30D'),
               carConsumptionL100km: typeof parsedFuel.carConsumptionL100km === 'number' && !isNaN(parsedFuel.carConsumptionL100km)
-                ? parsedFuel.carConsumptionL100km
-                : (dFuel.carConsumptionL100km || 6.5),
-              priceMode: ['cbs', 'custom'].includes(parsedFuel.priceMode) ? parsedFuel.priceMode : (dFuel.priceMode || 'custom'),
-              customPricePerLiter: typeof parsedFuel.customPricePerLiter === 'number' && !isNaN(parsedFuel.customPricePerLiter)
+                ? Math.max(fCfg.CAR_CONSUMPTION_MIN || 3.0, Math.min(fCfg.CAR_CONSUMPTION_MAX || 14.0, parsedFuel.carConsumptionL100km))
+                : (dFuel.carConsumptionL100km || 5.8),
+              priceMode: ['daily', 'cbs', 'custom'].includes(parsedFuel.priceMode)
+                ? (parsedFuel.priceMode === 'custom' && !parsedFuel.isUserCustom ? 'daily' : parsedFuel.priceMode)
+                : (dFuel.priceMode || 'daily'),
+              isUserCustom: Boolean(parsedFuel.isUserCustom),
+              customPricePerLiter: (parsedFuel.isUserCustom && typeof parsedFuel.customPricePerLiter === 'number')
                 ? Math.max(fCfg.PRICE_MIN || 1.0, Math.min(fCfg.PRICE_MAX || 4.0, parsedFuel.customPricePerLiter))
-                : (dFuel.customPricePerLiter || 2.274)
+                : null
             };
           }
         } catch (e) {
